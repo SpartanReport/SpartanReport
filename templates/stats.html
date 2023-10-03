@@ -1,0 +1,31 @@
+{{define "stats"}}
+        <!-- Gamer Info Card -->
+        <div class="card mb-5">
+            <div class="card-body">
+                <h5 class="card-title">{{.gamerInfo.Gamertag}}</h5>
+                <div class="row align-items-center"> <!-- Bootstrap row and alignment class -->
+                    <div class="col-3"> <!-- Bootstrap column class -->
+                            <img src="{{.gamerInfo.Gamerpic.Medium}}" alt="Medium Gamerpic" class="rounded">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Match Stats -->
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Matches</h5>
+                <div class="matches">
+                    {{range .data.HaloStats.Results}}
+                        <a href="/match/{{.MatchId}}" class="match-link">
+                            <div class="match">
+                                <p>Match ID: {{.MatchId}}</p>
+                                <p>Start Time: {{.MatchInfo.FormattedStartTime}}</p>
+                                <p>End Time: {{.MatchInfo.FormattedEndTime}}</p>
+                            </div>
+                        </a>
+                    {{end}}
+                </div>
+            </div>
+        </div>
+
+{{end}}

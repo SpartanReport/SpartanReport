@@ -1,0 +1,92 @@
+{{define "match-details"}}
+    <!-- Gamer Info Card -->
+    <div class="card mb-5">
+        <div class="card-body">
+            <h5 class="card-title">{{.gamerInfo.Gamertag}}</h5>
+            <div class="row align-items-center"> <!-- Bootstrap row and alignment class -->
+                <div class="col-3"> <!-- Bootstrap column class -->
+                        <img src="{{.gamerInfo.Gamerpic.Medium}}" alt="Medium Gamerpic" class="rounded">
+                </div>
+            </div>
+        </div>
+    </div>
+<!-- Match Stats Card -->
+    <div class="card mt-5">
+        <div class="card-body">
+            <h5 class="card-title">Match Stats</h5>
+            <div class="row">
+                <div class="col">
+                    <p>Public Name: {{.data.MatchStats.MatchInfo.PublicName}}</p>
+                    <img src="{{.data.MatchStats.MatchInfo.MapImagePath}}" alt="Map Image" class="img-fluid">
+                    <p>Match ID: {{.data.MatchStats.MatchId}}</p>
+                    <p>Start Time: {{.data.MatchStats.MatchInfo.StartTime}}</p>
+                    <p>End Time: {{.data.MatchStats.MatchInfo.EndTime}}</p>
+                    <p>Duration: {{.data.MatchStats.MatchInfo.Duration}}</p>
+                    <p>Lifecycle Mode: {{.data.MatchStats.MatchInfo.LifecycleMode}}</p>
+                    <p>Game Variant Category: {{.data.MatchStats.MatchInfo.GameVariantCategory}}</p>
+                    <p>Level ID: {{.data.MatchStats.MatchInfo.LevelId}}</p>
+                    <p>Map Variant Asset ID: {{.data.MatchStats.MatchInfo.MapVariant.AssetId}}</p>
+                    <p>Map Variant Version ID: {{.data.MatchStats.MatchInfo.MapVariant.VersionId}}</p>
+                    <p>Ugc Game Variant Asset ID: {{.data.MatchStats.MatchInfo.UgcGameVariant.AssetId}}</p>
+                    <p>Ugc Game Variant Version ID: {{.data.MatchStats.MatchInfo.UgcGameVariant.VersionId}}</p>
+                    <p>Clearance ID: {{.data.MatchStats.MatchInfo.ClearanceId}}</p>
+                    <p>Playlist Asset ID: {{.data.MatchStats.MatchInfo.Playlist.AssetId}}</p>
+                    <p>Playlist Version ID: {{.data.MatchStats.MatchInfo.Playlist.VersionId}}</p>
+                    <p>Playlist Experience: {{.data.MatchStats.MatchInfo.PlaylistExperience}}</p>
+                    <p>Playlist Map Mode Pair Asset ID: {{.data.MatchStats.MatchInfo.PlaylistMapModePair.AssetId}}</p>
+                    <p>Playlist Map Mode Pair Version ID: {{.data.MatchStats.MatchInfo.PlaylistMapModePair.VersionId}}</p>
+                    <p>Season ID: {{.data.MatchStats.MatchInfo.SeasonId}}</p>
+                    <p>Playable Duration: {{.data.MatchStats.MatchInfo.PlayableDuration}}</p>
+                    <p>Teams Enabled: {{.data.MatchStats.MatchInfo.TeamsEnabled}}</p>
+                    <p>Team Scoring Enabled: {{.data.MatchStats.MatchInfo.TeamScoringEnabled}}</p>
+                    <p>Gameplay Interaction: {{.data.MatchStats.MatchInfo.GameplayInteraction}}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Player Stats Card -->
+    <div class="card mt-5">
+        <div class="card-body">
+            <h5 class="card-title">Player Stats</h5>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th scope="col">Player ID</th>
+                        <th scope="col">Kills</th>
+                        <th scope="col">Deaths</th>
+                        <!-- Add more headers for other stats -->
+                    </tr>
+                </thead>
+                <tbody>
+                    {{range .data.MatchStats.Players}}
+                        <tr>
+                            <td>{{.PlayerId}}</td>
+                            <td>{{index .PlayerTeamStats 0 "Stats" "CoreStats" "Kills"}}</td>
+                            <td>{{index .PlayerTeamStats 0 "Stats" "CoreStats" "Deaths"}}</td>
+                            <!-- Add more cells for other stats -->
+                        </tr>
+                    {{end}}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Match Stats -->
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">Matches</h5>
+            <div class="matches">
+                {{range .data.HaloStats.Results}}
+                    <a href="/match/{{.MatchId}}" class="match-link">
+                        <div class="match">
+                            <p>Match ID: {{.MatchId}}</p>
+                            <p>Start Time: {{.data.MatchStats.MatchInfo.FormattedStartTime}}</p>
+                            <p>End Time: {{.data.MatchStats.MatchInfo.FormattedEndTime}}</p>
+                        </div>
+                    </a>
+                {{end}}
+            </div>
+        </div>
+    </div>
+{{end}}

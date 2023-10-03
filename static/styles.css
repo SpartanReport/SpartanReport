@@ -1,0 +1,61 @@
+body {
+	font-family: Arial, sans-serif;
+	margin: 0;
+	padding: 0;
+	background-color: #f2f2f2;
+	position: relative; /* New: Relative positioning for body */
+}
+
+.container {
+	max-width: 800px;
+	margin: 0 auto;
+	padding: 20px;
+	background-color: #fff;
+	box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+	word-wrap: break-word; /* New: Wrap text */
+}
+
+.header {
+	background-color: #333;
+	color: #fff;
+	padding: 10px;
+}
+
+.header h1 {
+	margin: 0;
+}
+
+nav ul {
+	list-style-type: none;
+	margin: 0;
+	padding: 0;
+}
+
+nav ul li {
+	display: inline-block;
+	margin-right: 10px;
+}
+
+nav ul li a {
+	color: #fff;
+	text-decoration: none;
+}
+
+nav ul li a:hover {
+	text-decoration: underline;
+}
+
+.clear-cookie-button {
+	position: absolute; /* New: Absolute positioning */
+	top: 10px;
+	right: 130px; /* Adjust according to your layout */
+}
+.right-aligned {
+	flex-grow: 1;
+	text-align: right;
+	display: flex;
+	justify-content: flex-end;
+	align-items: center;
+	gap: 1rem;  /* optional: adds a gap between the gamerpic and the button */
+}
+
