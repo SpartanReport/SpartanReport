@@ -111,13 +111,11 @@ type InventoryResponse struct {
 }
 
 func HandleInventory(c *gin.Context) {
-	cookie, err := c.Cookie("SpartanToken")
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "No cookie found"})
+	spartanToken := c.DefaultQuery("spartanKey", "")
+	if spartanToken == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "No SpartanKey found"})
 		return
 	}
-
-	spartanToken := cookie
 	gamerInfo, err := requests.RequestUserProfile(spartanToken)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error while getting user profile"})
@@ -126,16 +124,13 @@ func HandleInventory(c *gin.Context) {
 	}
 
 	playerInventory := GetInventory(c, gamerInfo)
+
 	c.Set("gamerInfoKey", gamerInfo)
 
-	// Render the base template, specifying "spartan" as the content block
-	c.HTML(http.StatusOK, "base.html", gin.H{
-		"gamerInfo":       gamerInfo,
-		"contentBlock":    "spartan",       // Use "spartan" as the content block
-		"playerInventory": playerInventory, // Pass playerInventory to the template
-	})
+	// Return the playerInventory as JSON
+	fmt.Println("player inventory: ", playerInventory)
+	c.JSON(http.StatusOK, playerInventory)
 }
-
 func GetInventory(c *gin.Context, gamerInfo requests.GamerInfo) SpartanInventory {
 	hdrs := http.Header{}
 

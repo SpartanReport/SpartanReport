@@ -20,9 +20,11 @@ func GamerInfoMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		cookie, err := c.Cookie("SpartanToken")
 		if err != nil {
-			fmt.Println("Error:", err)
-			c.Redirect(http.StatusSeeOther, requests.RequestLink())
-			c.Abort()
+			// Only redirect to /account if the current route is not /account
+			if c.Request.URL.Path != "/account" {
+				fmt.Println("Error GamerInfoMiddleWare:", err)
+				c.Redirect(http.StatusSeeOther, requests.RequestLink())
+			}
 			return
 		}
 

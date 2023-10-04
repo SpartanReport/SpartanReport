@@ -9,9 +9,10 @@ import (
 
 func main() {
 	r := gin.Default()
-	r.LoadHTMLGlob("templates/*")
+	r.LoadHTMLGlob("client/build/index.html")
 	// Static files
-	r.StaticFile("/styles.css", "./static/styles.css")
+	r.StaticFile("/styles.css", "./client/build/styles.css")
+	r.Static("/static", "./client/build/static")
 
 	// Routes without middleware
 	r.GET("/", halotestapp.HandleWelcome)
@@ -20,6 +21,7 @@ func main() {
 	r.GET("/callback", func(c *gin.Context) {
 		halotestapp.HandleCallback(c.Writer, c.Request)
 	})
+	r.GET("/startAuth", halotestapp.HandleAuth)
 
 	// Grouping routes that require gamer info
 	authenticated := r.Group("/")

@@ -11,7 +11,7 @@ import (
 func HandleAuthenticated(c *gin.Context) {
 	cookie, err := c.Cookie("SpartanToken")
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "No cookie found"})
+		c.Redirect(http.StatusSeeOther, requests.RequestLink())
 		return
 	}
 
@@ -25,10 +25,15 @@ func HandleAuthenticated(c *gin.Context) {
 
 	// Store gamerInfo in Gin context if needed for later handlers
 	c.Set("gamerInfoKey", gamerInfo)
-
+	fmt.Println("gamerinfo: ", gamerInfo)
 	// Render the base template, which should include authenticated.html
-	c.HTML(http.StatusOK, "base.html", gin.H{
-		"gamerInfo":    gamerInfo,
-		"contentBlock": "authenticatedContent",
+	c.JSON(http.StatusOK, gin.H{
+		"gamerInfo": gamerInfo,
 	})
+}
+
+func HandleAuth(c *gin.Context) {
+	authURL := requests.RequestLink()
+	c.Redirect(http.StatusSeeOther, authURL)
+
 }

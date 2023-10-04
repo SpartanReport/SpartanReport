@@ -166,6 +166,7 @@ func RequestXstsToken(userTokenResp UserTokenResponse) (error, string) {
 	userToken := xstsTokenResp.Token
 	v3Token := GetXboxLiveV3Token(userHash, userToken)
 	fmt.Println("V3 Token:", v3Token)
+	fmt.Println(spartanTokenResp.ExpiresUtc)
 	return nil, spartanTokenResp.SpartanToken
 }
 
@@ -275,6 +276,7 @@ func RequestUserProfile(spartanKey string) (GamerInfo, error) {
 	if err != nil {
 		return gamerInfo, err
 	}
+	gamerInfo.SpartanKey = spartanKey
 	gamerInfo.ClearanceCode = clearanceCode
 
 	return gamerInfo, nil
