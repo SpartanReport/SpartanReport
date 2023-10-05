@@ -128,5 +128,5 @@ func ProcessAuthCode(code string, w http.ResponseWriter, r *http.Request) {
 		Value: SpartanToken,
 	})
 	// Redirect to authenticated page
-	http.Redirect(w, r, "/account", http.StatusSeeOther)
+	http.Redirect(w, r, "http://localhost:3000", http.StatusSeeOther)
 }

@@ -9,9 +9,10 @@ import (
 
 func main() {
 	r := gin.Default()
-	r.LoadHTMLGlob("templates/*")
+	r.LoadHTMLGlob("client/build/index.html")
 	// Static files
-	r.StaticFile("/styles.css", "./static/styles.css")
+	r.StaticFile("/styles.css", "./client/build/styles.css")
+	r.Static("/static", "./client/build/static")
 
 	// Routes without middleware
 	r.GET("/", halotestapp.HandleWelcome)
@@ -20,16 +21,13 @@ func main() {
 	r.GET("/callback", func(c *gin.Context) {
 		halotestapp.HandleCallback(c.Writer, c.Request)
 	})
+	r.GET("/startAuth", halotestapp.HandleAuth)
 
 	// Grouping routes that require gamer info
-	authenticated := r.Group("/")
-	authenticated.Use(halotestapp.GamerInfoMiddleware())
-	{
-		authenticated.GET("/account", halotestapp.HandleAuthenticated)
-		authenticated.GET("/spartan", halotestapp.HandleInventory)
-		authenticated.GET("/stats", halotestapp.HandleStats)
-		authenticated.GET("/match/:id", halotestapp.HaloDataMiddleware(), halotestapp.HandleMatch)
-	}
+	r.GET("/account", halotestapp.HandleAuthenticated)
+	r.POST("/spartan", halotestapp.HandleInventory)
+	r.POST("/stats", halotestapp.HandleStats)
+	r.POST("/match/:id", halotestapp.HandleMatch)
 
 	fmt.Println("Server started at :8080")
 	r.Run(":8080")

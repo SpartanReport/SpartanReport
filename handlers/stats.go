@@ -86,17 +86,13 @@ func ParseGamerInfo(data interface{}) (requests.GamerInfo, error) {
 }
 
 func HandleStats(c *gin.Context) {
-	// Check for the SpartanToken cookie
-	_, err := c.Cookie("SpartanToken")
-	if err != nil {
-		// Cookie is not set, so do something (like redirecting to login)
-		c.Redirect(http.StatusSeeOther, requests.RequestLink())
+	var gamerInfo requests.GamerInfo
+	if err := c.ShouldBindJSON(&gamerInfo); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	// Get HaloStats data
-
-	haloStats, err := GetStats(c)
+	haloStats, err := GetStats(gamerInfo, c)
 	if err != nil {
 		HandleError(c, err)
 		return
@@ -106,32 +102,12 @@ func HandleStats(c *gin.Context) {
 		haloStats.Results[i].MatchInfo = formatMatchTimes(result.MatchInfo)
 	}
 
-	c.Set("HaloStats", haloStats)
-
-	gamerInfo, exists := c.Get(GamerInfoKey)
-	if !exists {
-		// Handle the error case
-		HandleError(c, fmt.Errorf("GamerInfo not found in context"))
-		return
-	}
-
-	parsedStats, ok := gamerInfo.(requests.GamerInfo)
-	if !ok {
-		// Handle the error case
-		HandleError(c, fmt.Errorf("Failed to assert type for GamerInfo"))
-		return
-	}
-
 	data := TemplateData{
 		HaloStats: haloStats,
-		GamerInfo: parsedStats,
+		GamerInfo: gamerInfo,
 	}
 
-	c.HTML(http.StatusOK, "base.html", gin.H{
-		"data":         data,
-		"gamerInfo":    gamerInfo,
-		"contentBlock": "stats",
-	})
+	c.JSON(http.StatusOK, data)
 }
 func formatMatchTimes(matchInfo MatchInfo) MatchInfo {
 	layoutInput := time.RFC3339Nano // This layout matches the provided format
