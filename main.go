@@ -24,14 +24,10 @@ func main() {
 	r.GET("/startAuth", halotestapp.HandleAuth)
 
 	// Grouping routes that require gamer info
-	authenticated := r.Group("/")
-	authenticated.Use(halotestapp.GamerInfoMiddleware())
-	{
-		authenticated.GET("/account", halotestapp.HandleAuthenticated)
-		authenticated.GET("/spartan", halotestapp.HandleInventory)
-		authenticated.GET("/stats", halotestapp.HandleStats)
-		authenticated.GET("/match/:id", halotestapp.HaloDataMiddleware(), halotestapp.HandleMatch)
-	}
+	r.GET("/account", halotestapp.HandleAuthenticated)
+	r.POST("/spartan", halotestapp.HandleInventory)
+	r.POST("/stats", halotestapp.HandleStats)
+	r.POST("/match/:id", halotestapp.HandleMatch)
 
 	fmt.Println("Server started at :8080")
 	r.Run(":8080")

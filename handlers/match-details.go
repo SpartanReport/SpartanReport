@@ -20,80 +20,35 @@ type MapData struct {
 	MapImagePath string   // New field
 	// Add other fields as needed
 }
-
-func HandleMatch(c *gin.Context) {
-	// Check for the SpartanToken cookie
-	cookie, err := c.Cookie("SpartanToken")
-	if err != nil {
-		c.Redirect(http.StatusSeeOther, requests.RequestLink())
-		return
-	}
-
-	// Extract matchId from URL
-	matchId := c.Param("id")
-	if matchId == "" {
-		c.String(http.StatusBadRequest, "Match ID is missing")
-		return
-	}
-
-	// Fetch match stats
-	matchStats := GetMatchStats(c, matchId)
-
-	// Format match stats
-	matchStats = formatMatchStats(cookie, matchStats)
-
-	// Get HaloStats from Gin context
-	value, exists := c.Get("HaloData")
-	if !exists {
-		c.String(http.StatusInternalServerError, "Internal server error")
-		return
-	}
-	HaloStats, ok := value.(HaloData)
-	if !ok {
-		c.String(http.StatusInternalServerError, "Internal server error")
-		return
-	}
-
-	// Get GamerInfo from Gin context
-	gamerInfo, exists := c.Get("gamerInfoKey")
-	if !exists {
-		c.String(http.StatusInternalServerError, "Internal server error")
-		return
-	}
-
-	parsedStats, err := ParseGamerInfo(gamerInfo.(requests.GamerInfo))
-	if err != nil {
-		c.String(http.StatusInternalServerError, "Internal server error")
-		return
-	}
-
-	data := struct {
-		MatchStats MatchData
-		HaloStats  HaloData
-		GamerInfo  requests.GamerInfo
-	}{
-		MatchStats: matchStats,
-		HaloStats:  HaloStats,
-		GamerInfo:  parsedStats,
-	}
-
-	c.HTML(http.StatusOK, "base.html", gin.H{
-		"data":         data,
-		"gamerInfo":    gamerInfo,
-		"contentBlock": "match-details",
-	})
+type CompositeData struct {
+	HaloStats HaloData           `json:"HaloStats"`
+	GamerInfo requests.GamerInfo `json:"gamerInfo"`
 }
 
-func GetMatchStats(c *gin.Context, matchId string) MatchData {
+func HandleMatch(c *gin.Context) {
+	matchId := c.Param("id")
+	fmt.Println("matchID: ", matchId)
+	var compData CompositeData
+
+	if err := c.ShouldBindJSON(&compData); err != nil {
+		fmt.Println("could not bind data")
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	spartanKey := compData.GamerInfo.SpartanKey
+
+	// Fetch match stats
+	matchStats := GetMatchStats(c, spartanKey, matchId)
+	// Format match stats
+	matchStats = formatMatchStats(spartanKey, matchStats)
+
+	c.JSON(http.StatusOK, matchStats)
+}
+
+func GetMatchStats(c *gin.Context, spartanToken string, matchId string) MatchData {
 	hdrs := http.Header{}
 	var data MatchData
-
-	// Check for the SpartanToken cookie in Gin context
-	spartanToken, err := c.Cookie("SpartanToken")
-	if err != nil {
-		c.String(http.StatusBadRequest, "SpartanToken not found or empty")
-		return data
-	}
 
 	hdrs.Set("X-343-Authorization-Spartan", spartanToken)
 	hdrs.Set("Accept", "application/json")
@@ -204,12 +159,23 @@ func formatMatchStats(spartanToken string, matchStats MatchData) MatchData {
 	publicName, _ := rawResponse["PublicName"].(string)
 	// Find the first .png or .jpg image in FileRelativePaths
 	var mapImagePath string
+	var fallbackImagePath string
+
 	for _, path := range filePaths {
 		strPath, ok := path.(string)
-		if ok && (strings.HasSuffix(strPath, ".png") || strings.HasSuffix(strPath, ".jpg")) {
-			mapImagePath = prefix + strPath
-			break
+		fmt.Println("Path: ", strPath)
+		if ok {
+			if strPath == "images/thumbnail.jpg" {
+				mapImagePath = prefix + strPath
+				break // Exit the loop because we found the thumbnail.jpg
+			} else if fallbackImagePath == "" && (strings.HasSuffix(strPath, ".png") || strings.HasSuffix(strPath, ".jpg")) {
+				fallbackImagePath = prefix + strPath
+			}
 		}
+	}
+
+	if mapImagePath == "" {
+		mapImagePath = fallbackImagePath // Use the fallback if thumbnail.jpg was not found
 	}
 
 	// Append it to the existing matchStats
@@ -222,6 +188,7 @@ func formatMatchStats(spartanToken string, matchStats MatchData) MatchData {
 			"MapImagePath": mapImagePath,
 		}
 	}
+
 	fmt.Println(matchStats["MatchInfo"])
 	return matchStats
 

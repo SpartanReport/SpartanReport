@@ -1,28 +1,27 @@
 function AuthenticatedContent({ gamerInfo }) {
-    if (!gamerInfo) return null;
-  
-    return (
-      <div>
-        <div className="card mb-5">
-          <div className="card-body">
-            <h5 className="card-title">{gamerInfo.gamertag}</h5>
-            <div className="row align-items-center">
-              <div className="col-3">
-                <img src={gamerInfo.gamerpic.medium} alt="Medium Gamerpic" className="rounded" />
-              </div>
-            </div>
-          </div>
+  console.log("gamerInfo: ", gamerInfo);
+  if (!gamerInfo) return null;
+
+  const cardData = [
+    { title: 'Authenticated', spartanKey: "too long to show.. but acquired!", xuid: gamerInfo.xuid, clearanceCode: gamerInfo.ClearanceCode, gamertag: gamerInfo.gamertag },
+    { title: 'Card 2', data: "hi" },
+    // ... other cards
+  ];
+
+  return (
+    <div className="main-grid-container">
+      {cardData.map((card, index) => (
+        <div key={index} className="main-cards">
+          <div className="card-title">{card.title}</div>
+          {card.spartanKey && <p>Spartan Key: {card.spartanKey}</p>}
+          {card.xuid && <p>XUID: {card.xuid}</p>}
+          {card.clearanceCode && <p>FlightID: {card.clearanceCode}</p>}
+          {card.gamertag && <p>Gamertag: {card.gamertag}</p>}
+          {card.data && <p>Data: {card.data}</p>}
         </div>
-        <div className="container">
-          <h1>Authenticated!</h1>
-          <p>Spartan Key: {gamerInfo.spartankey}</p>
-          <p>XUID: {gamerInfo.xuid}</p>
-          <p>FlightID: {gamerInfo.ClearanceCode}</p>
-          <p>Gamertag: {gamerInfo.gamertag}</p>
-        </div>
-      </div>
-    );
-  }
-  
-  export default AuthenticatedContent;
-  
+      ))}
+    </div>      
+  );
+}
+
+export default AuthenticatedContent;

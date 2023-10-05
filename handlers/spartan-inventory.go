@@ -111,26 +111,16 @@ type InventoryResponse struct {
 }
 
 func HandleInventory(c *gin.Context) {
-	spartanToken := c.DefaultQuery("spartanKey", "")
-	if spartanToken == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "No SpartanKey found"})
-		return
-	}
-	gamerInfo, err := requests.RequestUserProfile(spartanToken)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error while getting user profile"})
-		fmt.Println("Error While Getting User Profile:", err)
+	var gamerInfo requests.GamerInfo
+	if err := c.ShouldBindJSON(&gamerInfo); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
 	playerInventory := GetInventory(c, gamerInfo)
-
-	c.Set("gamerInfoKey", gamerInfo)
-
-	// Return the playerInventory as JSON
-	fmt.Println("player inventory: ", playerInventory)
 	c.JSON(http.StatusOK, playerInventory)
 }
+
 func GetInventory(c *gin.Context, gamerInfo requests.GamerInfo) SpartanInventory {
 	hdrs := http.Header{}
 

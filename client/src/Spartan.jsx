@@ -9,12 +9,8 @@ const Spartan = ({ gamerInfo }) => {
   useEffect(() => {
     const fetchSpartanInventory = async () => {
       try {
-        // Use gamerInfo.spartanKey in the Axios request
-        const response = await axios.get('http://localhost:8080/spartan', {
-          headers: {
-            'SpartanKey': gamerInfo.spartanKey,
-          },
-        });
+        // Use gamerInfo in the Axios POST request
+        const response = await axios.post('http://localhost:8080/spartan', gamerInfo);
 
         console.log(response.data);
         setSpartanInventory(response.data);
@@ -25,18 +21,22 @@ const Spartan = ({ gamerInfo }) => {
     };
 
     fetchSpartanInventory();
-  }, [gamerInfo.spartanKey]);
-
+  }, [gamerInfo]);
+  
   if (isLoading) {
     return <div>Loading...</div>;
   }
-
+  if (!spartanInventory) {
+    return <div>No Spartan Inventory Data</div>;
+  }
   return (
-    <div>
-      <h1>Spartan Inventory</h1>
-      <h2>Current Spartan Armor</h2>
-      <ul>
-        {spartanInventory.playerInventory.ArmorCores.ArmorCores.map((core, index) => (
+    <div className="card">
+      <div className="card-header">
+        <h1>Spartan Inventory</h1>
+      </div>
+      <div className="card-body">
+        <h2 className="card-title">Current Spartan Armor</h2>      <ul>
+        {spartanInventory.ArmorCores.ArmorCores.map((core, index) => (
           <li key={index}>
             Core Path: {core.CorePath}, Is Equipped: {core.IsEquipped ? 'Yes' : 'No'}, Core ID: {core.CoreId}, Core Type: {core.CoreType}
             <ul>
@@ -68,29 +68,31 @@ const Spartan = ({ gamerInfo }) => {
             </ul>
           </li>
         ))}
+        
       </ul>
       <h2>Spartan Body</h2>
-      <p>Body Type: {spartanInventory.playerInventory.SpartanBody.BodyType}</p>
+      <p>Body Type: {spartanInventory.SpartanBody.BodyType}</p>
       <h2>Appearance</h2>
-      <p>Service Tag: {spartanInventory.playerInventory.Appearance.ServiceTag}</p>
+      <p>Service Tag: {spartanInventory.Appearance.ServiceTag}</p>
       <h2>Weapon Cores</h2>
       <ul>
-        {spartanInventory.playerInventory.WeaponCores.WeaponCores.map((core, index) => (
+        {spartanInventory.WeaponCores.WeaponCores.map((core, index) => (
           <li key={index}>Core ID: {core.CoreId}, Core Type: {core.CoreType}</li>
         ))}
       </ul>
       <h2>AI Cores</h2>
       <ul>
-        {spartanInventory.playerInventory.AiCores.AiCores.map((core, index) => (
+        {spartanInventory.AiCores.AiCores.map((core, index) => (
           <li key={index}>Core ID: {core.CoreId}, Core Type: {core.CoreType}</li>
         ))}
       </ul>
       <h2>Vehicle Cores</h2>
       <ul>
-        {spartanInventory.playerInventory.VehicleCores.VehicleCores.map((core, index) => (
+        {spartanInventory.VehicleCores.VehicleCores.map((core, index) => (
           <li key={index}>Core ID: {core.CoreId}, Core Type: {core.CoreType}</li>
         ))}
       </ul>
+    </div>
     </div>
   );
 };
