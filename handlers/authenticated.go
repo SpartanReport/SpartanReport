@@ -23,9 +23,6 @@ func HandleAuthenticated(c *gin.Context) {
 		return
 	}
 
-	// Store gamerInfo in Gin context if needed for later handlers
-	c.Set("gamerInfoKey", gamerInfo)
-	fmt.Println("gamerinfo: ", gamerInfo)
 	// Render the base template, which should include authenticated.html
 	c.JSON(http.StatusOK, gin.H{
 		"gamerInfo": gamerInfo,

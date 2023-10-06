@@ -102,7 +102,6 @@ func ProcessAuthCode(code string, w http.ResponseWriter, r *http.Request) {
 	// Parse the OAuth response
 	var oauthResp OAuthResponse
 	err := json.Unmarshal(body, &oauthResp)
-	fmt.Println("oauthresp: ", string(body))
 
 	if err != nil {
 		fmt.Println("Error parsing JSON:", err)

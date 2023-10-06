@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	requests "halotestapp/requests"
+	"io"
 	"io/ioutil"
 	"net/http"
 
@@ -98,6 +99,7 @@ type SpartanInventory struct {
 	WeaponCores  WeaponCores  `json:"WeaponCores"`
 	AiCores      AiCores      `json:"AiCores"`
 	VehicleCores VehicleCores `json:"VehicleCores"`
+	CoreDetails  CoreDetails  `json:"CoreDetails,omitempty"`
 }
 
 type PlayerCustomization struct {
@@ -108,6 +110,26 @@ type PlayerCustomization struct {
 
 type InventoryResponse struct {
 	PlayerCustomizations []PlayerCustomization `json:"PlayerCustomizations"`
+}
+
+type CoreDetails struct {
+	CommonData struct {
+		Id        string `json:"Id"`
+		ImageData []byte `json:"ImageData,omitempty"`
+		Title     struct {
+			Value string `json:"value"`
+		} `json:"Title"`
+		Description struct {
+			Value string `json:"value"`
+		} `json:"Description"`
+		DisplayPath struct {
+			Media struct {
+				MediaUrl struct {
+					Path string `json:"Path"`
+				} `json:"MediaUrl"`
+			} `json:"Media"`
+		} `json:"DisplayPath"`
+	} `json:"CommonData"`
 }
 
 func HandleInventory(c *gin.Context) {
@@ -170,8 +192,88 @@ func GetInventory(c *gin.Context, gamerInfo requests.GamerInfo) SpartanInventory
 	}
 
 	if len(inventoryResponse.PlayerCustomizations) > 0 {
+		FetchCoreDetails(&inventoryResponse.PlayerCustomizations[0].Result, gamerInfo)
 		return inventoryResponse.PlayerCustomizations[0].Result
 	}
 
 	return SpartanInventory{}
+}
+
+func FetchCoreDetails(spartanInventory *SpartanInventory, gamerInfo requests.GamerInfo) {
+	// Extract CorePath from the first ArmorCore in the list (modify this as needed)
+	corePath := spartanInventory.ArmorCores.ArmorCores[0].CorePath
+
+	// Prepare the URL
+	url := "https://gamecms-hacs.svc.halowaypoint.com/hi/progression/file/" + corePath
+
+	// Initialize headers
+	hdrs := http.Header{}
+	hdrs.Set("X-343-Authorization-Spartan", gamerInfo.SpartanKey)
+
+	// Create a new HTTP client and request
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		fmt.Println("Error creating request:", err)
+		return
+	}
+
+	// Set the headers for the request
+	req.Header = hdrs
+
+	// Make the request
+	resp, err := client.Do(req)
+	if err != nil {
+		fmt.Println("Error making request:", err)
+		return
+	}
+	defer resp.Body.Close()
+
+	// Handle the response (you can modify this part as needed)
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Println("Error reading response:", err)
+		return
+	}
+	details := ParseCoreDetails(body)
+	// Add image data to details
+	details.CommonData.ImageData = FetchImageData(details.CommonData.DisplayPath.Media.MediaUrl.Path, gamerInfo)
+	spartanInventory.CoreDetails = details
+
+}
+
+func ParseCoreDetails(responseBody []byte) CoreDetails {
+	var details CoreDetails
+	err := json.Unmarshal(responseBody, &details)
+	if err != nil {
+		fmt.Println("Error unmarshaling JSON:", err)
+		return details
+	}
+
+	return details
+}
+
+func FetchImageData(imagePath string, gamerInfo requests.GamerInfo) []byte {
+	imageURL := "https://gamecms-hacs.svc.halowaypoint.com/hi/images/file/" + imagePath
+	hdrs := http.Header{}
+	hdrs.Set("X-343-Authorization-Spartan", gamerInfo.SpartanKey)
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", imageURL, nil)
+	if err != nil {
+		fmt.Println("Error creating request:", err)
+		return nil
+	}
+	req.Header = hdrs
+	resp, err := client.Do(req)
+	if err != nil {
+		fmt.Println("Error making request:", err)
+		return nil
+	}
+	defer resp.Body.Close()
+	imgData, err := io.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Println("Error reading image data:", err)
+		return nil
+	}
+	return imgData
 }

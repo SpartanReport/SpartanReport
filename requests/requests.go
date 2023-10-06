@@ -162,16 +162,9 @@ func RequestXstsToken(userTokenResp UserTokenResponse) (error, string) {
 		return err, ""
 	}
 	spartanTokenResp, err := requestSpartanToken(xstsTokenResp.Token)
-	userHash := xstsTokenResp.DisplayClaims.Xui[0].Uhs
-	userToken := xstsTokenResp.Token
-	v3Token := GetXboxLiveV3Token(userHash, userToken)
-	fmt.Println("V3 Token:", v3Token)
+
 	fmt.Println(spartanTokenResp.ExpiresUtc)
 	return nil, spartanTokenResp.SpartanToken
-}
-
-func GetXboxLiveV3Token(userHash string, userToken string) string {
-	return fmt.Sprintf("XBL3.0 x=%s;%s", userHash, userToken)
 }
 
 func requestSpartanToken(xstsToken string) (*SpartanTokenResponse, error) {
@@ -219,7 +212,6 @@ func requestUserClearance(spartanKey string, userID string) (string, error) {
 	editedUserID := "xuid(" + userID + ")"
 	url := "https://settings.svc.halowaypoint.com/oban/flight-configurations/titles/hi/audiences/RETAIL/players/" + editedUserID + "/active?sandbox=UNUSED&build=210921.22.01.10.1706-0"
 
-	fmt.Println(url)
 	// Create the request
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
