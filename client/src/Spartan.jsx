@@ -1,27 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import useFetchSpartanInventory from './useFetchSpartanInventory';
 
 // Include gamerInfo in the function signature
-const Spartan = ({ gamerInfo }) => {
-  const [isLoading, setIsLoading] = useState(true);
-  const [spartanInventory, setSpartanInventory] = useState(null);
+const Spartan = ({ gamerInfo}) => {
+  // Function to convert byte array to Base64
 
-  useEffect(() => {
-    const fetchSpartanInventory = async () => {
-      try {
-        // Use gamerInfo in the Axios POST request
-        const response = await axios.post('http://localhost:8080/spartan', gamerInfo);
+    const [spartanInventory,isLoading,fetchSpartanInventory] = useFetchSpartanInventory(gamerInfo)
+    useEffect(() => {
+      fetchSpartanInventory();
+    }, []);  // Empty dependency array, so it only runs once after the initial render
+    // Letttsss not make microsoft angry... for now
+        /* Set up the interval to fetch data every 5 seconds
+        const intervalId = setInterval(() => {
+          fetchSpartanInventory();
+        }, 5000);
 
-        console.log(response.data);
-        setSpartanInventory(response.data);
-      } catch (error) {
-        console.error("Error fetching Spartan inventory:", error);
-      }
-      setIsLoading(false);
-    };
-
-    fetchSpartanInventory();
-  }, [gamerInfo]);
+        // Clear the interval when the component unmounts
+        return () => clearInterval(intervalId);
+        */
   
   if (isLoading) {
     return <div>Loading...</div>;
@@ -29,11 +26,22 @@ const Spartan = ({ gamerInfo }) => {
   if (!spartanInventory) {
     return <div>No Spartan Inventory Data</div>;
   }
+
+  const coreDetails = spartanInventory.CoreDetails;
+  const base64ImageData = spartanInventory.CoreDetails.CommonData.ImageData;
+  const imageSrc = `data:image/png;base64,${base64ImageData}`;
   return (
     <div className="card">
       <div className="card-header">
         <h1>Spartan Inventory</h1>
       </div>
+      <div>
+          <h2>Core Details</h2>
+          <p>ID: {coreDetails.CommonData.Id}</p>
+          <p>Title: {coreDetails.CommonData.Title.value}</p>
+          <p>Description: {coreDetails.CommonData.Description.value}</p>
+          <img src={imageSrc} alt="Spartan Core" />
+        </div>
       <div className="card-body">
         <h2 className="card-title">Current Spartan Armor</h2>      <ul>
         {spartanInventory.ArmorCores.ArmorCores.map((core, index) => (

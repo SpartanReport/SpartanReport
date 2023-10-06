@@ -27,7 +27,6 @@ type CompositeData struct {
 
 func HandleMatch(c *gin.Context) {
 	matchId := c.Param("id")
-	fmt.Println("matchID: ", matchId)
 	var compData CompositeData
 
 	if err := c.ShouldBindJSON(&compData); err != nil {
@@ -189,7 +188,6 @@ func formatMatchStats(spartanToken string, matchStats MatchData) MatchData {
 		}
 	}
 
-	fmt.Println(matchStats["MatchInfo"])
 	return matchStats
 
 }

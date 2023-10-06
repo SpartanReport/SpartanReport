@@ -43,7 +43,7 @@ const MatchStats = ({gamerInfo, HaloStats}) => {
       <div className="col">
         <p>Public Name: {MatchStats.MatchInfo.PublicName}</p>
         <div className="col-md-6">
-            <img src={MatchStats.MatchInfo.MapImagePath} alt="Map Image" className="img-fluid scaled-image" />
+            <img src={MatchStats.MatchInfo.MapImagePath} alt="" className="img-fluid scaled-image" />
         </div>
         <p>Match ID: {MatchStats.MatchId}</p>
         <p>Start Time: {MatchStats.MatchInfo.StartTime}</p>

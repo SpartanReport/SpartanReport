@@ -13,6 +13,8 @@ function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [gamerInfo, setGamerInfo] = useState(null);
   const [HaloStats, setHaloStats] = useState(null);
+  const [spartanInventory, setSpartanInventory] = useState(null);
+
   useEffect(() => {
     const checkAuth = async () => {
       try {
@@ -62,10 +64,10 @@ function App() {
 
         <div className="container mt-5">
         <Routes>
-          <Route path="/spartan" element={<Spartan gamerInfo={gamerInfo} setGamerInfo={setGamerInfo} />} />
+          <Route path="/spartan" element={<Spartan gamerInfo={gamerInfo} spartanInventory={spartanInventory} setSpartanInventory={setSpartanInventory} />} />
           <Route path="/" element={
             isAuthenticated 
-              ? <AuthenticatedContent gamerInfo={gamerInfo} /> 
+              ? <AuthenticatedContent gamerInfo={gamerInfo} spartanInventory={spartanInventory}/> 
               : <div><h1>You are not authenticated</h1><button onClick={startAuth}>Authenticate</button></div>
           } />
 <Route path="/match/:matchId" element={<MatchStats gamerInfo={gamerInfo} HaloStats={HaloStats} />} />
