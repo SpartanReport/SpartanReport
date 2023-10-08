@@ -116,7 +116,7 @@ func ProcessAuthCode(code string, w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Request the XSTS token
-	err, SpartanToken := RequestXstsToken(*userToken)
+	err, SpartanResp := RequestXstsToken(*userToken)
 
 	if err != nil {
 		fmt.Println("Error with XSTS Token:", err)
@@ -124,7 +124,11 @@ func ProcessAuthCode(code string, w http.ResponseWriter, r *http.Request) {
 	}
 	http.SetCookie(w, &http.Cookie{
 		Name:  "SpartanToken",
-		Value: SpartanToken,
+		Value: SpartanResp.SpartanToken,
+	})
+	http.SetCookie(w, &http.Cookie{
+		Name:  "XBLToken",
+		Value: SpartanResp.XBLToken,
 	})
 	// Redirect to authenticated page
 	http.Redirect(w, r, "http://localhost:3000", http.StatusSeeOther)

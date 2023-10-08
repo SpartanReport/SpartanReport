@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 const MatchStats = ({gamerInfo, HaloStats}) => {
   const [isLoading, setIsLoading] = useState(true);
@@ -36,12 +37,20 @@ const MatchStats = ({gamerInfo, HaloStats}) => {
   return (
     <>
 {/* Match Stats Card */}
+<Link 
+                to={`/stats`}
+                className="stats-link">
+                Back to stats
+    </Link>
+
 <div className="card mb-5">
   <div className="card-body">
+    
     <h5 className="card-title">Match Stats</h5>
+    <h2>{MatchStats.MatchInfo.PublicName}</h2>
     <div className="row">
+
       <div className="col">
-        <p>Public Name: {MatchStats.MatchInfo.PublicName}</p>
         <div className="col-md-6">
             <img src={MatchStats.MatchInfo.MapImagePath} alt="" className="img-fluid scaled-image" />
         </div>
@@ -51,22 +60,9 @@ const MatchStats = ({gamerInfo, HaloStats}) => {
         <p>Duration: {MatchStats.MatchInfo.Duration}</p>
         <p>Lifecycle Mode: {MatchStats.MatchInfo.LifecycleMode}</p>
         <p>Game Variant Category: {MatchStats.MatchInfo.GameVariantCategory}</p>
-        <p>Level ID: {MatchStats.MatchInfo.LevelId}</p>
-        <p>Map Variant Asset ID: {MatchStats.MatchInfo.MapVariant.AssetId}</p>
-        <p>Map Variant Version ID: {MatchStats.MatchInfo.MapVariant.VersionId}</p>
-        <p>Ugc Game Variant Asset ID: {MatchStats.MatchInfo.UgcGameVariant.AssetId}</p>
-        <p>Ugc Game Variant Version ID: {MatchStats.MatchInfo.UgcGameVariant.VersionId}</p>
-        <p>Clearance ID: {MatchStats.MatchInfo.ClearanceId}</p>
-        <p>Playlist Asset ID: {MatchStats.MatchInfo.Playlist.AssetId}</p>
-        <p>Playlist Version ID: {MatchStats.MatchInfo.Playlist.VersionId}</p>
         <p>Playlist Experience: {MatchStats.MatchInfo.PlaylistExperience}</p>
-        <p>Playlist Map Mode Pair Asset ID: {MatchStats.MatchInfo.PlaylistMapModePair.AssetId}</p>
-        <p>Playlist Map Mode Pair Version ID: {MatchStats.MatchInfo.PlaylistMapModePair.VersionId}</p>
         <p>Season ID: {MatchStats.MatchInfo.SeasonId}</p>
         <p>Playable Duration: {MatchStats.MatchInfo.PlayableDuration}</p>
-        <p>Teams Enabled: {MatchStats.MatchInfo.TeamsEnabled.toString()}</p>
-        <p>Team Scoring Enabled: {MatchStats.MatchInfo.TeamScoringEnabled.toString()}</p>
-        <p>Gameplay Interaction: {MatchStats.MatchInfo.GameplayInteraction}</p>
       </div>
     </div>
   </div>
