@@ -9,14 +9,17 @@ import (
 )
 
 func HandleAuthenticated(c *gin.Context) {
-	cookie, err := c.Cookie("SpartanToken")
+	SpartanCookie, err := c.Cookie("SpartanToken")
+	XBLToken, err := c.Cookie("XBLToken")
+
 	if err != nil {
 		c.Redirect(http.StatusSeeOther, requests.RequestLink())
 		return
 	}
 
-	spartanToken := cookie
+	spartanToken := SpartanCookie
 	gamerInfo, err := requests.RequestUserProfile(spartanToken)
+	gamerInfo.XBLToken = XBLToken
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error while getting user profile"})
 		fmt.Println("Error While Getting User Profile:", err)

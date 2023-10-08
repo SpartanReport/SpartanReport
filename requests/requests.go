@@ -49,13 +49,16 @@ type SpartanTokenResponse struct {
 	} `json:"ExpiresUtc"`
 	SpartanToken  string `json:"SpartanToken"`
 	TokenDuration string `json:"TokenDuration"`
+	XBLToken      string `json:"XBLToken"`
 }
 
 type GamerInfo struct {
 	SpartanKey string `json:"spartankey"`
-	XUID       string `json:"xuid"`
-	Gamertag   string `json:"gamertag"`
-	Gamerpic   struct {
+	XBLToken   string `json:"xbltoken"`
+
+	XUID     string `json:"xuid"`
+	Gamertag string `json:"gamertag"`
+	Gamerpic struct {
 		Small  string `json:"small"`
 		Medium string `json:"medium"`
 		Large  string `json:"large"`
@@ -126,7 +129,7 @@ func RequestOAuth(clientID string, clientSecret string, redirectURI string, auth
 	return body
 }
 
-func RequestXstsToken(userTokenResp UserTokenResponse) (error, string) {
+func RequestXstsToken(userTokenResp UserTokenResponse) (error, SpartanTokenResponse) {
 	var reqData XstsRequest
 	reqData.RelyingParty = "https://prod.xsts.halowaypoint.com/"
 	reqData.TokenType = "JWT"
@@ -134,12 +137,12 @@ func RequestXstsToken(userTokenResp UserTokenResponse) (error, string) {
 	reqData.Properties.SandboxId = "RETAIL"
 	jsonData, err := json.Marshal(reqData)
 	if err != nil {
-		return err, ""
+		return err, SpartanTokenResponse{}
 	}
 	req, err := http.NewRequest("POST", "https://xsts.auth.xboxlive.com/xsts/authorize", bytes.NewBuffer(jsonData))
 	if err != nil {
 		fmt.Println("Error While Creating Request")
-		return err, ""
+		return err, SpartanTokenResponse{}
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("x-xbl-contract-version", "1")
@@ -147,24 +150,30 @@ func RequestXstsToken(userTokenResp UserTokenResponse) (error, string) {
 	resp, err := client.Do(req)
 	if err != nil {
 		fmt.Println("Error While Executing Request")
-		return err, ""
+		return err, SpartanTokenResponse{}
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		fmt.Println("Error While Parsing Response")
-		return err, ""
+		return err, SpartanTokenResponse{}
 	}
 	var xstsTokenResp XstsTokenResponse
 	err = json.Unmarshal(body, &xstsTokenResp)
 	if err != nil {
 		fmt.Println("Error While Unmarshalling")
-		return err, ""
+		return err, SpartanTokenResponse{}
 	}
 	spartanTokenResp, err := requestSpartanToken(xstsTokenResp.Token)
-
-	fmt.Println(spartanTokenResp.ExpiresUtc)
-	return nil, spartanTokenResp.SpartanToken
+	userHash := xstsTokenResp.DisplayClaims.Xui[0].Uhs
+	userToken := xstsTokenResp.Token
+	v3Token := GetXboxLiveV3Token(userHash, userToken)
+	fmt.Println("v3 token: ", v3Token)
+	spartanTokenResp.XBLToken = v3Token
+	return nil, *spartanTokenResp
+}
+func GetXboxLiveV3Token(userHash string, userToken string) string {
+	return fmt.Sprintf("XBL3.0 x=%s;%s", userHash, userToken)
 }
 
 func requestSpartanToken(xstsToken string) (*SpartanTokenResponse, error) {

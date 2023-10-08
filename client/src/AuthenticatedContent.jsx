@@ -22,7 +22,7 @@ function AuthenticatedContent({ gamerInfo }) {
   }
 
   const cardData = [
-    { title: 'Authenticated', spartanKey: "too long to show.. but acquired!", xuid: gamerInfo.xuid, clearanceCode: gamerInfo.ClearanceCode, gamertag: gamerInfo.gamertag },
+    { title: 'Authenticated', spartanKey: "too long to show.. but acquired!", xuid: gamerInfo.xuid, xbltoken: gamerInfo.xbltoken ,clearanceCode: gamerInfo.ClearanceCode, gamertag: gamerInfo.gamertag },
     { title: coreDetails ? coreDetails.CommonData.Title.value : 'N/A', imageSrc: imageSrc },
         // ... other cards
   ];
@@ -34,6 +34,8 @@ function AuthenticatedContent({ gamerInfo }) {
           <div className="card-title">{card.title}</div>
           {card.spartanKey && <p>Spartan Key: {card.spartanKey}</p>}
           {card.xuid && <p>XUID: {card.xuid}</p>}
+          {card.xbltoken && <p>XBLToken: {card.xbltoken}</p>}
+
           {card.clearanceCode && <p>FlightID: {card.clearanceCode}</p>}
           {card.gamertag && <p>Gamertag: {card.gamertag}</p>}
           {card.data && <p>Data: {card.data}</p>}
