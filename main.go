@@ -5,10 +5,21 @@ import (
 	halotestapp "halotestapp/handlers"
 
 	"github.com/gin-gonic/gin"
+	nrgin "github.com/newrelic/go-agent/v3/integrations/nrgin"
+	"github.com/newrelic/go-agent/v3/newrelic"
 )
 
 func main() {
+	app, err := newrelic.NewApplication(
+		newrelic.ConfigAppName("Halo Tracker"),
+		newrelic.ConfigLicense("b21e4fbeac174bef0b2e89db026e09b2FFFFNRAL"),
+		newrelic.ConfigAppLogForwardingEnabled(true),
+	)
+	if err != nil {
+		fmt.Println("Error with NR!")
+	}
 	r := gin.Default()
+	r.Use(nrgin.Middleware(app))
 	r.LoadHTMLGlob("client/build/index.html")
 	// Static files
 	r.StaticFile("/styles.css", "./client/build/styles.css")

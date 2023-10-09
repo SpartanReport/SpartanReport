@@ -9,7 +9,7 @@ const Spartan = ({ gamerInfo}) => {
     const [spartanInventory,isLoading,fetchSpartanInventory] = useFetchSpartanInventory(gamerInfo)
     useEffect(() => {
       fetchSpartanInventory();
-    }, []);  // Empty dependency array, so it only runs once after the initial render
+    }, []);
     // Letttsss not make microsoft angry... for now
         /* Set up the interval to fetch data every 5 seconds
         const intervalId = setInterval(() => {

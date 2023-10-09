@@ -17,6 +17,7 @@ const MatchStats = ({gamerInfo, HaloStats}) => {
         };
         const response = await axios.post(`http://localhost:8080/match/${matchId}`, payload);
         setMatchStats(response.data);
+        console.log(MatchStats)
       } catch (error) {
         console.error("Error fetching match details:", error);
       }
@@ -75,18 +76,26 @@ const MatchStats = ({gamerInfo, HaloStats}) => {
           <table className="table">
             <thead>
               <tr>
-                <th scope="col">Player ID</th>
+                <th scope="col">Spartan ID</th>
                 <th scope="col">Kills</th>
                 <th scope="col">Deaths</th>
+                <th scope="col">Assists</th>
+                <th scope="col">KDA</th>
+
                 {/* Add more headers for other stats */}
               </tr>
             </thead>
             <tbody>
               {MatchStats.Players?.map((player, index) => (
                 <tr key={index}>
-                  <td>{player.PlayerId}</td>
+                  
+                  <td><img src={player.Profile?.gamerpic.small} alt="Medium Gamerpic" className="rounded" />
+                  {player.Profile?.gamertag || "Unknown"}</td>
                   <td>{player.PlayerTeamStats[0]?.Stats?.CoreStats?.Kills}</td>
                   <td>{player.PlayerTeamStats[0]?.Stats?.CoreStats?.Deaths}</td>
+                  <td>{player.PlayerTeamStats[0]?.Stats?.CoreStats?.Assists}</td>
+                  <td>{player.PlayerTeamStats[0]?.Stats?.CoreStats?.KDA}</td>
+
                   {/* Add more cells for other stats */}
                 </tr>
               ))}

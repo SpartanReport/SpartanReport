@@ -30,6 +30,8 @@ type MatchInfo struct {
 	GameplayInteraction int    `json:"GameplayInteraction"`
 	FormattedStartTime  string
 	FormattedEndTime    string
+	PublicName          string `json:"PublicName"`
+	MapImagePath        string `json:"MapImagePath"`
 }
 
 type Result struct {
