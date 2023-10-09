@@ -11,6 +11,100 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type Medal struct {
+	NameId                    int64 `json:"NameId"`
+	Count                     int   `json:"Count"`
+	TotalPersonalScoreAwarded int   `json:"TotalPersonalScoreAwarded"`
+}
+
+type PersonalScore struct {
+	NameId                    int64 `json:"NameId"`
+	Count                     int   `json:"Count"`
+	TotalPersonalScoreAwarded int   `json:"TotalPersonalScoreAwarded"`
+}
+
+type CoreStats struct {
+	Score          int             `json:"Score"`
+	PersonalScore  int             `json:"PersonalScore"`
+	RoundsWon      int             `json:"RoundsWon"`
+	RoundsLost     int             `json:"RoundsLost"`
+	Kills          int             `json:"Kills"`
+	Deaths         int             `json:"Deaths"`
+	Assists        int             `json:"Assists"`
+	KDA            float64         `json:"KDA"`
+	Suicides       int             `json:"Suicides"`
+	Betrayals      int             `json:"Betrayals"`
+	Medals         []Medal         `json:"Medals"`
+	PersonalScores []PersonalScore `json:"PersonalScores"`
+}
+
+type Stats struct {
+	CoreStats CoreStats `json:"CoreStats"`
+	// ... other fields if needed
+}
+
+type Team struct {
+	TeamId  int   `json:"TeamId"`
+	Outcome int   `json:"Outcome"`
+	Rank    int   `json:"Rank"`
+	Stats   Stats `json:"Stats"`
+}
+
+type AssetDetailed struct {
+	AssetKind int    `json:"AssetKind"`
+	AssetId   string `json:"AssetId"`
+	VersionId string `json:"VersionId"`
+}
+
+type MatchInfoDetailed struct {
+	StartTime           string `json:"StartTime"`
+	EndTime             string `json:"EndTime"`
+	Duration            string `json:"Duration"`
+	MapVariant          Asset  `json:"MapVariant"`
+	UgcGameVariant      Asset  `json:"UgcGameVariant"`
+	Playlist            Asset  `json:"Playlist"`
+	PlaylistMapModePair Asset  `json:"PlaylistMapModePair"`
+}
+
+type ParticipationInfo struct {
+	FirstJoinedTime string `json:"FirstJoinedTime"`
+	// ... other fields
+}
+
+type PlayerTeamStats struct {
+	TeamId int   `json:"TeamId"`
+	Stats  Stats `json:"Stats"`
+}
+
+type Gamerpic struct {
+	Small  string `json:"small"`
+	Medium string `json:"medium"`
+	Large  string `json:"large"`
+	Xlarge string `json:"xlarge"`
+}
+
+type PlayerProfile struct {
+	XUID     string   `json:"xuid"`
+	Gamertag string   `json:"gamertag"`
+	Gamerpic Gamerpic `json:"gamerpic"`
+}
+
+// Add PlayerProfile to the Player struct
+type Player struct {
+	PlayerId          string            `json:"PlayerId"`
+	PlayerType        int               `json:"PlayerType"`
+	ParticipationInfo ParticipationInfo `json:"ParticipationInfo"`
+	PlayerTeamStats   []PlayerTeamStats `json:"PlayerTeamStats"`
+	Profile           PlayerProfile     // Add this line to include the PlayerProfile
+}
+
+type Match struct {
+	MatchId   string    `json:"MatchId"`
+	MatchInfo MatchInfo `json:"MatchInfo"`
+	Teams     []Team    `json:"Teams"`
+	Players   []Player  `json:"Players"`
+}
+
 type MatchData map[string]interface{}
 type MapData struct {
 	AssetId      string   `json:"AssetId"`
@@ -38,16 +132,18 @@ func HandleMatch(c *gin.Context) {
 	spartanKey := compData.GamerInfo.SpartanKey
 
 	// Fetch match stats
-	matchStats := GetMatchStats(c, spartanKey, matchId)
-	// Format match stats
+	var matchStats Match
+	matchStats = GetMatchStats(c, spartanKey, matchId) // Note that GetMatchStats now returns Match
 	matchStats = formatMatchStats(spartanKey, matchStats)
+	// Perform further formatting or processing if needed.
+	fetchPlayerProfiles(spartanKey, &matchStats)
 
 	c.JSON(http.StatusOK, matchStats)
 }
 
-func GetMatchStats(c *gin.Context, spartanToken string, matchId string) MatchData {
+func GetMatchStats(c *gin.Context, spartanToken string, matchId string) Match {
 	hdrs := http.Header{}
-	var data MatchData
+	var data Match // Note that it's now a Match type instead of a map
 
 	hdrs.Set("X-343-Authorization-Spartan", spartanToken)
 	hdrs.Set("Accept", "application/json")
@@ -91,40 +187,38 @@ func GetMatchStats(c *gin.Context, spartanToken string, matchId string) MatchDat
 	return data
 }
 
-func formatMatchStats(spartanToken string, matchStats MatchData) MatchData {
+func formatMatchStats(spartanToken string, match Match) Match {
 	assetID := ""
 	versionID := ""
+
 	// Get VersionID / AssetID's of map played on
-	if matchInfo, ok := matchStats["MatchInfo"].(map[string]interface{}); ok {
-		// Assert that 'UgcGameVariant' exists and is a map
-		if ugcGameVariant, ok := matchInfo["MapVariant"].(map[string]interface{}); ok {
-			// Extract VersionId and AssetId
-			versionID = ugcGameVariant["VersionId"].(string)
-			assetID = ugcGameVariant["AssetId"].(string)
+	mapVariant := match.MatchInfo.MapVariant
+	versionID = mapVariant.VersionId
+	assetID = mapVariant.AssetId
 
-			fmt.Printf("VersionId: %s, AssetId: %s\n", versionID, assetID)
-		}
-	}
+	fmt.Printf("VersionId: %s, AssetId: %s\n", versionID, assetID)
 
-	// https://discovery-infiniteugc.svc.halowaypoint.com/hi/maps/6ae862f6-6a00-42e7-b1c6-3d2c337de7ed/versions/9f7faf2d-56cd-45ce-af42-011eb9218434
+	// Your HTTP header and request logic
 	hdrs := http.Header{}
 
 	if spartanToken == "" {
 		fmt.Println("SpartanToken is empty")
-
 	}
 
 	hdrs.Set("X-343-Authorization-Spartan", spartanToken)
 	hdrs.Set("Accept", "application/json")
+
 	if assetID == "" && versionID == "" {
 		fmt.Println("Unable to get asset ID and version ID of map")
 	}
+
 	url := "https://discovery-infiniteugc.svc.halowaypoint.com/hi/maps/" + assetID + "/versions/" + versionID
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		fmt.Println("oops")
 		fmt.Println(err)
 	}
+
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
@@ -137,36 +231,33 @@ func formatMatchStats(spartanToken string, matchStats MatchData) MatchData {
 		fmt.Printf("Received a non-OK status code %d. Response body: %s\n", resp.StatusCode, string(bodyBytes))
 	}
 
-	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		fmt.Println(err)
-		return matchStats
+		return match // Returning the unchanged match
 	}
-	// Unmarshal the raw response body into a map
+
+	// Unmarshal logic
 	var rawResponse map[string]interface{}
 	err = json.Unmarshal(body, &rawResponse)
 	if err != nil {
 		fmt.Println("Error unmarshaling raw response:", err)
-		return matchStats
+		return match // Returning the unchanged match
 	}
 
-	// Find the Prefix and FileRelativePaths
 	prefix, _ := rawResponse["Files"].(map[string]interface{})["Prefix"].(string)
 	filePaths, _ := rawResponse["Files"].(map[string]interface{})["FileRelativePaths"].([]interface{})
-	// Find the PublicName
 	publicName, _ := rawResponse["PublicName"].(string)
-	// Find the first .png or .jpg image in FileRelativePaths
+
 	var mapImagePath string
 	var fallbackImagePath string
 
 	for _, path := range filePaths {
 		strPath, ok := path.(string)
-		fmt.Println("Path: ", strPath)
 		if ok {
 			if strPath == "images/thumbnail.jpg" {
 				mapImagePath = prefix + strPath
-				break // Exit the loop because we found the thumbnail.jpg
+				break // found the thumbnail.jpg
 			} else if fallbackImagePath == "" && (strings.HasSuffix(strPath, ".png") || strings.HasSuffix(strPath, ".jpg")) {
 				fallbackImagePath = prefix + strPath
 			}
@@ -174,20 +265,84 @@ func formatMatchStats(spartanToken string, matchStats MatchData) MatchData {
 	}
 
 	if mapImagePath == "" {
-		mapImagePath = fallbackImagePath // Use the fallback if thumbnail.jpg was not found
+		mapImagePath = fallbackImagePath // Use fallback if thumbnail.jpg not found
 	}
 
-	// Append it to the existing matchStats
-	if matchInfo, ok := matchStats["MatchInfo"].(map[string]interface{}); ok {
-		matchInfo["MapImagePath"] = mapImagePath
-		matchInfo["PublicName"] = publicName
-	} else {
-		// If "MatchInfo" doesn't exist in matchStats, create it
-		matchStats["MatchInfo"] = map[string]interface{}{
-			"MapImagePath": mapImagePath,
+	match.MatchInfo.MapImagePath = mapImagePath
+	match.MatchInfo.PublicName = publicName
+
+	return match
+}
+
+func printPlayerIds(match Match) {
+	for _, player := range match.Players {
+		fmt.Println("PlayerId:", player.PlayerId)
+	}
+}
+
+func fetchPlayerProfiles(spartanToken string, match *Match) {
+	hdrs := http.Header{}
+	hdrs.Set("X-343-Authorization-Spartan", spartanToken)
+
+	client := &http.Client{}
+
+	// Extract xuids from the PlayerIds in the Match struct
+	var xuids []string
+	for _, player := range match.Players {
+		xuid := strings.TrimPrefix(player.PlayerId, "xuid(")
+		xuid = strings.TrimSuffix(xuid, ")")
+		xuids = append(xuids, xuid)
+	}
+
+	// Join the xuids slice into a comma-separated string
+	xuidsStr := strings.Join(xuids, ",")
+
+	url := fmt.Sprintf("https://profile.svc.halowaypoint.com/users?xuids=%s", xuidsStr)
+
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		fmt.Println("Failed to create request:", err)
+		return
+	}
+
+	req.Header = hdrs
+
+	resp, err := client.Do(req)
+	if err != nil {
+		fmt.Println("Failed to make request:", err)
+		return
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		bodyBytes, _ := ioutil.ReadAll(resp.Body)
+		fmt.Printf("Received a non-OK status code %d. Response body: %s\n", resp.StatusCode, string(bodyBytes))
+		return
+	}
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Println("Failed to read response body:", err)
+		return
+	}
+
+	// Unmarshal the JSON into a slice of PlayerProfile structs
+	var playerProfiles []PlayerProfile
+	err = json.Unmarshal(body, &playerProfiles)
+	if err != nil {
+		fmt.Println("Failed to parse JSON response:", err)
+		return
+	}
+
+	// Attach each PlayerProfile to the corresponding Player in the Match
+	for _, profile := range playerProfiles {
+		for i, player := range match.Players {
+			xuid := strings.TrimPrefix(player.PlayerId, "xuid(")
+			xuid = strings.TrimSuffix(xuid, ")")
+			if profile.XUID == xuid {
+				match.Players[i].Profile = profile
+				break
+			}
 		}
 	}
-
-	return matchStats
-
 }
