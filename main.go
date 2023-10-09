@@ -38,6 +38,8 @@ func main() {
 	r.GET("/account", halotestapp.HandleAuthenticated)
 	r.POST("/spartan", halotestapp.HandleInventory)
 	r.POST("/stats", halotestapp.HandleStats)
+	r.POST("/progression", halotestapp.HandleProgression)
+
 	r.POST("/match/:id", halotestapp.HandleMatch)
 
 	fmt.Println("Server started at :8080")

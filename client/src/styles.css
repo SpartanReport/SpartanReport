@@ -6,7 +6,6 @@ body {
 	position: relative; /* New: Relative positioning for body */
 }
 
-  
   .main-grid-container {
 	display: grid;
 	grid-template-columns: repeat(3, 1fr);
@@ -24,7 +23,10 @@ body {
 	font-weight: bold;
 	margin-top: 10px;
   }
-  
+  .card-header{
+	text-align: center;
+
+  }
   .scaled-image {
 	max-width: 75%; /* You can adjust this */
 	height: auto;
@@ -91,3 +93,76 @@ nav ul li a:hover {
 	gap: 1rem;  /* optional: adds a gap between the gamerpic and the button */
 }
 
+
+
+.match {
+	display: flex;
+	align-items: center;
+	margin-bottom: 10px;  /* Adds space below each card */
+	transition: background-color 0.3s ease;  /* Animation */
+	margin-top: 5px;	
+  }
+  .match:hover {
+	background-color: #f2f2f2;  /* Background color when hovered */
+  }
+  
+  .match-img {
+	max-width: 200px;
+	margin-right: 16px;
+
+  }
+  
+  .info-col, .time-col {
+	margin-right: 16px;
+  }
+  
+  .map-name {
+	font-size: 1.4em;
+	margin-bottom: 4px;
+  }
+  
+  .match-link{
+	text-decoration: none;
+	color: black
+  }
+  .playlist {
+	font-size: 0.8em;
+  }
+  
+  
+  
+
+  
+/* Match Cards */
+  
+
+  /* Style for gamerpic */
+.gamerpic-td img {
+	border-radius: 50%;
+  }
+  
+  /* Style for gamer tag */
+  .gamertag-td {
+	font-weight: bold;
+	
+  }
+  
+  /* Style for kills */
+  .kills-td {
+	color: green;
+  }
+  
+  /* Style for deaths */
+  .deaths-td {
+	color: red;
+  }
+  
+  /* Style for assists */
+  .assists-td {
+	color: blue;
+  }
+  
+  /* Style for KDA */
+  .kda-td {
+	font-style: italic;
+  }

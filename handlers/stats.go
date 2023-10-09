@@ -5,10 +5,14 @@ import (
 	"fmt"
 	requests "halotestapp/requests"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/gin-gonic/gin"
 )
+
+var matchInfoMutex sync.Mutex
+var playlistInfoMutex sync.Mutex
 
 type MatchInfo struct {
 	StartTime           string       `json:"StartTime"`
@@ -36,12 +40,12 @@ type MatchInfo struct {
 }
 
 type Result struct {
-	MatchId             string    `json:"MatchId"`
-	MatchInfo           MatchInfo `json:"MatchInfo"`
-	LastTeamId          int       `json:"LastTeamId"`
-	Outcome             int       `json:"Outcome"`
-	Rank                int       `json:"Rank"`
-	PresentAtEndOfMatch bool      `json:"PresentAtEndOfMatch"`
+	MatchId             string `json:"MatchId"`
+	Match               Match  `json:"Match"`
+	LastTeamId          int    `json:"LastTeamId"`
+	Outcome             int    `json:"Outcome"`
+	Rank                int    `json:"Rank"`
+	PresentAtEndOfMatch bool   `json:"PresentAtEndOfMatch"`
 }
 
 type HaloData struct {
@@ -101,9 +105,38 @@ func HandleStats(c *gin.Context) {
 		return
 	}
 
-	for i, result := range haloStats.Results {
-		haloStats.Results[i].MatchInfo = formatMatchTimes(result.MatchInfo)
+	var wg sync.WaitGroup
+
+	for i := range haloStats.Results {
+		wg.Add(1) // Increment the WaitGroup counter
+
+		go func(i int) {
+			defer wg.Done() // Decrement the counter when the goroutine completes
+
+			matchID := haloStats.Results[i].MatchId
+
+			// Fetch and format MatchInfo
+			fetchedMatch := GetMatchStats(c, gamerInfo.SpartanKey, matchID)
+			formattedMatch := formatMatchStats(gamerInfo.SpartanKey, fetchedMatch) // Assuming formatMatchStats returns Match
+			formattedMatch.MatchInfo = formatMatchTimes(formattedMatch.MatchInfo)  // Assuming formatMatchTimes returns MatchInfo
+
+			haloStats.Results[i].Match = formattedMatch
+
+			// For PlaylistInfo
+			playlistAssetID := haloStats.Results[i].Match.MatchInfo.Playlist.AssetId
+			playlistVersionID := haloStats.Results[i].Match.MatchInfo.Playlist.VersionId
+
+			var playlistInfo PlaylistInfo
+			err := FetchPlaylistDetails(gamerInfo.SpartanKey, playlistAssetID, playlistVersionID, &playlistInfo)
+			if err != nil {
+				fmt.Println("Error fetching playlist details ", err)
+			} else {
+				haloStats.Results[i].Match.MatchInfo.PlaylistInfo = playlistInfo
+			}
+		}(i)
 	}
+
+	wg.Wait() // Wait for all goroutines to complete
 
 	data := TemplateData{
 		HaloStats: haloStats,

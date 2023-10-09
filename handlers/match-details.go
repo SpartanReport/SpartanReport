@@ -74,17 +74,6 @@ type AssetDetailed struct {
 	VersionId string `json:"VersionId"`
 }
 
-type MatchInfoDetailed struct {
-	StartTime           string       `json:"StartTime"`
-	EndTime             string       `json:"EndTime"`
-	Duration            string       `json:"Duration"`
-	MapVariant          Asset        `json:"MapVariant"`
-	UgcGameVariant      Asset        `json:"UgcGameVariant"`
-	Playlist            Asset        `json:"Playlist"`
-	PlaylistMapModePair Asset        `json:"PlaylistMapModePair"`
-	PlaylistInfo        PlaylistInfo `json:"PlaylistInfo"`
-}
-
 type ParticipationInfo struct {
 	FirstJoinedTime string `json:"FirstJoinedTime"`
 	// ... other fields
@@ -134,14 +123,12 @@ type MapData struct {
 	// Add other fields as needed
 }
 type CompositeData struct {
-	HaloStats HaloData           `json:"HaloStats"`
-	GamerInfo requests.GamerInfo `json:"gamerInfo"`
+	GamerInfo     requests.GamerInfo `json:"gamerInfo"`
+	SelectedMatch Match              `json:"selectedMatch"`
 }
 
 func HandleMatch(c *gin.Context) {
-	matchId := c.Param("id")
 	var compData CompositeData
-
 	if err := c.ShouldBindJSON(&compData); err != nil {
 		fmt.Println("could not bind data")
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -150,24 +137,9 @@ func HandleMatch(c *gin.Context) {
 
 	spartanKey := compData.GamerInfo.SpartanKey
 
-	// Fetch match stats
-	var matchStats Match
-	matchStats = GetMatchStats(c, spartanKey, matchId) // Note that GetMatchStats now returns Match
-	matchStats = formatMatchStats(spartanKey, matchStats)
-
-	// Instantiate a PlaylistInfo struct to populate
-	var playlistInfo PlaylistInfo
-
-	// Get assetID and versionID from your existing data, perhaps like this:
-	playlistAssetID := matchStats.MatchInfo.Playlist.AssetId
-	playlistVersionID := matchStats.MatchInfo.Playlist.VersionId
-	err := FetchPlaylistDetails(spartanKey, playlistAssetID, playlistVersionID, &playlistInfo)
-	if err != nil {
-		fmt.Println(err)
-	}
-	matchStats.MatchInfo = formatMatchTimes(matchStats.MatchInfo)
+	matchStats := compData.SelectedMatch
+	fmt.Println("stats", matchStats.Players)
 	fetchPlayerProfiles(spartanKey, &matchStats)
-	matchStats.MatchInfo.PlaylistInfo = playlistInfo
 	c.JSON(http.StatusOK, matchStats)
 }
 
@@ -213,7 +185,6 @@ func GetMatchStats(c *gin.Context, spartanToken string, matchId string) Match {
 		c.String(http.StatusInternalServerError, "Failed to parse JSON response")
 		return data
 	}
-
 	return data
 }
 
@@ -225,8 +196,6 @@ func formatMatchStats(spartanToken string, match Match) Match {
 	mapVariant := match.MatchInfo.MapVariant
 	versionID = mapVariant.VersionId
 	assetID = mapVariant.AssetId
-
-	fmt.Printf("VersionId: %s, AssetId: %s\n", versionID, assetID)
 
 	// Your HTTP header and request logic
 	hdrs := http.Header{}
@@ -300,7 +269,6 @@ func formatMatchStats(spartanToken string, match Match) Match {
 
 	match.MatchInfo.MapImagePath = mapImagePath
 	match.MatchInfo.PublicName = publicName
-
 	return match
 }
 
@@ -313,7 +281,13 @@ func fetchPlayerProfiles(spartanToken string, match *Match) {
 	// Extract xuids from the PlayerIds in the Match struct
 	var xuids []string
 	for _, player := range match.Players {
-		xuid := strings.TrimPrefix(player.PlayerId, "xuid(")
+		xuid := player.PlayerId
+		// Skip bots with IDs starting with "bid("
+		if strings.HasPrefix(xuid, "bid(") {
+			continue
+		}
+		// Extract the xuid
+		xuid = strings.TrimPrefix(xuid, "xuid(")
 		xuid = strings.TrimSuffix(xuid, ")")
 		xuids = append(xuids, xuid)
 	}
@@ -378,7 +352,6 @@ func FetchPlaylistDetails(spartanToken, assetID, versionID string, playlistInfo 
 
 	client := &http.Client{}
 	url := fmt.Sprintf("https://discovery-infiniteugc.svc.halowaypoint.com/hi/Playlists/%s/versions/%s", assetID, versionID)
-	fmt.Println(url)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return fmt.Errorf("Failed to create request: %v", err)

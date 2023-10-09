@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import 'bootstrap/dist/css/bootstrap.min.css';
 import "./styles.css"
+import 'bootstrap/dist/css/bootstrap.min.css';
 import AuthenticatedContent from './AuthenticatedContent';
 import Spartan from './Spartan';
 import Stats from './Stats';
+import Progression from './Progression';
 import MatchStats from './match-stats';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { Link } from 'react-router-dom';
@@ -13,6 +14,8 @@ function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [gamerInfo, setGamerInfo] = useState(null);
   const [HaloStats, setHaloStats] = useState(null);
+  const [selectedMatch, setSelectedMatch] = useState(null);
+
   const [spartanInventory, setSpartanInventory] = useState(null);
 
   useEffect(() => {
@@ -52,7 +55,7 @@ function App() {
           <nav>
             <ul>
               <li><Link to="/">Account</Link></li>
-              <li><Link to="/season">Season</Link></li>
+              <li><Link to="/progression">Progression</Link></li>
               <li><Link to="/stats">Battle History</Link></li>
               <li><Link to="/spartan">Spartan</Link></li>
             </ul>
@@ -62,21 +65,19 @@ function App() {
           </nav>
         </div>
 
-        <div className="container mt-5">
+        <div className="container mb-5">
         <Routes>
           <Route path="/spartan" element={<Spartan gamerInfo={gamerInfo} spartanInventory={spartanInventory} setSpartanInventory={setSpartanInventory} />} />
-          <Route path="/" element={
-            isAuthenticated 
-              ? <AuthenticatedContent gamerInfo={gamerInfo} spartanInventory={spartanInventory}/> 
-              : <div><h1>You are not authenticated</h1><button onClick={startAuth}>Authenticate</button></div>
-          } />
-<Route path="/match/:matchId" element={<MatchStats gamerInfo={gamerInfo} HaloStats={HaloStats} />} />
-<Route path="/stats" element={<Stats gamerInfo={gamerInfo} HaloStats={HaloStats} setHaloStats={setHaloStats} />} />
+          <Route path="/" element={isAuthenticated ? <AuthenticatedContent gamerInfo={gamerInfo} spartanInventory={spartanInventory}/> : <div><h1>You are not authenticated</h1><button onClick={startAuth}>Authenticate</button></div>} />
+          <Route path="/match/:matchId" element={<MatchStats gamerInfo={gamerInfo} HaloStats={HaloStats} selectedMatch={selectedMatch} />} />
+          <Route path="/stats" element={<Stats gamerInfo={gamerInfo} HaloStats={HaloStats} setHaloStats={setHaloStats} setSelectedMatch={setSelectedMatch} />} />
+          <Route path="/progression" element={<Progression gamerInfo={gamerInfo} HaloStats={HaloStats} setHaloStats={setHaloStats} setSelectedMatch={setSelectedMatch} />} />
+
         </Routes>
       </div>
       </div>
     </Router>
   );
-}
 
+}
 export default App;

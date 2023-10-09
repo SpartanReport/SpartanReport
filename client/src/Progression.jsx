@@ -4,7 +4,7 @@ import { Routes, Route, Link, useLocation } from 'react-router-dom'; // Import u
 import MatchStats from './match-stats';
 import { useNavigate } from 'react-router-dom';
 
-const Stats = ({ gamerInfo ,HaloStats, setHaloStats, setSelectedMatch}) => {
+const Progression = ({ gamerInfo ,HaloStats, setHaloStats, setSelectedMatch}) => {
     const [isLoading, setIsLoading] = useState(true);
     const navigate = useNavigate();
     const location = useLocation(); // Get the current location
@@ -13,7 +13,7 @@ const Stats = ({ gamerInfo ,HaloStats, setHaloStats, setSelectedMatch}) => {
       const fetchSpartanInventory = async () => {
         try {
           // Use gamerInfo in the Axios POST request
-          const response = await axios.post('http://localhost:8080/stats', gamerInfo);
+          const response = await axios.post('http://localhost:8080/progression', gamerInfo);
           console.log(response.data.HaloStats)
           setHaloStats(response.data.HaloStats);
         } catch (error) {
@@ -31,7 +31,7 @@ const Stats = ({ gamerInfo ,HaloStats, setHaloStats, setSelectedMatch}) => {
 
     // Reset HaloStats state when navigating back to /stats
     useEffect(() => {
-      if (location.pathname === '/stats') {
+      if (location.pathname === '/progression') {
         setHaloStats(null);
       }
     }, [location, setHaloStats]);
@@ -95,4 +95,4 @@ const Stats = ({ gamerInfo ,HaloStats, setHaloStats, setSelectedMatch}) => {
   );
 };
 
-export default Stats;
+export default Progression;
