@@ -11,6 +11,24 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type FileDetail struct {
+	Prefix string `json:"Prefix"`
+}
+
+type AssetStats struct {
+	PlaysRecent int `json:"PlaysRecent"`
+	// ... other fields
+}
+
+type PlaylistInfo struct {
+	AssetId    string     `json:"AssetId"`
+	VersionId  string     `json:"VersionId"`
+	PublicName string     `json:"PublicName"`
+	Files      FileDetail `json:"Files"`
+	AssetStats AssetStats `json:"AssetStats"`
+	// ... add other fields as needed
+}
+
 type Medal struct {
 	NameId                    int64 `json:"NameId"`
 	Count                     int   `json:"Count"`
@@ -57,13 +75,14 @@ type AssetDetailed struct {
 }
 
 type MatchInfoDetailed struct {
-	StartTime           string `json:"StartTime"`
-	EndTime             string `json:"EndTime"`
-	Duration            string `json:"Duration"`
-	MapVariant          Asset  `json:"MapVariant"`
-	UgcGameVariant      Asset  `json:"UgcGameVariant"`
-	Playlist            Asset  `json:"Playlist"`
-	PlaylistMapModePair Asset  `json:"PlaylistMapModePair"`
+	StartTime           string       `json:"StartTime"`
+	EndTime             string       `json:"EndTime"`
+	Duration            string       `json:"Duration"`
+	MapVariant          Asset        `json:"MapVariant"`
+	UgcGameVariant      Asset        `json:"UgcGameVariant"`
+	Playlist            Asset        `json:"Playlist"`
+	PlaylistMapModePair Asset        `json:"PlaylistMapModePair"`
+	PlaylistInfo        PlaylistInfo `json:"PlaylistInfo"`
 }
 
 type ParticipationInfo struct {
@@ -135,9 +154,20 @@ func HandleMatch(c *gin.Context) {
 	var matchStats Match
 	matchStats = GetMatchStats(c, spartanKey, matchId) // Note that GetMatchStats now returns Match
 	matchStats = formatMatchStats(spartanKey, matchStats)
-	// Perform further formatting or processing if needed.
-	fetchPlayerProfiles(spartanKey, &matchStats)
 
+	// Instantiate a PlaylistInfo struct to populate
+	var playlistInfo PlaylistInfo
+
+	// Get assetID and versionID from your existing data, perhaps like this:
+	playlistAssetID := matchStats.MatchInfo.Playlist.AssetId
+	playlistVersionID := matchStats.MatchInfo.Playlist.VersionId
+	err := FetchPlaylistDetails(spartanKey, playlistAssetID, playlistVersionID, &playlistInfo)
+	if err != nil {
+		fmt.Println(err)
+	}
+	matchStats.MatchInfo = formatMatchTimes(matchStats.MatchInfo)
+	fetchPlayerProfiles(spartanKey, &matchStats)
+	matchStats.MatchInfo.PlaylistInfo = playlistInfo
 	c.JSON(http.StatusOK, matchStats)
 }
 
@@ -274,12 +304,6 @@ func formatMatchStats(spartanToken string, match Match) Match {
 	return match
 }
 
-func printPlayerIds(match Match) {
-	for _, player := range match.Players {
-		fmt.Println("PlayerId:", player.PlayerId)
-	}
-}
-
 func fetchPlayerProfiles(spartanToken string, match *Match) {
 	hdrs := http.Header{}
 	hdrs.Set("X-343-Authorization-Spartan", spartanToken)
@@ -345,4 +369,41 @@ func fetchPlayerProfiles(spartanToken string, match *Match) {
 			}
 		}
 	}
+}
+
+func FetchPlaylistDetails(spartanToken, assetID, versionID string, playlistInfo *PlaylistInfo) error {
+	hdrs := http.Header{}
+	hdrs.Set("X-343-Authorization-Spartan", spartanToken)
+	hdrs.Set("Accept", "application/json")
+
+	client := &http.Client{}
+	url := fmt.Sprintf("https://discovery-infiniteugc.svc.halowaypoint.com/hi/Playlists/%s/versions/%s", assetID, versionID)
+	fmt.Println(url)
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return fmt.Errorf("Failed to create request: %v", err)
+	}
+	req.Header = hdrs
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("Failed to make request: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		bodyBytes, _ := ioutil.ReadAll(resp.Body)
+		return fmt.Errorf("Received a non-OK status code %d. Response body: %s", resp.StatusCode, string(bodyBytes))
+	}
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return fmt.Errorf("Failed to read response body: %v", err)
+	}
+
+	err = json.Unmarshal(body, playlistInfo)
+	if err != nil {
+		return fmt.Errorf("Failed to parse JSON response: %v", err)
+	}
+	return nil
 }

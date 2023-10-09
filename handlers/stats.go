@@ -11,23 +11,24 @@ import (
 )
 
 type MatchInfo struct {
-	StartTime           string `json:"StartTime"`
-	EndTime             string `json:"EndTime"`
-	Duration            string `json:"Duration"`
-	LifecycleMode       int    `json:"LifecycleMode"`
-	GameVariantCategory int    `json:"GameVariantCategory"`
-	LevelId             string `json:"LevelId"`
-	MapVariant          Asset  `json:"MapVariant"`
-	UgcGameVariant      Asset  `json:"UgcGameVariant"`
-	Playlist            Asset  `json:"Playlist"`
-	PlaylistMapModePair Asset  `json:"PlaylistMapModePair"`
-	ClearanceId         string `json:"ClearanceId"`
-	PlaylistExperience  int    `json:"PlaylistExperience"`
-	SeasonId            string `json:"SeasonId"`
-	PlayableDuration    string `json:"PlayableDuration"`
-	TeamsEnabled        bool   `json:"TeamsEnabled"`
-	TeamScoringEnabled  bool   `json:"TeamScoringEnabled"`
-	GameplayInteraction int    `json:"GameplayInteraction"`
+	StartTime           string       `json:"StartTime"`
+	EndTime             string       `json:"EndTime"`
+	Duration            string       `json:"Duration"`
+	LifecycleMode       int          `json:"LifecycleMode"`
+	GameVariantCategory int          `json:"GameVariantCategory"`
+	LevelId             string       `json:"LevelId"`
+	MapVariant          Asset        `json:"MapVariant"`
+	UgcGameVariant      Asset        `json:"UgcGameVariant"`
+	Playlist            Asset        `json:"Playlist"`
+	PlaylistInfo        PlaylistInfo `json:"PlaylistInfo"`
+	PlaylistMapModePair Asset        `json:"PlaylistMapModePair"`
+	ClearanceId         string       `json:"ClearanceId"`
+	PlaylistExperience  int          `json:"PlaylistExperience"`
+	SeasonId            string       `json:"SeasonId"`
+	PlayableDuration    string       `json:"PlayableDuration"`
+	TeamsEnabled        bool         `json:"TeamsEnabled"`
+	TeamScoringEnabled  bool         `json:"TeamScoringEnabled"`
+	GameplayInteraction int          `json:"GameplayInteraction"`
 	FormattedStartTime  string
 	FormattedEndTime    string
 	PublicName          string `json:"PublicName"`

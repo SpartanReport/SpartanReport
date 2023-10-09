@@ -48,21 +48,18 @@ const MatchStats = ({gamerInfo, HaloStats}) => {
   <div className="card-body">
     
     <h5 className="card-title">Match Stats</h5>
-    <h2>{MatchStats.MatchInfo.PublicName}</h2>
+    <h1>{MatchStats.MatchInfo.PublicName}</h1>
+    <p>{MatchStats.MatchInfo.PlaylistInfo.PublicName}</p>
+
     <div className="row">
 
       <div className="col">
         <div className="col-md-6">
             <img src={MatchStats.MatchInfo.MapImagePath} alt="" className="img-fluid scaled-image" />
         </div>
-        <p>Match ID: {MatchStats.MatchId}</p>
-        <p>Start Time: {MatchStats.MatchInfo.StartTime}</p>
-        <p>End Time: {MatchStats.MatchInfo.EndTime}</p>
+        <p>Start Time: {MatchStats.MatchInfo.FormattedStartTime}</p>
+        <p>End Time: {MatchStats.MatchInfo.FormattedEndTime}</p>
         <p>Duration: {MatchStats.MatchInfo.Duration}</p>
-        <p>Lifecycle Mode: {MatchStats.MatchInfo.LifecycleMode}</p>
-        <p>Game Variant Category: {MatchStats.MatchInfo.GameVariantCategory}</p>
-        <p>Playlist Experience: {MatchStats.MatchInfo.PlaylistExperience}</p>
-        <p>Season ID: {MatchStats.MatchInfo.SeasonId}</p>
         <p>Playable Duration: {MatchStats.MatchInfo.PlayableDuration}</p>
       </div>
     </div>
