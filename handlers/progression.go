@@ -1,15 +1,69 @@
 package halotestapp
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	requests "halotestapp/requests"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"sync"
 
 	"github.com/gin-gonic/gin"
 )
+
+type CurrentProgress struct {
+	TotalXPEarned        int    `json:"TotalXPEarned"`
+	Rank                 int    `json:"Rank"`
+	PartialProgress      int    `json:"PartialProgress"`
+	IsOwned              bool   `json:"IsOwned"`
+	HasReachedMaxRank    bool   `json:"HasReachedMaxRank"`
+	RankIconData         string `json:"RankIconData"`
+	PreviousRankIconData string `json:"PreviousRankIconData"`
+	NextRankIconData     string `json:"NextRankIconData"`
+}
+
+type RewardTrackResponse struct {
+	RewardTrackPath  string          `json:"RewardTrackPath"`
+	TrackType        string          `json:"TrackType"`
+	CurrentProgress  CurrentProgress `json:"CurrentProgress"`
+	PreviousProgress interface{}     `json:"PreviousProgress"` // Could be `nil` or a similar struct to CurrentProgress
+	IsOwned          bool            `json:"IsOwned"`
+	BaseXp           interface{}     `json:"BaseXp"`  // Could be `nil` or a specific type
+	BoostXp          interface{}     `json:"BoostXp"` // Could be `nil` or a specific type
+}
+
+type Reward struct {
+	InventoryRewards []interface{} `json:"InventoryRewards"`
+	CurrencyRewards  []interface{} `json:"CurrencyRewards"`
+}
+
+type RankInfo struct {
+	Rank              int         `json:"Rank"`
+	FreeRewards       Reward      `json:"FreeRewards"`
+	PaidRewards       Reward      `json:"PaidRewards"`
+	XpRequiredForRank int         `json:"XpRequiredForRank"`
+	RankTitle         interface{} `json:"RankTitle"`
+	RankSubTitle      interface{} `json:"RankSubTitle"`
+	RankTier          interface{} `json:"RankTier"`
+	RankIcon          interface{} `json:"RankIcon"`
+	RankLargeIcon     interface{} `json:"RankLargeIcon"`
+	RankAdornmentIcon interface{} `json:"RankAdornmentIcon"`
+	TierType          interface{} `json:"TierType"`
+	RankGrade         int         `json:"RankGrade"`
+}
+
+type CareerLadderResponse struct {
+	Ranks []RankInfo `json:"Ranks"`
+}
+
+type ProgressionDataToSend struct {
+	HaloStats    HaloData
+	GamerInfo    requests.GamerInfo // Assuming GamerInfo is of type requests.GamerInfo
+	CareerTrack  RewardTrackResponse
+	CareerLadder CareerLadderResponse
+}
 
 func HandleProgression(c *gin.Context) {
 	var gamerInfo requests.GamerInfo
@@ -18,25 +72,25 @@ func HandleProgression(c *gin.Context) {
 		return
 	}
 
-	// Let's assume you want to fetch 500 matches for this example
-	targetMatchCount := 50
+	/* Let's assume you want to fetch 500 matches for this example
+	targetMatchCount := 25
 	allHaloStats, err := GetProgression(gamerInfo, c, targetMatchCount)
 	if err != nil {
 		HandleError(c, err)
 		return
 	}
 	// Initialize an empty HaloData to store the merged results
-	mergedHaloData := HaloData{}
-	var mu sync.Mutex // Mutex for concurrent writes
+	// mergedHaloData := HaloData{}
+	// var mu sync.Mutex // Mutex for concurrent writes
 
 	if err != nil {
 		HandleError(c, err)
 		return
 	}
-
+	*/
 	var wg sync.WaitGroup
 
-	// Loop through each batch of HaloData
+	/* Loop through each batch of HaloData
 	for _, haloStats := range allHaloStats {
 		// Loop through the matches in each HaloData batch
 		for i := range haloStats.Results {
@@ -70,15 +124,96 @@ func HandleProgression(c *gin.Context) {
 			}(haloStats, i)
 		}
 	}
+	*/
 
 	wg.Wait() // Wait for all goroutines to complete
+	careerTrack := GetCareerStats(gamerInfo, c)
+	careerLadder := GetCareerLadder(gamerInfo, c)
+	careerTrack.CurrentProgress.TotalXPEarned = CalculateTotalXPGainedSoFar(careerLadder, careerTrack.CurrentProgress.Rank) + careerTrack.CurrentProgress.PartialProgress
+	GetCareerRankImage(careerLadder, &careerTrack, gamerInfo)
+	data := ProgressionDataToSend{
+		// HaloStats:    mergedHaloData,
+		GamerInfo:    gamerInfo,
+		CareerTrack:  careerTrack,
+		CareerLadder: careerLadder,
+	}
+	c.JSON(http.StatusOK, data)
+}
 
-	data := TemplateData{
-		HaloStats: mergedHaloData,
-		GamerInfo: gamerInfo,
+func getRankImageData(rankIndex int, careerLadder CareerLadderResponse, gamerInfo requests.GamerInfo) (string, error) {
+	rankLargeIcon := careerLadder.Ranks[rankIndex].RankLargeIcon
+	url := fmt.Sprintf("https://gamecms-hacs.svc.halowaypoint.com/hi/images/file/%s", rankLargeIcon)
+
+	// Creating the GET request
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return "", err
+	}
+	req.Header.Set("x-343-authorization-spartan", gamerInfo.SpartanKey)
+
+	// Sending the GET request
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	// Reading the response body
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
 	}
 
-	c.JSON(http.StatusOK, data)
+	// Convert raw image data to base64
+	base64ImageData := base64.StdEncoding.EncodeToString(data)
+	return base64ImageData, nil
+}
+
+func GetCareerRankImage(careerLadder CareerLadderResponse, careerTrack *RewardTrackResponse, gamerInfo requests.GamerInfo) {
+	currentRankIndex := careerTrack.CurrentProgress.Rank
+
+	// Get image data for current rank
+	imageData, err := getRankImageData(currentRankIndex, careerLadder, gamerInfo)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	careerTrack.CurrentProgress.RankIconData = imageData
+
+	// Get image data for previous rank, if applicable
+	if currentRankIndex > 0 {
+		imageData, err := getRankImageData(currentRankIndex-1, careerLadder, gamerInfo)
+		if err != nil {
+			fmt.Println(err)
+		} else {
+			careerTrack.CurrentProgress.PreviousRankIconData = imageData
+		}
+	}
+
+	// Get image data for next rank, if applicable
+	if currentRankIndex < len(careerLadder.Ranks)-1 {
+		imageData, err := getRankImageData(currentRankIndex+1, careerLadder, gamerInfo)
+		if err != nil {
+			fmt.Println(err)
+		} else {
+			careerTrack.CurrentProgress.NextRankIconData = imageData
+		}
+	}
+}
+
+func CalculateTotalXPGainedSoFar(careerLadder CareerLadderResponse, currentRank int) int {
+	totalXpRequiredForRank := 0
+
+	for _, rankInfo := range careerLadder.Ranks {
+		totalXpRequiredForRank += rankInfo.XpRequiredForRank
+
+		if rankInfo.Rank >= currentRank {
+			break
+		}
+	}
+
+	return totalXpRequiredForRank
 }
 
 func GetProgression(gamerInfo requests.GamerInfo, c *gin.Context, targetMatchCount int) ([]HaloData, error) {
@@ -156,4 +291,81 @@ func GetProgression(gamerInfo requests.GamerInfo, c *gin.Context, targetMatchCou
 	}
 
 	return allData, nil
+}
+
+func GetCareerLadder(gamerInfo requests.GamerInfo, c *gin.Context) CareerLadderResponse {
+	// Build the URL
+	url := "https://gamecms-hacs.svc.halowaypoint.com/hi/Progression/file/RewardTracks/CareerRanks/careerRank1.json"
+
+	// Create a new HTTP client
+	client := &http.Client{}
+
+	// Create a new HTTP request
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		log.Fatal("Error creating request:", err)
+	}
+
+	// Add headers to the request
+	req.Header.Add("x-343-authorization-spartan", gamerInfo.SpartanKey)
+	req.Header.Add("343-clearance", gamerInfo.ClearanceCode)
+
+	// Make the HTTP request
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Fatal("Error making request:", err)
+	}
+	defer resp.Body.Close()
+
+	// Read the response body
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatal("Error reading response:", err)
+	}
+	var careerLadder CareerLadderResponse
+	if err := json.Unmarshal(body, &careerLadder); err != nil {
+		log.Fatal("Error unmarshalling JSON Career Ladder Response:", err)
+	}
+
+	fmt.Println("Career Ladder: ", string(body))
+	return careerLadder
+}
+
+func GetCareerStats(gamerInfo requests.GamerInfo, c *gin.Context) RewardTrackResponse {
+	// Build the URL
+	url := "https://economy.svc.halowaypoint.com/hi/players/xuid(" + gamerInfo.XUID + ")/rewardtracks/careerranks/careerrank1"
+
+	// Create a new HTTP client
+	client := &http.Client{}
+
+	// Create a new HTTP request
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		log.Fatal("Error creating request:", err)
+	}
+
+	// Add headers to the request
+	req.Header.Add("x-343-authorization-spartan", gamerInfo.SpartanKey)
+	req.Header.Add("343-clearance", gamerInfo.ClearanceCode)
+
+	// Make the HTTP request
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Fatal("Error making request:", err)
+	}
+	defer resp.Body.Close()
+
+	// Read the response body
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatal("Error reading response:", err)
+	}
+	var careerTrack RewardTrackResponse
+	if err := json.Unmarshal([]byte(body), &careerTrack); err != nil {
+		log.Fatal("Error unmarshalling JSON:", err)
+	}
+
+	fmt.Printf("Parsed JSON: %+v\n", careerTrack)
+	return careerTrack
+
 }
