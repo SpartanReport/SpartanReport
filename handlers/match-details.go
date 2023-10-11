@@ -1,10 +1,8 @@
 package halotestapp
 
 import (
-	"encoding/json"
 	"fmt"
 	requests "halotestapp/requests"
-	"io/ioutil"
 	"net/http"
 	"strings"
 
@@ -143,105 +141,31 @@ func HandleMatch(c *gin.Context) {
 	c.JSON(http.StatusOK, matchStats)
 }
 
-func GetMatchStats(c *gin.Context, spartanToken string, matchId string) Match {
-	hdrs := http.Header{}
-	var data Match // Note that it's now a Match type instead of a map
-
-	hdrs.Set("X-343-Authorization-Spartan", spartanToken)
-	hdrs.Set("Accept", "application/json")
-
-	client := &http.Client{}
+func GetMatchStats(c *gin.Context, spartanToken string, matchId string) (Match, error) {
+	var data Match
 	url := fmt.Sprintf("https://halostats.svc.halowaypoint.com/hi/matches/%s/stats", matchId)
-
-	req, err := http.NewRequest("GET", url, nil)
+	err := makeAPIRequest(spartanToken, url, nil, &data)
 	if err != nil {
-		c.String(http.StatusInternalServerError, "Failed to create request")
-		return data
+		c.String(http.StatusInternalServerError, "%v", err)
+		return data, err
 	}
-
-	req.Header = hdrs
-
-	resp, err := client.Do(req)
-	if err != nil {
-		c.String(http.StatusInternalServerError, "Failed to make request")
-		return data
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		bodyBytes, _ := ioutil.ReadAll(resp.Body)
-		c.String(resp.StatusCode, "Received a non-OK status code. Response body: %s\n", string(bodyBytes))
-		return data
-	}
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		c.String(http.StatusInternalServerError, "Failed to read response body")
-		return data
-	}
-
-	err = json.Unmarshal(body, &data)
-	if err != nil {
-		c.String(http.StatusInternalServerError, "Failed to parse JSON response")
-		return data
-	}
-	return data
+	return data, nil
 }
 
 func formatMatchStats(spartanToken string, match Match) Match {
-	assetID := ""
-	versionID := ""
+	assetID := match.MatchInfo.MapVariant.AssetId
+	versionID := match.MatchInfo.MapVariant.VersionId
 
-	// Get VersionID / AssetID's of map played on
-	mapVariant := match.MatchInfo.MapVariant
-	versionID = mapVariant.VersionId
-	assetID = mapVariant.AssetId
-
-	// Your HTTP header and request logic
-	hdrs := http.Header{}
-
-	if spartanToken == "" {
-		fmt.Println("SpartanToken is empty")
-	}
-
-	hdrs.Set("X-343-Authorization-Spartan", spartanToken)
-	hdrs.Set("Accept", "application/json")
-
-	if assetID == "" && versionID == "" {
+	if assetID == "" || versionID == "" {
 		fmt.Println("Unable to get asset ID and version ID of map")
+		return match
 	}
 
-	url := "https://discovery-infiniteugc.svc.halowaypoint.com/hi/maps/" + assetID + "/versions/" + versionID
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		fmt.Println("oops")
-		fmt.Println(err)
-	}
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		fmt.Println(err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		bodyBytes, _ := ioutil.ReadAll(resp.Body)
-		fmt.Printf("Received a non-OK status code %d. Response body: %s\n", resp.StatusCode, string(bodyBytes))
-	}
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		fmt.Println(err)
-		return match // Returning the unchanged match
-	}
-
-	// Unmarshal logic
+	url := fmt.Sprintf("https://discovery-infiniteugc.svc.halowaypoint.com/hi/maps/%s/versions/%s", assetID, versionID)
 	var rawResponse map[string]interface{}
-	err = json.Unmarshal(body, &rawResponse)
-	if err != nil {
-		fmt.Println("Error unmarshaling raw response:", err)
-		return match // Returning the unchanged match
+	if err := makeAPIRequest(spartanToken, url, nil, &rawResponse); err != nil {
+		fmt.Println("Error fetching map details:", err)
+		return match
 	}
 
 	prefix, _ := rawResponse["Files"].(map[string]interface{})["Prefix"].(string)
@@ -256,7 +180,7 @@ func formatMatchStats(spartanToken string, match Match) Match {
 		if ok {
 			if strPath == "images/thumbnail.jpg" {
 				mapImagePath = prefix + strPath
-				break // found the thumbnail.jpg
+				break
 			} else if fallbackImagePath == "" && (strings.HasSuffix(strPath, ".png") || strings.HasSuffix(strPath, ".jpg")) {
 				fallbackImagePath = prefix + strPath
 			}
@@ -264,7 +188,7 @@ func formatMatchStats(spartanToken string, match Match) Match {
 	}
 
 	if mapImagePath == "" {
-		mapImagePath = fallbackImagePath // Use fallback if thumbnail.jpg not found
+		mapImagePath = fallbackImagePath
 	}
 
 	match.MatchInfo.MapImagePath = mapImagePath
@@ -273,66 +197,26 @@ func formatMatchStats(spartanToken string, match Match) Match {
 }
 
 func fetchPlayerProfiles(spartanToken string, match *Match) {
-	hdrs := http.Header{}
-	hdrs.Set("X-343-Authorization-Spartan", spartanToken)
-
-	client := &http.Client{}
-
-	// Extract xuids from the PlayerIds in the Match struct
 	var xuids []string
 	for _, player := range match.Players {
 		xuid := player.PlayerId
-		// Skip bots with IDs starting with "bid("
 		if strings.HasPrefix(xuid, "bid(") {
 			continue
 		}
-		// Extract the xuid
 		xuid = strings.TrimPrefix(xuid, "xuid(")
 		xuid = strings.TrimSuffix(xuid, ")")
 		xuids = append(xuids, xuid)
 	}
-
-	// Join the xuids slice into a comma-separated string
 	xuidsStr := strings.Join(xuids, ",")
-
 	url := fmt.Sprintf("https://profile.svc.halowaypoint.com/users?xuids=%s", xuidsStr)
 
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		fmt.Println("Failed to create request:", err)
-		return
-	}
-
-	req.Header = hdrs
-
-	resp, err := client.Do(req)
-	if err != nil {
-		fmt.Println("Failed to make request:", err)
-		return
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		bodyBytes, _ := ioutil.ReadAll(resp.Body)
-		fmt.Printf("Received a non-OK status code %d. Response body: %s\n", resp.StatusCode, string(bodyBytes))
-		return
-	}
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		fmt.Println("Failed to read response body:", err)
-		return
-	}
-
-	// Unmarshal the JSON into a slice of PlayerProfile structs
 	var playerProfiles []PlayerProfile
-	err = json.Unmarshal(body, &playerProfiles)
+	err := makeAPIRequest(spartanToken, url, nil, &playerProfiles)
 	if err != nil {
-		fmt.Println("Failed to parse JSON response:", err)
+		fmt.Println("Error while fetching player profiles:", err)
 		return
 	}
 
-	// Attach each PlayerProfile to the corresponding Player in the Match
 	for _, profile := range playerProfiles {
 		for i, player := range match.Players {
 			xuid := strings.TrimPrefix(player.PlayerId, "xuid(")
@@ -346,37 +230,6 @@ func fetchPlayerProfiles(spartanToken string, match *Match) {
 }
 
 func FetchPlaylistDetails(spartanToken, assetID, versionID string, playlistInfo *PlaylistInfo) error {
-	hdrs := http.Header{}
-	hdrs.Set("X-343-Authorization-Spartan", spartanToken)
-	hdrs.Set("Accept", "application/json")
-
-	client := &http.Client{}
 	url := fmt.Sprintf("https://discovery-infiniteugc.svc.halowaypoint.com/hi/Playlists/%s/versions/%s", assetID, versionID)
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		return fmt.Errorf("Failed to create request: %v", err)
-	}
-	req.Header = hdrs
-
-	resp, err := client.Do(req)
-	if err != nil {
-		return fmt.Errorf("Failed to make request: %v", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		bodyBytes, _ := ioutil.ReadAll(resp.Body)
-		return fmt.Errorf("Received a non-OK status code %d. Response body: %s", resp.StatusCode, string(bodyBytes))
-	}
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return fmt.Errorf("Failed to read response body: %v", err)
-	}
-
-	err = json.Unmarshal(body, playlistInfo)
-	if err != nil {
-		return fmt.Errorf("Failed to parse JSON response: %v", err)
-	}
-	return nil
+	return makeAPIRequest(spartanToken, url, nil, playlistInfo)
 }

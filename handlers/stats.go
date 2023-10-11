@@ -116,7 +116,7 @@ func HandleStats(c *gin.Context) {
 			matchID := haloStats.Results[i].MatchId
 
 			// Fetch and format MatchInfo
-			fetchedMatch := GetMatchStats(c, gamerInfo.SpartanKey, matchID)
+			fetchedMatch, _ := GetMatchStats(c, gamerInfo.SpartanKey, matchID)
 			formattedMatch := formatMatchStats(gamerInfo.SpartanKey, fetchedMatch) // Assuming formatMatchStats returns Match
 			formattedMatch.MatchInfo = formatMatchTimes(formattedMatch.MatchInfo)  // Assuming formatMatchTimes returns MatchInfo
 

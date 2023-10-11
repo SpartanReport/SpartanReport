@@ -2,7 +2,6 @@ package halotestapp
 
 import (
 	"encoding/base64"
-	"encoding/json"
 	"fmt"
 	requests "halotestapp/requests"
 	"io/ioutil"
@@ -221,12 +220,7 @@ func GetProgression(gamerInfo requests.GamerInfo, c *gin.Context, targetMatchCou
 	dataChan := make(chan HaloData)
 	errChan := make(chan error)
 
-	// Calculate the number of requests
-	numRequests := targetMatchCount / 25
-	if targetMatchCount%25 != 0 {
-		numRequests++
-	}
-
+	numRequests := (targetMatchCount + 24) / 25
 	var wg sync.WaitGroup
 	wg.Add(numRequests)
 
@@ -234,39 +228,10 @@ func GetProgression(gamerInfo requests.GamerInfo, c *gin.Context, targetMatchCou
 		go func(start int) {
 			defer wg.Done()
 			var data HaloData
-
 			url := fmt.Sprintf("https://halostats.svc.halowaypoint.com/hi/players/xuid(%s)/matches?start=%d&count=25", gamerInfo.XUID, start)
-			req, err := http.NewRequest("GET", url, nil)
-			if err != nil {
-				errChan <- fmt.Errorf("Failed to create request: %w", err)
-				return
-			}
 
-			req.Header.Set("X-343-Authorization-Spartan", gamerInfo.SpartanKey)
-			req.Header.Set("Accept", "application/json")
-
-			resp, err := httpClient.Do(req)
-			if err != nil {
-				errChan <- fmt.Errorf("Failed to make request: %w", err)
-				return
-			}
-			defer resp.Body.Close()
-
-			if resp.StatusCode != http.StatusOK {
-				bodyBytes, _ := ioutil.ReadAll(resp.Body)
-				errChan <- fmt.Errorf("Received a non-OK status code. Response body: %s", string(bodyBytes))
-				return
-			}
-
-			body, err := ioutil.ReadAll(resp.Body)
-			if err != nil {
-				errChan <- fmt.Errorf("Failed to read response body: %w", err)
-				return
-			}
-
-			err = json.Unmarshal(body, &data)
-			if err != nil {
-				errChan <- fmt.Errorf("Failed to parse JSON response: %w", err)
+			if err := makeAPIRequest(gamerInfo.SpartanKey, url, nil, &data); err != nil {
+				errChan <- err
 				return
 			}
 
@@ -280,7 +245,6 @@ func GetProgression(gamerInfo requests.GamerInfo, c *gin.Context, targetMatchCou
 		close(errChan)
 	}()
 
-	// Collect the results and errors
 	for i := 0; i < numRequests; i++ {
 		select {
 		case data := <-dataChan:
@@ -294,78 +258,31 @@ func GetProgression(gamerInfo requests.GamerInfo, c *gin.Context, targetMatchCou
 }
 
 func GetCareerLadder(gamerInfo requests.GamerInfo, c *gin.Context) CareerLadderResponse {
-	// Build the URL
 	url := "https://gamecms-hacs.svc.halowaypoint.com/hi/Progression/file/RewardTracks/CareerRanks/careerRank1.json"
-
-	// Create a new HTTP client
-	client := &http.Client{}
-
-	// Create a new HTTP request
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		log.Fatal("Error creating request:", err)
-	}
-
-	// Add headers to the request
-	req.Header.Add("x-343-authorization-spartan", gamerInfo.SpartanKey)
-	req.Header.Add("343-clearance", gamerInfo.ClearanceCode)
-
-	// Make the HTTP request
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Fatal("Error making request:", err)
-	}
-	defer resp.Body.Close()
-
-	// Read the response body
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatal("Error reading response:", err)
-	}
 	var careerLadder CareerLadderResponse
-	if err := json.Unmarshal(body, &careerLadder); err != nil {
-		log.Fatal("Error unmarshalling JSON Career Ladder Response:", err)
+
+	headers := map[string]string{
+		"343-clearance": gamerInfo.ClearanceCode,
 	}
 
-	fmt.Println("Career Ladder: ", string(body))
+	if err := makeAPIRequest(gamerInfo.SpartanKey, url, headers, &careerLadder); err != nil {
+		log.Fatal("Error:", err)
+	}
+
 	return careerLadder
 }
 
 func GetCareerStats(gamerInfo requests.GamerInfo, c *gin.Context) RewardTrackResponse {
-	// Build the URL
-	url := "https://economy.svc.halowaypoint.com/hi/players/xuid(" + gamerInfo.XUID + ")/rewardtracks/careerranks/careerrank1"
-
-	// Create a new HTTP client
-	client := &http.Client{}
-
-	// Create a new HTTP request
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		log.Fatal("Error creating request:", err)
-	}
-
-	// Add headers to the request
-	req.Header.Add("x-343-authorization-spartan", gamerInfo.SpartanKey)
-	req.Header.Add("343-clearance", gamerInfo.ClearanceCode)
-
-	// Make the HTTP request
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Fatal("Error making request:", err)
-	}
-	defer resp.Body.Close()
-
-	// Read the response body
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatal("Error reading response:", err)
-	}
+	url := fmt.Sprintf("https://economy.svc.halowaypoint.com/hi/players/xuid(%s)/rewardtracks/careerranks/careerrank1", gamerInfo.XUID)
 	var careerTrack RewardTrackResponse
-	if err := json.Unmarshal([]byte(body), &careerTrack); err != nil {
-		log.Fatal("Error unmarshalling JSON:", err)
+
+	headers := map[string]string{
+		"343-clearance": gamerInfo.ClearanceCode,
 	}
 
-	fmt.Printf("Parsed JSON: %+v\n", careerTrack)
-	return careerTrack
+	if err := makeAPIRequest(gamerInfo.SpartanKey, url, headers, &careerTrack); err != nil {
+		log.Fatal("Error:", err)
+	}
 
+	return careerTrack
 }
