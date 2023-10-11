@@ -1,0 +1,52 @@
+  #sidebar-wrapper {
+    background-color: #282c34;
+    position: fixed;
+    height: 100vh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.header-wrapper {
+    background-color: #282c34;
+    color: #fff;
+    padding: 10px;  /* Adjust padding as necessary */
+    position: fixed;
+    top: 0;
+    left: 210px;  /* Adjust left position to match the width of your sidebar */
+    right: 0;
+    z-index: 1000;  /* Ensure the header stays on top */
+}
+
+
+.right-aligned {
+    margin-top: auto;  /* This will push the div to the bottom */
+    width: 100%;  /* Ensures the div takes up the full width of the sidebar */
+    padding: 10px;  /* Optional: Adds some padding around the button */
+}
+
+
+.list-group-item {
+    background-color: #282c34;
+    color: #fff;
+    transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out; /* Transition for background-color and color */
+    text-align: center;
+}
+
+.list-group-item:hover {
+    background-color: #444; /* or any other color you prefer */
+    cursor: pointer; /* changes the cursor to a hand icon when hovering */
+  }
+.sidebar-heading {
+    color: #fff; /* Set the text color to white for better readability */
+    background-color: #282c34;
+    padding: 50px; /* Adds padding around the heading text */
+    font-family: 'Montserrat', sans-serif;
+}
+#page-content-wrapper {
+    margin-left: 213px;  /* This will add space for the sidebar */
+    padding-top: 60px;  /* New padding to create space for the top bar, adjust as necessary */
+
+}
+
+

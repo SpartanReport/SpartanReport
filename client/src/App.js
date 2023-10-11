@@ -7,8 +7,10 @@ import Spartan from './Spartan';
 import Stats from './Stats';
 import Progression from './Progression';
 import MatchStats from './match-stats';
+import Header from './Header';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import { Link } from 'react-router-dom';
+import Sidebar from './Sidebar';
+
 function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -46,35 +48,31 @@ function App() {
     return <div>Loading...</div>;
   }
 
+
+
   return (
-    
     <Router>
-      <div>
-        <div className="header">
-          <h1>Halo Tracker</h1>
-          <nav>
-            <ul>
-              <li><Link to="/">Account</Link></li>
-              <li><Link to="/progression">Progression</Link></li>
-              <li><Link to="/stats">Battle History</Link></li>
-              <li><Link to="/spartan">Spartan</Link></li>
-            </ul>
-            <div className="right-aligned">
-              <button className="clear-cookie-button btn btn-danger" onClick={clearCookie}>Clear Cookie</button>
-            </div>
-          </nav>
+      <div className="d-flex" id="wrapper">
+        {/* Sidebar */}
+        <Sidebar clearCookie={clearCookie} />
+        {/* /#sidebar-wrapper */}
+            {/* Header */}
+            <Header gamerInfo={gamerInfo} />
+            {/* Routes */}
+
+        {/* Page Content */}
+        <div id="page-content-wrapper">
+          <div className="container-fluid">
+            <Routes>
+              <Route path="/spartan" element={<Spartan gamerInfo={gamerInfo} spartanInventory={spartanInventory} setSpartanInventory={setSpartanInventory} />} />
+              <Route path="/" element={isAuthenticated ? <AuthenticatedContent gamerInfo={gamerInfo} spartanInventory={spartanInventory}/> : <div><h1>You are not authenticated</h1><button onClick={startAuth}>Authenticate</button></div>} />
+              <Route path="/match/:matchId" element={<MatchStats gamerInfo={gamerInfo} HaloStats={HaloStats} selectedMatch={selectedMatch} />} />
+              <Route path="/stats" element={<Stats gamerInfo={gamerInfo} HaloStats={HaloStats} setHaloStats={setHaloStats} setSelectedMatch={setSelectedMatch} />} />
+              <Route path="/progression" element={<Progression gamerInfo={gamerInfo} HaloStats={HaloStats} setHaloStats={setHaloStats} setSelectedMatch={setSelectedMatch} />} />
+            </Routes>
+          </div>
         </div>
-
-        <div className="container mb-5">
-        <Routes>
-          <Route path="/spartan" element={<Spartan gamerInfo={gamerInfo} spartanInventory={spartanInventory} setSpartanInventory={setSpartanInventory} />} />
-          <Route path="/" element={isAuthenticated ? <AuthenticatedContent gamerInfo={gamerInfo} spartanInventory={spartanInventory}/> : <div><h1>You are not authenticated</h1><button onClick={startAuth}>Authenticate</button></div>} />
-          <Route path="/match/:matchId" element={<MatchStats gamerInfo={gamerInfo} HaloStats={HaloStats} selectedMatch={selectedMatch} />} />
-          <Route path="/stats" element={<Stats gamerInfo={gamerInfo} HaloStats={HaloStats} setHaloStats={setHaloStats} setSelectedMatch={setSelectedMatch} />} />
-          <Route path="/progression" element={<Progression gamerInfo={gamerInfo} HaloStats={HaloStats} setHaloStats={setHaloStats} setSelectedMatch={setSelectedMatch} />} />
-
-        </Routes>
-      </div>
+        {/* /#page-content-wrapper */}
       </div>
     </Router>
   );

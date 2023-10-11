@@ -1,0 +1,54 @@
+  /* styles.css */
+  .rank-image {
+    width: 150px;  /* or whatever width you want */
+    height: auto;  /* maintain aspect ratio */
+	margin-bottom: 10px;
+
+}
+
+.rank-container {
+	padding-left:10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    border: 1px solid #ccc;
+    
+    padding: 20px;
+    border-radius: 10px;
+    width: 275px;  /* Adjust width as necessary */
+}
+
+.rank-header {
+    font-weight: bold;
+    margin-bottom: 10px;
+	
+}
+
+.rank-subtext{
+	font-weight: bold;
+}
+
+.rank-row {
+    display: flex;
+    gap: 20px; /* Space between containers */
+}
+
+
+.rank-spotlight {
+    flex: 1;
+    background-color: #f0f0f0; /* Highlight background */
+}
+.rank-spotlight-image {
+    width: 200px;  /* or whatever width you want */
+    height: auto;  /* maintain aspect ratio */
+	justify-content: center;
+
+}
+.rank-regular-image {
+    width: 150px;  /* or whatever width you want */
+    height: auto;  /* maintain aspect ratio */
+	justify-content: center;
+
+}
+

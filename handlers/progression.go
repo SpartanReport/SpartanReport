@@ -7,7 +7,11 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"regexp"
+	"strconv"
+	"strings"
 	"sync"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -58,10 +62,11 @@ type CareerLadderResponse struct {
 }
 
 type ProgressionDataToSend struct {
-	HaloStats    HaloData
-	GamerInfo    requests.GamerInfo // Assuming GamerInfo is of type requests.GamerInfo
-	CareerTrack  RewardTrackResponse
-	CareerLadder CareerLadderResponse
+	HaloStats        HaloData
+	GamerInfo        requests.GamerInfo // Assuming GamerInfo is of type requests.GamerInfo
+	CareerTrack      RewardTrackResponse
+	CareerLadder     CareerLadderResponse
+	AdjustedAverages map[string]float64
 }
 
 func HandleProgression(c *gin.Context) {
@@ -71,25 +76,23 @@ func HandleProgression(c *gin.Context) {
 		return
 	}
 
-	/* Let's assume you want to fetch 500 matches for this example
-	targetMatchCount := 25
+	// Let's assume you want to fetch 500 matches for this example
+	targetMatchCount := 500
 	allHaloStats, err := GetProgression(gamerInfo, c, targetMatchCount)
 	if err != nil {
 		HandleError(c, err)
 		return
 	}
 	// Initialize an empty HaloData to store the merged results
-	// mergedHaloData := HaloData{}
-	// var mu sync.Mutex // Mutex for concurrent writes
+	mergedHaloData := HaloData{}
+	var mu sync.Mutex // Mutex for concurrent writes
 
 	if err != nil {
 		HandleError(c, err)
 		return
 	}
-	*/
 	var wg sync.WaitGroup
 
-	/* Loop through each batch of HaloData
 	for _, haloStats := range allHaloStats {
 		// Loop through the matches in each HaloData batch
 		for i := range haloStats.Results {
@@ -100,7 +103,7 @@ func HandleProgression(c *gin.Context) {
 				matchID := haloStats.Results[i].MatchId
 
 				// Fetch and format MatchInfo
-				fetchedMatch := GetMatchStats(c, gamerInfo.SpartanKey, matchID)
+				fetchedMatch, _ := GetMatchStats(c, gamerInfo.SpartanKey, matchID)
 				formattedMatch := formatMatchStats(gamerInfo.SpartanKey, fetchedMatch) // Assuming formatMatchStats returns Match
 				formattedMatch.MatchInfo = formatMatchTimes(formattedMatch.MatchInfo)  // Assuming formatMatchTimes returns MatchInfo
 				haloStats.Results[i].Match = formattedMatch
@@ -123,18 +126,28 @@ func HandleProgression(c *gin.Context) {
 			}(haloStats, i)
 		}
 	}
-	*/
 
 	wg.Wait() // Wait for all goroutines to complete
 	careerTrack := GetCareerStats(gamerInfo, c)
 	careerLadder := GetCareerLadder(gamerInfo, c)
 	careerTrack.CurrentProgress.TotalXPEarned = CalculateTotalXPGainedSoFar(careerLadder, careerTrack.CurrentProgress.Rank) + careerTrack.CurrentProgress.PartialProgress
 	GetCareerRankImage(careerLadder, &careerTrack, gamerInfo)
+
+	targetPlayerId := "xuid(" + gamerInfo.XUID + ")"
+	averages := calculateAveragePersonalScoreForPlaylists(mergedHaloData, targetPlayerId)
+
+	// Apply multipliers
+	adjustedAverages := applyMultiplierToScores(averages)
+	for playlist, avg := range adjustedAverages {
+		fmt.Printf("Average PersonalScore for playlist %s: %f\n", playlist, avg)
+	}
+
 	data := ProgressionDataToSend{
-		// HaloStats:    mergedHaloData,
-		GamerInfo:    gamerInfo,
-		CareerTrack:  careerTrack,
-		CareerLadder: careerLadder,
+		HaloStats:        mergedHaloData,
+		GamerInfo:        gamerInfo,
+		CareerTrack:      careerTrack,
+		CareerLadder:     careerLadder,
+		AdjustedAverages: adjustedAverages,
 	}
 	c.JSON(http.StatusOK, data)
 }
@@ -285,4 +298,106 @@ func GetCareerStats(gamerInfo requests.GamerInfo, c *gin.Context) RewardTrackRes
 	}
 
 	return careerTrack
+}
+
+func calculateAveragePersonalScoreForPlaylists(data HaloData, targetPlayerId string) map[string]float64 {
+	sums := make(map[string]int)
+	counts := make(map[string]int)
+	layoutInput := time.RFC3339Nano // Layout to parse the input time
+	averageDurations := make(map[string]time.Duration)
+	durationSums := make(map[string]time.Duration)
+	cutoffDate, err := time.Parse("01/02/2006", "06/20/2023")
+	if err != nil {
+		fmt.Println("Error parsing cutoff date:", err)
+		return map[string]float64{}
+	}
+	for _, result := range data.Results {
+		if !result.PresentAtEndOfMatch {
+			continue
+		}
+		// Parse the start time and check if it's before the cutoff date
+		startTime, err := time.Parse(layoutInput, result.Match.MatchInfo.StartTime)
+		if err != nil {
+			fmt.Println("Error parsing start time:", err)
+			continue
+		}
+
+		if startTime.Before(cutoffDate) {
+			continue
+		}
+
+		// Identify the playlist name
+		playlistName := result.Match.MatchInfo.PlaylistInfo.PublicName
+		// Parse duration
+		durationStr := result.Match.MatchInfo.Duration
+		re := regexp.MustCompile(`PT(\d+)M(\d+(\.\d+)?)S`)
+		matches := re.FindStringSubmatch(durationStr)
+		if matches == nil {
+			fmt.Println("Failed to parse Duration:", durationStr)
+			continue
+		}
+		minutes, _ := strconv.Atoi(matches[1])
+		seconds, _ := strconv.ParseFloat(matches[2], 64)
+		duration := time.Duration(minutes)*time.Minute + time.Duration(seconds*1e9)*time.Nanosecond
+
+		if _, exists := durationSums[playlistName]; !exists {
+			durationSums[playlistName] = 0
+		}
+		durationSums[playlistName] += duration
+
+		for _, player := range result.Match.Players {
+			if player.PlayerId != targetPlayerId {
+				continue
+			}
+
+			// Loop through the player's team stats to get the PersonalScore.
+			for _, teamStat := range player.PlayerTeamStats {
+				personalScore := teamStat.Stats.CoreStats.PersonalScore
+
+				if _, exists := sums[playlistName]; !exists {
+					sums[playlistName] = 0
+					counts[playlistName] = 0
+				}
+				sums[playlistName] += personalScore
+				counts[playlistName]++
+			}
+		}
+	}
+
+	// Calculate averages
+	averages := make(map[string]float64)
+	for playlist, sum := range sums {
+		averages[playlist] = float64(sum) / float64(counts[playlist])
+		averageDurations[playlist] = durationSums[playlist] / time.Duration(counts[playlist])
+		fmt.Printf("Average duration for playlist %s: %s\n", playlist, averageDurations[playlist])
+	}
+
+	return averages
+}
+
+func getPlaylistMultipliers() map[string]float64 {
+	return map[string]float64{
+		"Bot Bootcamp": 0.2,
+		// Add other playlist names and multipliers here
+	}
+}
+
+func applyMultiplierToScores(averages map[string]float64) map[string]float64 {
+	multipliers := getPlaylistMultipliers()
+	adjustedAverages := make(map[string]float64)
+
+	for playlist, average := range averages {
+		multiplier, exists := multipliers[playlist]
+		if !exists {
+			multiplier = 1.0 // Default multiplier
+		}
+
+		if strings.Contains(playlist, "BTB") {
+			multiplier = 1.8 // Special case for playlists with "BTB" in the title
+		}
+
+		adjustedAverages[playlist] = average * multiplier
+	}
+
+	return adjustedAverages
 }

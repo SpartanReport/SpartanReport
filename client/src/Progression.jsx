@@ -3,6 +3,7 @@ import axios from 'axios';
 import { Routes, Route, Link, useLocation } from 'react-router-dom'; // Import useLocation
 import MatchStats from './match-stats';
 import { useNavigate } from 'react-router-dom';
+import "./progression.css"
 
 const Progression = ({ gamerInfo ,HaloStats, setHaloStats, setSelectedMatch}) => {
     const [isLoading, setIsLoading] = useState(true);
@@ -10,6 +11,7 @@ const Progression = ({ gamerInfo ,HaloStats, setHaloStats, setSelectedMatch}) =>
     const location = useLocation(); // Get the current location
     const [careerTrack, setCareerTrack] = useState()
     const [careerLadder, setCareerLadder] = useState()
+    const [playlistMultipliers, setPlaylistMultipliers] = useState()
 
     
     useEffect(() => {
@@ -21,6 +23,7 @@ const Progression = ({ gamerInfo ,HaloStats, setHaloStats, setSelectedMatch}) =>
           console.log(response.data.CareerLadder)
           setCareerTrack(response.data.CareerTrack)
           setCareerLadder(response.data.CareerLadder)
+          setPlaylistMultipliers(response.data.AdjustedAverages)
 
           setHaloStats(response.data.HaloStats);
         } catch (error) {
@@ -53,7 +56,10 @@ const Progression = ({ gamerInfo ,HaloStats, setHaloStats, setSelectedMatch}) =>
     const partialProgress = careerTrack.CurrentProgress.PartialProgress;
     const xpRemaining = xpRequiredForNextRank - partialProgress;
 
-
+    const playlistMultiplierArray = Object.keys(playlistMultipliers).map(key => ({
+      name: key,
+      adjusted_xp: playlistMultipliers[key]
+  }));
     const getRankImageData = (rankIndex) => {
         if (rankIndex < careerTrack.CurrentProgress.Rank) {
             return careerTrack.CurrentProgress.PreviousRankIconData;
@@ -114,21 +120,39 @@ const Progression = ({ gamerInfo ,HaloStats, setHaloStats, setSelectedMatch}) =>
           </div>
         </div>
       </div>
-      <div className="card mb-5">
-      <div className="card-header">
-            < h1>Progression</h1>
+      <div className="row">
+
+        <div className="col-md-6">
+          <div className="card mb-5">
+              <div className="card-header">
+                < h1>Rank</h1>
+              </div>
+            <div className="rank-row">
+                {careerTrack.CurrentProgress.Rank-1 >= 0 && getRankContainer(careerTrack.CurrentProgress.Rank-1, false)}
+                {getRankContainer(careerTrack.CurrentProgress.Rank, true)}
+                {careerTrack.CurrentProgress.Rank+1 < careerLadder.Ranks.length && getRankContainer(careerTrack.CurrentProgress.Rank+1, false)}
+            </div>
+            <p>Total XP Gained So Far {careerTrack.CurrentProgress.TotalXPEarned}</p>
           </div>
-        <div className="rank-row">
-            {careerTrack.CurrentProgress.Rank-1 >= 0 && getRankContainer(careerTrack.CurrentProgress.Rank-1, false)}
-            {getRankContainer(careerTrack.CurrentProgress.Rank, true)}
-            {careerTrack.CurrentProgress.Rank+1 < careerLadder.Ranks.length && getRankContainer(careerTrack.CurrentProgress.Rank+1, false)}
         </div>
-        <p>Total XP Gained So Far {careerTrack.CurrentProgress.TotalXPEarned}</p>
-
- 
-
+        <div className="col-md-6">
+          <div className="card mb-5">
+              <div className="card-header">
+                < h1>Average XP Per Playlist</h1>
+              </div>
+              <div className="card-body">
+                {playlistMultiplierArray.map((playlistData, index) => (
+                  <div key={index}>
+                    <span>Name: {playlistData.name}, </span>
+                    <span>Adjusted XP: {playlistData.adjusted_xp}</span>
+                  </div>
+                  ))}
+              </div>
+          </div>
+        </div>
       </div>
-      {/* Match Stats 
+
+      
       <div className="card mb-5">
           <div className="card-header">
             < h1>Matches</h1>
@@ -160,7 +184,6 @@ const Progression = ({ gamerInfo ,HaloStats, setHaloStats, setSelectedMatch}) =>
             ))}
           </div>
       </div>
-            */}
       <Routes>
         <Route path="match/:matchId" element={<MatchStats HaloStats={HaloStats} gamerInfo={gamerInfo} />} />
       </Routes>

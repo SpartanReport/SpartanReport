@@ -56,7 +56,6 @@ type CoreStats struct {
 
 type Stats struct {
 	CoreStats CoreStats `json:"CoreStats"`
-	// ... other fields if needed
 }
 
 type Team struct {
@@ -74,7 +73,6 @@ type AssetDetailed struct {
 
 type ParticipationInfo struct {
 	FirstJoinedTime string `json:"FirstJoinedTime"`
-	// ... other fields
 }
 
 type PlayerTeamStats struct {
