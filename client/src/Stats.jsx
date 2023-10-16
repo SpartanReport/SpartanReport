@@ -3,6 +3,7 @@ import axios from 'axios';
 import { Routes, Route, Link, useLocation } from 'react-router-dom'; // Import useLocation
 import MatchStats from './match-stats';
 import { useNavigate } from 'react-router-dom';
+import "./stats.css"
 
 const Stats = ({ gamerInfo ,HaloStats, setHaloStats, setSelectedMatch}) => {
     const [isLoading, setIsLoading] = useState(true);

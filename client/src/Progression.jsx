@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Routes, Route, Link, useLocation } from 'react-router-dom'; // Import useLocation
-import MatchStats from './match-stats';
-import { useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom'; // Import useLocation
 import "./progression.css"
+import "./svgwave.css"
+import RankTable from './RankTable';
 
 const Progression = ({ gamerInfo ,HaloStats, setHaloStats, setSelectedMatch}) => {
     const [isLoading, setIsLoading] = useState(true);
-    const navigate = useNavigate();
     const location = useLocation(); // Get the current location
     const [careerTrack, setCareerTrack] = useState()
     const [careerLadder, setCareerLadder] = useState()
     const [playlistMultipliers, setPlaylistMultipliers] = useState()
+    const [playlistTimes, setPlaylistTimes] = useState()
+    const [rankImages, setRankImages] = useState([]); // New state variable for rank images
 
     
     useEffect(() => {
@@ -19,13 +20,21 @@ const Progression = ({ gamerInfo ,HaloStats, setHaloStats, setSelectedMatch}) =>
         try {
           // Use gamerInfo in the Axios POST request
           const response = await axios.post('http://localhost:8080/progression', gamerInfo);
-          console.log(response.data.CareerTrack)
-          console.log(response.data.CareerLadder)
+          console.log(response.data.AverageDurations)
+          console.log(response.data.HaloStats)
+          console.log(response.data.careerLadder)
+          console.log(response.data.RankImages)
+
+          setRankImages(response.data.RankImages);
+          console.log(response.data); // Log the rank images
+
+
           setCareerTrack(response.data.CareerTrack)
           setCareerLadder(response.data.CareerLadder)
           setPlaylistMultipliers(response.data.AdjustedAverages)
-
+          setPlaylistTimes(response.data.AverageDurations)
           setHaloStats(response.data.HaloStats);
+          
         } catch (error) {
           console.error("Error fetching Spartan inventory:", error);
         }
@@ -60,14 +69,15 @@ const Progression = ({ gamerInfo ,HaloStats, setHaloStats, setSelectedMatch}) =>
       name: key,
       adjusted_xp: playlistMultipliers[key]
   }));
-    const getRankImageData = (rankIndex) => {
-        if (rankIndex < careerTrack.CurrentProgress.Rank) {
-            return careerTrack.CurrentProgress.PreviousRankIconData;
-        } else if (rankIndex > careerTrack.CurrentProgress.Rank) {
-            return careerTrack.CurrentProgress.NextRankIconData;
-        }
-        return careerTrack.CurrentProgress.RankIconData;
-    };
+  console.log(careerLadder)
+
+  const getRankImageData = (rankIndex) => {
+    // Look up the rank image in the rankImages array
+    const rankImage = rankImages[rankIndex].Image
+    console.log("Rank Image: ", rankImage)
+    return rankImage
+};
+    
     
     const getRankContainer = (rankIndex, isSpotlight) => {
         const rankIconData = getRankImageData(rankIndex);
@@ -107,88 +117,78 @@ const Progression = ({ gamerInfo ,HaloStats, setHaloStats, setSelectedMatch}) =>
         );
     };
     
-  return (
-    <div>
-      {/* Gamer Info Card */}
-      <div className="card mb-5">
-        <div className="card-body">
-          <h5 className="card-title">{gamerInfo.gamertag}</h5>
-          <div className="row align-items-center"> {/* Bootstrap row and alignment class */}
-            <div className="col-3"> {/* Bootstrap column class */}
-              <img src={gamerInfo.gamerpic.medium} alt="Medium Gamerpic" className="rounded" />
+    return (
+      <div className="relative-container">
+
+        <div className="flex-row">
+          <div className="flex-col">
+            <div className="card mb-5 rank-card" style={{height: '70vh'}}>
+              <div className="card-header">
+                  <h1>Rank</h1>
+              </div>
+              <div className="rank-row">
+                  {getRankContainer(careerTrack.CurrentProgress.Rank, true)}
+                  {careerTrack.CurrentProgress.Rank+1 < careerLadder.Ranks.length && getRankContainer(careerTrack.CurrentProgress.Rank+1, false)}
+              </div>
+              <p>Total XP Gained So Far {careerTrack.CurrentProgress.TotalXPEarned}</p>
             </div>
           </div>
-        </div>
-      </div>
-      <div className="row">
-
-        <div className="col-md-6">
+          <div className="flex-col">
           <div className="card mb-5">
-              <div className="card-header">
-                < h1>Rank</h1>
-              </div>
-            <div className="rank-row">
-                {careerTrack.CurrentProgress.Rank-1 >= 0 && getRankContainer(careerTrack.CurrentProgress.Rank-1, false)}
-                {getRankContainer(careerTrack.CurrentProgress.Rank, true)}
-                {careerTrack.CurrentProgress.Rank+1 < careerLadder.Ranks.length && getRankContainer(careerTrack.CurrentProgress.Rank+1, false)}
-            </div>
-            <p>Total XP Gained So Far {careerTrack.CurrentProgress.TotalXPEarned}</p>
-          </div>
-        </div>
-        <div className="col-md-6">
-          <div className="card mb-5">
-              <div className="card-header">
-                < h1>Average XP Per Playlist</h1>
-              </div>
-              <div className="card-body">
-                {playlistMultiplierArray.map((playlistData, index) => (
-                  <div key={index}>
-                    <span>Name: {playlistData.name}, </span>
-                    <span>Adjusted XP: {playlistData.adjusted_xp}</span>
-                  </div>
-                  ))}
-              </div>
-          </div>
-        </div>
-      </div>
-
-      
-      <div className="card mb-5">
           <div className="card-header">
-            < h1>Matches</h1>
+              <h1>Averages Per Playlist</h1>
           </div>
-          <div className="matches">
-            {HaloStats.Results.map((result, index) => (
-              <Link 
-              key={result.MatchId} 
-              to={`/match/${result.MatchId}`}
-              onClick={() => {
-                setSelectedMatch(result.Match);
-                navigate(`/match/${result.Match.MatchId}`);
-              }}
-              className="match-link">
-              <div className="match" >
-                <img src={result.Match.MatchInfo.MapImagePath} alt="Map" className="match-img" />
-                  <div className="info-col">
-                    <p className="map-name">{result.Match.MatchInfo.PublicName}</p>
-                    <p className="playlist">{result.Match.MatchInfo.PlaylistInfo.PublicName}</p>
-                  </div>
-                  <div className="time-col">
-                    <p>End Time: {result.Match.MatchInfo.FormattedEndTime}</p>
-                    <p>Start Time: {result.Match.MatchInfo.FormattedStartTime}</p>
-                  </div>
-                  {HaloStats.Results[index].PresentAtEndOfMatch ? '' : 'Left Match Early :('}
-                </div>
+          <div className="card-body playlist-card-body">
+                    <table className="xp-table">
+                  <thead>
+                      <tr>
+                          <th>Playlist</th>
+                          <th><i className="xp-icon"></i></th>
+                          <th><i className="time-icon"></i></th>
+                          <th><i className="rate-icon"></i></th>
+                      </tr>
+                  </thead>
+                  <tbody>
+                  {playlistMultiplierArray
+                      .map((playlistData, index) => {
+                        const playlistTimeInMinutes = parseInt(playlistTimes[playlistData.name].split(':')[0]) + parseInt(playlistTimes[playlistData.name].split(':')[1]) / 60;
+                        const xpPerMinute = playlistData.adjusted_xp / playlistTimeInMinutes;
+                          return {
+                              ...playlistData,
+                              xpPerMinute: isNaN(xpPerMinute) ? 0.00 : xpPerMinute
+                          };
+                      })
 
-              </Link>
-            ))}
+
+                      .sort((a, b) => b.xpPerMinute - a.xpPerMinute)
+                      .map((playlistData, index) => (
+                          <tr key={index}>
+                              <td>{playlistData.name}</td>
+                              <td>{parseInt(playlistData.adjusted_xp)}</td>
+                              <td>{playlistTimes[playlistData.name]} Min</td>
+                              <td>{playlistData.xpPerMinute.toFixed(2)}</td>
+                          </tr>
+                      ))}
+                  </tbody>
+              </table>
           </div>
+        </div>
+          </div>
+        </div>
+        <div className="card mb-5">
+          <div className="card-header">
+            <h1>Ranks</h1>
+          </div>
+          <div>
+            <RankTable
+              rankImages={rankImages}
+              careerLadder={careerLadder}
+            />
+          </div>
+        </div>
       </div>
-      <Routes>
-        <Route path="match/:matchId" element={<MatchStats HaloStats={HaloStats} gamerInfo={gamerInfo} />} />
-      </Routes>
-    </div>
-  );
+    );
+    
 };
 
 export default Progression;

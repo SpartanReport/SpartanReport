@@ -47,6 +47,8 @@ type Theme struct {
 	StatTrackerPath             string      `json:"StatTrackerPath,omitempty"`
 	WeaponCharmPath             string      `json:"WeaponCharmPath,omitempty"`
 	AlternateGeometryRegionPath string      `json:"AlternateGeometryRegionPath,omitempty"`
+	ModelPath                   string      `json:"ModelPath"`
+	ColorPath                   string      `json:"ColorPath"`
 }
 type Core struct {
 	CorePath   string  `json:"CorePath"`
@@ -85,7 +87,9 @@ type WeaponCores struct {
 }
 
 type AiCores struct {
-	AiCores []Core `json:"AiCores"`
+	AiCores   []Core `json:"AiCores"`
+	ModelPath string `json:"ModelPath"`
+	ColorPath string `json:"ColorPath"`
 }
 
 type VehicleCores struct {

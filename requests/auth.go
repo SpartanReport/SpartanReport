@@ -5,7 +5,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
+	"os"
+
+	"github.com/joho/godotenv"
 )
 
 type OAuthResponse struct {
@@ -97,11 +101,21 @@ func ProcessAuthCode(code string, w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Received authorization code:", code)
 
 	// Make the OAuth request
-	body := RequestOAuth("4267a656-30e6-4027-a973-edf079a6b52b", "5HM8Q~DtSXdaDnvcBVxaFWvpfr9Wi9y8dtgLLc1p", "http://localhost:8080/callback", code)
+	// Load environment variables from .env file
+	err := godotenv.Load("azure-keys.env")
+	if err != nil {
+		log.Fatal("Error loading .env file", err)
+	}
+
+	clientID := os.Getenv("CLIENT_ID")
+	clientSecret := os.Getenv("CLIENT_SECRET")
+	redirectURI := os.Getenv("REDIRECT_URI")
+
+	body := RequestOAuth(clientID, clientSecret, redirectURI, code)
 
 	// Parse the OAuth response
 	var oauthResp OAuthResponse
-	err := json.Unmarshal(body, &oauthResp)
+	err = json.Unmarshal(body, &oauthResp)
 
 	if err != nil {
 		fmt.Println("Error parsing JSON:", err)

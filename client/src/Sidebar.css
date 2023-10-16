@@ -12,7 +12,7 @@
     color: #fff;
     padding: 10px;  /* Adjust padding as necessary */
     position: fixed;
-    top: 0;
+    bottom: 0;
     left: 210px;  /* Adjust left position to match the width of your sidebar */
     right: 0;
     z-index: 1000;  /* Ensure the header stays on top */
@@ -45,8 +45,7 @@
 }
 #page-content-wrapper {
     margin-left: 213px;  /* This will add space for the sidebar */
-    padding-top: 60px;  /* New padding to create space for the top bar, adjust as necessary */
-
+    margin-right: 0px;
 }
 
 

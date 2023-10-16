@@ -4,7 +4,14 @@ body {
 	padding: 0;
     background-color: #18183C;
 	position: relative; /* New: Relative positioning for body */
+	width: 100%;
+
 }
+#page-content-wrapper {
+	flex-grow: 1;
+	overflow: auto;  /* in case the content gets too long */
+  }
+
 html {
 	background-color: #0D1D33;
 	background-size: cover; /* This will cover the entire viewport */

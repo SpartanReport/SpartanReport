@@ -1,12 +1,19 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"halotestapp/db"
 	halotestapp "halotestapp/handlers"
+	"log"
+	"time"
 
 	"github.com/gin-gonic/gin"
-	nrgin "github.com/newrelic/go-agent/v3/integrations/nrgin"
+	"github.com/newrelic/go-agent/v3/integrations/nrgin"
 	"github.com/newrelic/go-agent/v3/newrelic"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func main() {
@@ -17,6 +24,33 @@ func main() {
 	)
 	if err != nil {
 		fmt.Println("Error with NR!")
+	}
+
+	// Initialize MongoDB Client
+	db.MongoClient, err = mongo.NewClient(options.Client().ApplyURI("mongodb://localhost:27017"))
+
+	if err != nil {
+		fmt.Println("Error creating MongoDB client:", err)
+		return
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	err = db.MongoClient.Connect(ctx)
+	if err != nil {
+		fmt.Println("Error connecting to MongoDB:", err)
+		return
+	}
+	// You do not need to create the rank_images collection explicitly,
+	// as MongoDB will create it once you start inserting data.
+	// However, if you want to create it explicitly, you can do so like this:
+	err = db.StoreData("rank_images", bson.M{"init": true})
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.MongoClient.Disconnect(ctx)
+
+	if err != nil {
+		fmt.Println("Error creating index:", err)
 	}
 	r := gin.Default()
 	r.Use(nrgin.Middleware(app))

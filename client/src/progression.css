@@ -5,18 +5,50 @@
 	margin-bottom: 10px;
 
 }
+.rank-image, .rank-regular-image, .rank-spotlight-image {
+    margin: 0 auto;
+  }
 
 .rank-container {
+      background-color: #f8f8f8;
+  border: 1px solid #e0e0e0;
+  transition: transform .3s;
+    padding: 20px;
 	padding-left:10px;
     display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
-    border: 1px solid #ccc;
-    
     padding: 20px;
     border-radius: 10px;
     width: 275px;  /* Adjust width as necessary */
+    flex-shrink: 0; /* Prevents resizing */
+}
+.rank-container:hover {
+    transform: scale(1.05);
+  }
+.playlist-card-body {
+    padding: 10px;
+    max-height: calc(70vh - 50px);
+    overflow-y: auto;
+}
+
+
+.playlist-card-body::-webkit-scrollbar {
+    width: 8px;
+}
+
+.playlist-card-body::-webkit-scrollbar-thumb {
+    background-color: #888;
+    border-radius: 4px;
+}
+
+.playlist-card-body::-webkit-scrollbar-thumb:hover {
+    background-color: #555;
+}
+
+.playlist-card-body::-webkit-scrollbar-track {
+    background-color: #f7f7f7;
 }
 
 .rank-header {
@@ -31,6 +63,8 @@
 
 .rank-row {
     display: flex;
+    padding: 10px 15px 20px 25px; /* top, right, bottom, left */
+
     gap: 20px; /* Space between containers */
 }
 
@@ -52,3 +86,129 @@
 
 }
 
+
+.custom-shape {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    line-height: 0;
+    
+}
+
+.custom-shape svg {
+    position: relative;
+    display: block;
+    width: calc(100% + 1.3px);
+    height: 54px;
+}
+
+.custom-shape .shape-fill {
+    fill: #F68B3A;
+}
+.card{
+    margin-top: 70px; /* or another value to create space above the cards */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    border-radius: 10px;
+
+}
+.card-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;  /* To ensure it stays above the other content */
+      color: #333;
+  font-size: 28px;
+    border-radius: 10px 10px 0 0;
+    background: linear-gradient(to right, #f0f0f0, #f8f8f8);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+.card-body{
+    padding: 0; /* Remove the padding */
+}
+
+.grid-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Creates two equally sized columns */
+    grid-gap: 20px; /* Adds space between grid items */
+    padding: 20px; /* Adds padding around the grid container */
+}
+
+.flex-row {
+      margin-bottom: 20px; /* To separate from the ranks card */
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+  }
+  
+  .flex-col {
+    flex: 1;
+    margin: 0 10px;  /* Optional: for some spacing between the columns */
+  }
+
+  /* Additions to your styles.css */
+  .xp-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 8px;
+}
+
+.xp-table tbody tr:nth-child(odd) {
+    background-color: #f7f7f7;
+}
+
+.xp-table tbody tr:hover {
+    background-color: #e0e0e0;
+    transform: scale(1.01);
+    transition: transform 0.2s;
+}
+
+
+.xp-table thead th {
+    padding: 12px 10px;
+    background-color: #ddd;
+    border: none;
+    font-weight: 600;
+}
+
+.xp-table tbody tr:hover {
+    background-color: #F5F5F5;
+}
+
+.xp-table td, .xp-table th {
+    padding: 8px;
+    text-align: center;
+}
+
+/* Icons (you can use real icons, these are placeholders) */
+.xp-icon, .time-icon, .rate-icon {
+    vertical-align: middle;
+    margin-right: 5px;
+}
+
+
+
+.xp-icon::before {
+    content: "XP";
+}
+
+.time-icon::before {
+    content: "Min";
+}
+
+.rate-icon::before {
+    content: "XP/min";
+}
+
+.progress-bar {
+    height: 5px;
+    background-color: #F68B3A;
+    transition: width 0.3s;
+}
+
+.relative-container {
+    background-color: #0D1D33;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+    border-radius: 10px;
+    overflow: hidden;
+  }

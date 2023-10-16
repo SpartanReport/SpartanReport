@@ -1,0 +1,45 @@
+@keyframes moveWave1 {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(200px); /* Shift by 200 pixels */
+    }
+  }
+  @keyframes moveWave2 {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-200px); /* Shift by 200 pixels */
+    }
+  }
+  
+  .wave {
+    animation: moveWave1 20s ease-in-out infinite alternate; /* 10s duration */
+  }
+  
+  .wave2 {
+    animation: moveWave2 32s ease-in-out infinite alternate; /* 12s duration */
+  }
+  
+
+  .custom-shape {
+    position: relative;
+    top: 0;
+    left: 0;
+    width: 100%;
+    line-height: 0;
+    
+}
+
+.custom-shape svg {
+    position: relative;
+    display: block;
+    width: calc(100% + 1.3px);
+    height: 54px;
+}
+
+.custom-shape .shape-fill {
+    fill: #F68B3A;
+}

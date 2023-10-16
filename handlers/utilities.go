@@ -13,7 +13,6 @@ func makeAPIRequest(spartanToken, url string, hdrs map[string]string, responseSt
 	if err != nil {
 		return fmt.Errorf("Failed to create request: %v", err)
 	}
-
 	req.Header.Set("X-343-Authorization-Spartan", spartanToken)
 	req.Header.Set("Accept", "application/json")
 
@@ -29,7 +28,7 @@ func makeAPIRequest(spartanToken, url string, hdrs map[string]string, responseSt
 
 	if resp.StatusCode != http.StatusOK {
 		bodyBytes, _ := ioutil.ReadAll(resp.Body)
-		return fmt.Errorf("Received a non-OK status code %d. Response body: %s", resp.StatusCode, string(bodyBytes))
+		return fmt.Errorf("Received a non-OK status code %d. Response body: %s url: %s, headers: %s", resp.StatusCode, string(bodyBytes), url, hdrs)
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
