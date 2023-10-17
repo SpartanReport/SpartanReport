@@ -7,6 +7,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -15,8 +16,16 @@ type ISO8601Date struct {
 	ISO8601Date string `json:"ISO8601Date"`
 }
 
+type EmblemInfo struct {
+	EmblemCmsPath      string `json:"emblemCmsPath"`
+	NameplateCmsPath   string `json:"nameplateCmsPath"`
+	TextColor          string `json:"textColor"`
+	EmblemImageData    []byte `json:"EmblemImageData,omitempty"`
+	NameplateImageData []byte `json:"NameplateImageData,omitempty"`
+}
+
 type Emblem struct {
-	Path            string `json:"Path"`
+	EmblemPath      string `json:"EmblemPath"`
 	LocationId      int    `json:"LocationId"`
 	ConfigurationId int    `json:"ConfigurationId"`
 }
@@ -104,6 +113,7 @@ type SpartanInventory struct {
 	AiCores      AiCores      `json:"AiCores"`
 	VehicleCores VehicleCores `json:"VehicleCores"`
 	CoreDetails  CoreDetails  `json:"CoreDetails,omitempty"`
+	EmblemInfo   EmblemInfo   `json:"EmblemInfo"`
 }
 
 type PlayerCustomization struct {
@@ -197,6 +207,43 @@ func GetInventory(c *gin.Context, gamerInfo requests.GamerInfo) SpartanInventory
 
 	if len(inventoryResponse.PlayerCustomizations) > 0 {
 		FetchCoreDetails(&inventoryResponse.PlayerCustomizations[0].Result, gamerInfo)
+		var rawResponse map[string]interface{}
+
+		if err := makeAPIRequest(gamerInfo.SpartanKey, "https://gamecms-hacs.svc.halowaypoint.com/hi/Waypoint/file/images/emblems/mapping.json", nil, &rawResponse); err != nil {
+			fmt.Println(err)
+		}
+		configID := inventoryResponse.PlayerCustomizations[0].Result.Appearance.Emblem.ConfigurationId
+		fmt.Println("Emblem: ", inventoryResponse.PlayerCustomizations[0].Result.Appearance.Emblem)
+		fmt.Println("Emblem ConfigID: ")
+
+		emblemPath := inventoryResponse.PlayerCustomizations[0].Result.Appearance.Emblem.EmblemPath
+		parts := strings.Split(emblemPath, "/")
+		targetPart := parts[len(parts)-1]
+		targetPart = strings.TrimSuffix(targetPart, ".json")
+
+		fmt.Println("Extracted part:", targetPart)
+		emblemData := rawResponse[targetPart].(map[string]interface{})
+		configData := emblemData[fmt.Sprint(configID)]
+
+		configDataBytes, err := json.Marshal(configData)
+		if err != nil {
+			fmt.Println("Error marshaling config data:", err)
+		}
+
+		var emblem EmblemInfo
+		if err := json.Unmarshal(configDataBytes, &emblem); err != nil {
+			fmt.Println("Error unmarshaling into EmblemInfo:", err)
+		}
+
+		fmt.Println("EmblemInfo:", emblem)
+		emblemPngPath := "https://gamecms-hacs.svc.halowaypoint.com/hi/Waypoint/file/" + emblem.EmblemCmsPath
+		nameplatePngPath := "https://gamecms-hacs.svc.halowaypoint.com/hi/Waypoint/file/" + emblem.NameplateCmsPath
+		fmt.Println("Urls:", emblemPngPath)
+		fmt.Println("Urls:", nameplatePngPath)
+		emblem.EmblemImageData = FetchImageData(emblemPngPath, gamerInfo)
+		emblem.NameplateImageData = FetchImageData(nameplatePngPath, gamerInfo)
+
+		inventoryResponse.PlayerCustomizations[0].Result.EmblemInfo = emblem
 		return inventoryResponse.PlayerCustomizations[0].Result
 	}
 
@@ -241,7 +288,8 @@ func FetchCoreDetails(spartanInventory *SpartanInventory, gamerInfo requests.Gam
 	}
 	details := ParseCoreDetails(body)
 	// Add image data to details
-	details.CommonData.ImageData = FetchImageData(details.CommonData.DisplayPath.Media.MediaUrl.Path, gamerInfo)
+	url = "https://gamecms-hacs.svc.halowaypoint.com/hi/images/file/" + details.CommonData.DisplayPath.Media.MediaUrl.Path
+	details.CommonData.ImageData = FetchImageData(url, gamerInfo)
 	spartanInventory.CoreDetails = details
 
 }
@@ -257,8 +305,7 @@ func ParseCoreDetails(responseBody []byte) CoreDetails {
 	return details
 }
 
-func FetchImageData(imagePath string, gamerInfo requests.GamerInfo) []byte {
-	imageURL := "https://gamecms-hacs.svc.halowaypoint.com/hi/images/file/" + imagePath
+func FetchImageData(imageURL string, gamerInfo requests.GamerInfo) []byte {
 	hdrs := http.Header{}
 	hdrs.Set("X-343-Authorization-Spartan", gamerInfo.SpartanKey)
 	client := &http.Client{}

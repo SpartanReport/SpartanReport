@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import useFetchSpartanInventory from './useFetchSpartanInventory';
+import "./styles.css"
 
 // Include gamerInfo in the function signature
 const Spartan = ({ gamerInfo}) => {
@@ -30,6 +31,14 @@ const Spartan = ({ gamerInfo}) => {
   const coreDetails = spartanInventory.CoreDetails;
   const base64ImageData = spartanInventory.CoreDetails.CommonData.ImageData;
   const imageSrc = `data:image/png;base64,${base64ImageData}`;
+
+
+  const base64emblemData = spartanInventory.EmblemInfo.EmblemImageData;
+  const emblemSrc = `data:image/png;base64,${base64emblemData}`;
+
+  const base64nameplatedata = spartanInventory.EmblemInfo.NameplateImageData;
+  const nameplateSrc = `data:image/png;base64,${base64nameplatedata}`;
+
   return (
     <div className="card">
       <div className="card-header">
@@ -41,6 +50,11 @@ const Spartan = ({ gamerInfo}) => {
           <p>Title: {coreDetails.CommonData.Title.value}</p>
           <p>Description: {coreDetails.CommonData.Description.value}</p>
           <img src={imageSrc} alt="Spartan Core" />
+          <div className="image-container">
+            <img className="base-image" src={nameplateSrc} alt="Spartan Core" />
+            <img className="overlay-image" src={emblemSrc} alt="Spartan Emblem" />
+          </div>
+
         </div>
       <div className="card-body">
         <h2 className="card-title">Current Spartan Armor</h2>      <ul>

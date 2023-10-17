@@ -1,0 +1,41 @@
+.image-container {
+	position: relative;
+	width: 288px;
+	right: 75%;
+	overflow: hidden; 
+  }
+  
+  .base-image {
+	width: 100%; 
+	height: auto; 
+	display: block;
+  }
+  
+  .overlay-image {
+	position: absolute;
+	width: 52.5px; 
+	height: 52.5px; 
+	top: 50%; 
+	left: 10%;
+	transform: translate(-50%, -50%);
+  }
+  .gamertag {
+	position: absolute;
+	font-size:18px;
+	width: 100%; 
+	text-align: center; 
+	right: 4%;
+	top: 35%;  /* Position the top edge of the text element at the middle of the container */
+	transform: translateY(-50%); /* Vertically center the text within its container */
+	color: #ffffff; /* Set to white for now; adjust based on your design */
+}
+.header-wrapper {
+    display: flex;              /* Make this a flex container */
+    align-items: flex-end;      /* Align children to the bottom */
+    justify-content: flex-end;  /* Align children to the right */
+    width: 100%;                /* Take up full width */
+    position: relative;         /* Establishes a positioning context for absolutely positioned children */
+}
+
+
+
