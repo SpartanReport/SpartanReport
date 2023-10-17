@@ -8,11 +8,21 @@
 .rank-image, .rank-regular-image, .rank-spotlight-image {
     margin: 0 auto;
   }
+.rank-card{
+    max-width: 600px;  /* or whatever maximum width you want */
+    height: 70vh;      /* your existing height setting */
+}
+.playlist-card{
+    max-width: 600px;  /* or whatever maximum width you want */
+    height: 70vh;      /* your existing height setting */
+}
+
+
 
 .rank-container {
-      background-color: #f8f8f8;
-  border: 1px solid #e0e0e0;
-  transition: transform .3s;
+    background-color: #f8f8f8;
+    border: 1px solid #e0e0e0;
+    transition: transform .3s;
     padding: 20px;
 	padding-left:10px;
     display: flex;
@@ -31,6 +41,7 @@
     padding: 10px;
     max-height: calc(70vh - 50px);
     overflow-y: auto;
+    
 }
 
 
@@ -127,6 +138,7 @@
     padding: 0; /* Remove the padding */
 }
 
+
 .grid-container {
     display: grid;
     grid-template-columns: 1fr 1fr; /* Creates two equally sized columns */
@@ -149,6 +161,7 @@
   /* Additions to your styles.css */
   .xp-table {
     width: 100%;
+    
     border-collapse: separate;
     border-spacing: 0 8px;
 }
@@ -212,3 +225,45 @@
     border-radius: 10px;
     overflow: hidden;
   }
+  .RankTable {
+    max-height: auto;
+    overflow-y: auto; 
+    transition: transform 0.3s;
+    overflow-x: hidden;
+}
+
+@media (max-width: 400px) {
+    .RankTable {
+        transform: scale(0.8);
+    }
+}
+
+
+.grid-container {
+    display: grid;
+    grid-template-rows: auto auto;
+    grid-template-columns: 1fr 1fr;
+  }
+  
+  .grid-col {
+    /* Your column styles */
+  }
+  
+  .grid-row-full {
+    grid-column: 1 / -1;
+  }
+  
+  /* Responsive layout */
+  @media (max-width: 900px) { /* Adjust 768px to your needs */
+    .grid-container {
+      grid-template-columns: 1fr;  /* One column */
+    }
+    .grid-col, .grid-row-full {
+      grid-column: 1 / -1;  /* Span the full width */
+    }
+  }
+  
+  .rank-table-outer-container {
+    margin: auto;      /* centers the table in the grid cell */
+  }
+  

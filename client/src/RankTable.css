@@ -1,54 +1,68 @@
-.rank-images-table {
-    width: 100%;
-    border-collapse: collapse;
-    position: relative;
+
+.hover-content {
+    display: none;
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 100;
+    top: 105%; /* This will position the tooltip just below its parent container */
+    transition: opacity 0.7s ease;
+    opacity: 0;
 }
 
-.rank-images-table th,
-.rank-images-table td {
-    border: 1px solid #ddd;
-    text-align: left;
-    padding: 8px;
-    font-size: 12px;
-    position: relative; /* Add this line */
-    height: 50px; /* Add this line */
-    width: 50px; /* Add this line */
+.first-column-content {
+    transform: translateX(15%);
+
+    
+}
+
+/* For the last column's tooltip */
+.last-column-content {
+    transform: translateX(-100%);
+
+    left: 40%;   /* This will position the tooltip towards the left of the cell */
 }
 
 .rank-image {
-    max-width: 60px;
-    max-height: 80px;
-    
-    width: auto;
-    height: auto;
+    max-width: 50px;
+    max-height: 70px;
+    background-color: #F0F0F0; /* Sets background to gray */
+    border-radius: 10px; /* for rounded corners */
+    transition: transform .3s; /* hover effect */
 }
+.rank-image:hover {
+    transform: scale(1.05); /* zoom in a bit on hover */
+}
+
 .tooltip-header {
     font-weight: bold;
-    font-size: 1.2em;
-    padding: 5px 0;
+    font-size: 1em;
+    padding: 3px 0;
     border-bottom: 1px solid #ccc;
-    margin-bottom: 10px;
+    margin-bottom: 5px;
     text-align: center;
 }
 
 
 .card-tooltip {
     border: 1px solid #000000;
-    border-radius: 5px;
+    border-radius: 10px; /* bigger rounded corners */
     padding: 10px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-    background: #ffffff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* softer shadow */
+    background: #f8f8f8; /* light background */
 }
+
 
 .skipped-ranks-container {
     display: flex;
     justify-content: space-between;
-    margin: 10px 0;
+    margin: 5px 0;
 }
 
 .skipped-rank-image {
-    width: 60px; /* adjust as needed */
-    height: 80px; /* adjust as needed */
+    width: 40px; /* adjust as needed */
+    height: 60px; /* adjust as needed */
 }
 
 .color-label {
@@ -63,24 +77,81 @@
     padding: 10px;
     border-radius: 5px;
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
-    bottom: 0%; /* Position it above the table cell */
-    top: 150%; /* Position it below the table cell */
-    transform: translateX(-50%); /* Adjust for centering */
-
+    top: 100%; /* This will position the tooltip just below its parent container */
     white-space: nowrap; /* To prevent the tooltip from breaking into multiple lines */
 }
 
 
-.hover-content {
-    display: none;
-    position: absolute;
-    top: -10px;  /* Adjust this value based on your needs */
-    left: 50%;  /* Center it horizontally */
-    transform: translateX(-50%); /* Adjust for centering */
-    z-index: 100;  /* Make sure it's above everything else */
+
+
+.current-rank {
+    background-color: red;  /* Highlight with a gold color for example */
+    transition: background-color 0.3s ease; /* Smooth transition */
 }
+
 
 /* Show when parent container is hovered */
 .tooltip-container:hover .hover-content {
-    display: block; /* or flex or grid, depending on your design */
+    display: block;
+    opacity: 1;
+}
+
+.rankTableContainer {
+    background-color: #f8f8f8; /* light background */
+    border: 1px solid #e0e0e0; /* light border */
+    border-radius: 10px; /* rounded corners */
+    transition: transform .3s; /* hover effect */
+    padding: 20px; /* inner spacing */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* shadow for depth */
+    margin-top: 70px; 
+    max-width: 1200px;
+    margin: auto;
+    text-align: center; /* centered text */
+}
+.rankTableContainer:hover {
+    transform: scale(1.05); /* zoom in a bit on hover */
+}
+
+
+.rankCategory {
+    background-color: #f8f8f8; /* light background */
+    margin: 10px;
+    padding: 20px; /* more padding for spaciousness */
+    border-radius: 10px; /* rounded corners */
+    border: 1px solid #e0e0e0; /* light border */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* shadow for depth */
+    transition: transform .3s; /* hover effect */
+}
+.rankCategory:hover {
+    transform: scale(1.05); /* zoom in a bit on hover */
+}
+
+
+
+
+.rank-images-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 1px;
+}
+
+.row-title-header {
+    text-align: center;
+    font-weight: bold;
+    font-size: 24px !important;
+    padding: 10px;
+}
+
+.rank-images-table td:hover {
+    background-color: #f5f5f5;
+    cursor: pointer;
+}
+
+.rank-images-table th,
+.rank-images-table td {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* shadow for depth */
+    border-radius: 10px; 
+    
+    font-size: 10px;
+    position: relative;
 }

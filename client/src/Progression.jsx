@@ -115,79 +115,78 @@ const Progression = ({ gamerInfo ,HaloStats, setHaloStats, setSelectedMatch}) =>
                 ) : ""}
             </div>
         );
-    };
+    }; 
     
     return (
-      <div className="relative-container">
-
-        <div className="flex-row">
-          <div className="flex-col">
+      <div className="grid-container">
+      
+          <div className="grid-col">
             <div className="card mb-5 rank-card" style={{height: '70vh'}}>
               <div className="card-header">
-                  <h1>Rank</h1>
+                <h1>Rank</h1>
               </div>
               <div className="rank-row">
-                  {getRankContainer(careerTrack.CurrentProgress.Rank, true)}
-                  {careerTrack.CurrentProgress.Rank+1 < careerLadder.Ranks.length && getRankContainer(careerTrack.CurrentProgress.Rank+1, false)}
+                {getRankContainer(careerTrack.CurrentProgress.Rank, true)}
+                {careerTrack.CurrentProgress.Rank+1 < careerLadder.Ranks.length && getRankContainer(careerTrack.CurrentProgress.Rank+1, false)}
               </div>
-              <p>Total XP Gained So Far {careerTrack.CurrentProgress.TotalXPEarned}</p>
+              <p>Road to Hero is {(Math.floor((careerTrack.CurrentProgress.TotalXPEarned / 9319351) * 10000) / 100).toFixed(2)}% complete!</p>
             </div>
           </div>
-          <div className="flex-col">
-          <div className="card mb-5">
-          <div className="card-header">
-              <h1>Averages Per Playlist</h1>
-          </div>
-          <div className="card-body playlist-card-body">
-                    <table className="xp-table">
+    
+          <div className="grid-col">
+            <div className="card mb-5 playlist-card">
+              <div className="card-header">
+                <h1>Averages Per Playlist</h1>
+              </div>
+              <div className="card-body playlist-card-body">
+                <table className="xp-table">
                   <thead>
-                      <tr>
-                          <th>Playlist</th>
-                          <th><i className="xp-icon"></i></th>
-                          <th><i className="time-icon"></i></th>
-                          <th><i className="rate-icon"></i></th>
-                      </tr>
+                    <tr>
+                      <th>Playlist</th>
+                      <th><i className="xp-icon"></i></th>
+                      <th><i className="time-icon"></i></th>
+                      <th><i className="rate-icon"></i></th>
+                    </tr>
                   </thead>
                   <tbody>
-                  {playlistMultiplierArray
+                    {playlistMultiplierArray
                       .map((playlistData, index) => {
                         const playlistTimeInMinutes = parseInt(playlistTimes[playlistData.name].split(':')[0]) + parseInt(playlistTimes[playlistData.name].split(':')[1]) / 60;
                         const xpPerMinute = playlistData.adjusted_xp / playlistTimeInMinutes;
-                          return {
-                              ...playlistData,
-                              xpPerMinute: isNaN(xpPerMinute) ? 0.00 : xpPerMinute
-                          };
+                        return {
+                          ...playlistData,
+                          xpPerMinute: isNaN(xpPerMinute) ? 0.00 : xpPerMinute
+                        };
                       })
-
-
                       .sort((a, b) => b.xpPerMinute - a.xpPerMinute)
                       .map((playlistData, index) => (
-                          <tr key={index}>
-                              <td>{playlistData.name}</td>
-                              <td>{parseInt(playlistData.adjusted_xp)}</td>
-                              <td>{playlistTimes[playlistData.name]} Min</td>
-                              <td>{playlistData.xpPerMinute.toFixed(2)}</td>
-                          </tr>
+                        <tr key={index}>
+                          <td>{playlistData.name}</td>
+                          <td>{parseInt(playlistData.adjusted_xp)}</td>
+                          <td>{playlistTimes[playlistData.name]} Min</td>
+                          <td>{playlistData.xpPerMinute.toFixed(2)}</td>
+                        </tr>
                       ))}
                   </tbody>
-              </table>
+                </table>
+              </div>
+            </div>
           </div>
-        </div>
-          </div>
-        </div>
-        <div className="card mb-5">
-          <div className="card-header">
-            <h1>Ranks</h1>
-          </div>
-          <div>
-            <RankTable
-              rankImages={rankImages}
-              careerLadder={careerLadder}
-            />
+    
+          <div className="grid-row-full rank-table-outer-container">
+            <div className="card mb-5">
+            <div className='RankTable'>
+              <RankTable
+                currentRank={careerTrack.CurrentProgress.Rank}
+                rankImages={rankImages}
+                careerLadder={careerLadder}
+              />
+            </div>
           </div>
         </div>
       </div>
     );
+    
     
 };
 
