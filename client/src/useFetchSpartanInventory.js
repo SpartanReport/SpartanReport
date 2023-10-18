@@ -6,8 +6,8 @@ const useFetchSpartanInventory = (gamerInfo) => {
   const [spartanInventory, setSpartanInventory] = useState(null);
   const [isFetched, setIsFetched] = useState(false);
 
-  const fetchSpartanInventory = async () => {
-    if (isFetched) return; // Moved inside the function
+  const fetchSpartanInventory = async (force = false) => {
+    if (isFetched && !force) return;
 
     try {
       const response = await axios.post('http://localhost:8080/spartan', gamerInfo);

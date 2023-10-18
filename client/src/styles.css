@@ -1,20 +1,21 @@
-body {
-	font-family: Arial, sans-serif;
-	margin: 0;
-	padding: 0;
-    background-color: #18183C;
-	position: relative; /* New: Relative positioning for body */
-	width: 100%;
 
-}
+:root {
+	--primary-color: #0D1E33; /* Default value */
+	--secondary-color: #F68B39; /* Default value */
+	--tertiary-color: #0C1C33;
+  }
+  .html, .d-flex, .relative-container {
+	transition: background-color 0.3s ease;
+  }
+
 #page-content-wrapper {
 	flex-grow: 1;
 	overflow: auto;  /* in case the content gets too long */
   }
 
 html {
-	background-color: #0D1D33;
-	background-size: cover; /* This will cover the entire viewport */
+  background-color: var(--primary-color);
+  	background-size: cover; /* This will cover the entire viewport */
     background-repeat: no-repeat; /* This will prevent the image from repeating */
 }
 
@@ -25,7 +26,6 @@ html {
 	height: 100vh;
 	gap: 10px;
 	padding: 50px;
-	background-color: #0D1D33;
   }
 
   .card-title {
@@ -43,7 +43,7 @@ html {
 	height: auto;
   }
   .main-cards {
-	background-color: #414F7C;
+	background-color: #F8F8F8;
 	border-radius: 20px;
 	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.793);
 	display: flex;
@@ -164,32 +164,12 @@ nav ul li a:hover {
   }
 
 
-  .custom-shape {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    overflow: visible;
-    line-height: 0;
-}
-
-.custom-shape svg {
-    position: relative;
-    display: block;
-    width: calc(100% + 1.3px);
-    height: 54px;
-}
-
-.custom-shape .shape-fill {
-    fill: #F68B3A;
-}
 .relative-container {
-
+	
 	position: relative;
   }
   .d-flex{
-	background-color: #0D1D33;
-
+	background-color: var(--primary-color);
   }
 
   .main-card-spartan{

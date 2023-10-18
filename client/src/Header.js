@@ -1,22 +1,33 @@
-import React from 'react';
-import './footer.css';
+import React, { useState, useEffect } from 'react';
+import './header.css';
 import useFetchSpartanInventory from "./useFetchSpartanInventory";
-import { useEffect } from "react";
-import { useNavigate } from 'react-router-dom';  // <-- Import useNavigate
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const Header = ({ gamerInfo }) => {
   const [spartanInventory, isLoading, fetchSpartanInventory] = useFetchSpartanInventory(gamerInfo);
-  const navigate = useNavigate();  // <-- Use the useNavigate hook
+  const [forceFetch, setForceFetch] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
-    if (gamerInfo) {
-      fetchSpartanInventory();
+    setForceFetch(true);
+  }, [location]);
+
+  useEffect(() => {
+    if (gamerInfo && forceFetch) {
+      fetchSpartanInventory(true);
+      setForceFetch(false);
     }
+  }, [gamerInfo, forceFetch]);
 
-    // Instead of listening to history, directly fetch data when a new route is clicked
-    fetchSpartanInventory();
-
-  }, [gamerInfo, fetchSpartanInventory]);  // <-- Removed history from the dependency array
+  useEffect(() => {
+    if (spartanInventory && spartanInventory.EmblemColors) {
+      const { primary, secondary, tertiary } = spartanInventory.EmblemColors;
+      document.documentElement.style.setProperty('--primary-color', primary);
+      document.documentElement.style.setProperty('--secondary-color', secondary);
+      document.documentElement.style.setProperty('--tertiary-color', tertiary);
+    }
+  }, [spartanInventory]);
 
   const renderImages = () => {
     if (!spartanInventory || !spartanInventory.EmblemInfo) {
@@ -25,7 +36,6 @@ const Header = ({ gamerInfo }) => {
 
     const base64emblemData = spartanInventory.EmblemInfo.EmblemImageData;
     const emblemSrc = `data:image/png;base64,${base64emblemData}`;
-
     const base64nameplatedata = spartanInventory.EmblemInfo.NameplateImageData;
     const nameplateSrc = `data:image/png;base64,${base64nameplatedata}`;
 
@@ -37,12 +47,15 @@ const Header = ({ gamerInfo }) => {
     );
   };
 
+  const serviceTag = spartanInventory?.Appearance?.ServiceTag;
+
   return (
     <div className="header-wrapper">
       <header>
         <div className="image-container">
           {renderImages()}
           <p className="gamertag">{gamerInfo ? gamerInfo.gamertag : 'Loading...'}</p>
+          <p className="servicetag">{gamerInfo ? serviceTag : 'Loading...' }</p>
         </div>
       </header>
     </div>

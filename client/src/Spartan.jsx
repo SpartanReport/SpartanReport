@@ -33,12 +33,6 @@ const Spartan = ({ gamerInfo}) => {
   const imageSrc = `data:image/png;base64,${base64ImageData}`;
 
 
-  const base64emblemData = spartanInventory.EmblemInfo.EmblemImageData;
-  const emblemSrc = `data:image/png;base64,${base64emblemData}`;
-
-  const base64nameplatedata = spartanInventory.EmblemInfo.NameplateImageData;
-  const nameplateSrc = `data:image/png;base64,${base64nameplatedata}`;
-
   return (
     <div className="card">
       <div className="card-header">
@@ -51,8 +45,6 @@ const Spartan = ({ gamerInfo}) => {
           <p>Description: {coreDetails.CommonData.Description.value}</p>
           <img src={imageSrc} alt="Spartan Core" />
           <div className="image-container">
-            <img className="base-image" src={nameplateSrc} alt="Spartan Core" />
-            <img className="overlay-image" src={emblemSrc} alt="Spartan Emblem" />
           </div>
 
         </div>

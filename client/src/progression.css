@@ -98,25 +98,7 @@
 }
 
 
-.custom-shape {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    line-height: 0;
-    
-}
 
-.custom-shape svg {
-    position: relative;
-    display: block;
-    width: calc(100% + 1.3px);
-    height: 54px;
-}
-
-.custom-shape .shape-fill {
-    fill: #F68B3A;
-}
 .card{
     margin-top: 70px; /* or another value to create space above the cards */
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -220,7 +202,7 @@
 }
 
 .relative-container {
-    background-color: #0D1D33;
+    background-color: var(--primary-color);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
     border-radius: 10px;
     overflow: hidden;

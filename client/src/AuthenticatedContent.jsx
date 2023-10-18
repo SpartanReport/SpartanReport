@@ -31,7 +31,6 @@ function AuthenticatedContent({ gamerInfo }) {
   return (
     <div className="relative-container">
       <div className="main-grid-container">
-
       {cardData.map((card, index) => (
         <div key={index} className="main-cards">
           <div className="card-title">{card.title}</div>

@@ -106,14 +106,15 @@ type VehicleCores struct {
 }
 
 type SpartanInventory struct {
-	ArmorCores   ArmorCores   `json:"ArmorCores"`
-	SpartanBody  SpartanBody  `json:"SpartanBody"`
-	Appearance   Appearance   `json:"Appearance"`
-	WeaponCores  WeaponCores  `json:"WeaponCores"`
-	AiCores      AiCores      `json:"AiCores"`
-	VehicleCores VehicleCores `json:"VehicleCores"`
-	CoreDetails  CoreDetails  `json:"CoreDetails,omitempty"`
-	EmblemInfo   EmblemInfo   `json:"EmblemInfo"`
+	ArmorCores   ArmorCores        `json:"ArmorCores"`
+	SpartanBody  SpartanBody       `json:"SpartanBody"`
+	Appearance   Appearance        `json:"Appearance"`
+	WeaponCores  WeaponCores       `json:"WeaponCores"`
+	AiCores      AiCores           `json:"AiCores"`
+	VehicleCores VehicleCores      `json:"VehicleCores"`
+	CoreDetails  CoreDetails       `json:"CoreDetails,omitempty"`
+	EmblemInfo   EmblemInfo        `json:"EmblemInfo"`
+	EmblemColors map[string]string `json:"EmblemColors"`
 }
 
 type PlayerCustomization struct {
@@ -242,8 +243,10 @@ func GetInventory(c *gin.Context, gamerInfo requests.GamerInfo) SpartanInventory
 		fmt.Println("Urls:", nameplatePngPath)
 		emblem.EmblemImageData = FetchImageData(emblemPngPath, gamerInfo)
 		emblem.NameplateImageData = FetchImageData(nameplatePngPath, gamerInfo)
-
+		emblemColors := GetColorPercentages(emblem.NameplateImageData)
 		inventoryResponse.PlayerCustomizations[0].Result.EmblemInfo = emblem
+		inventoryResponse.PlayerCustomizations[0].Result.EmblemColors = emblemColors
+
 		return inventoryResponse.PlayerCustomizations[0].Result
 	}
 

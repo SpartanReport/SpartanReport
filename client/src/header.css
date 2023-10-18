@@ -20,6 +20,8 @@
 	transform: translate(-50%, -50%);
   }
   .gamertag {
+	font-style: italic;
+
 	position: absolute;
 	font-size:18px;
 	width: 100%; 
@@ -28,6 +30,19 @@
 	top: 35%;  /* Position the top edge of the text element at the middle of the container */
 	transform: translateY(-50%); /* Vertically center the text within its container */
 	color: #ffffff; /* Set to white for now; adjust based on your design */
+}
+
+.servicetag{
+	font-style: italic;
+	position: absolute;
+	font-size:10px;
+	width: 100%; 
+	text-align: center; 
+	right: 25%;
+	top: 60%;  /* Position the top edge of the text element at the middle of the container */
+	transform: translateY(-50%); /* Vertically center the text within its container */
+	color: #ffffff; /* Set to white for now; adjust based on your design */
+
 }
 .header-wrapper {
     display: flex;              /* Make this a flex container */

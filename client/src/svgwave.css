@@ -41,5 +41,6 @@
 }
 
 .custom-shape .shape-fill {
-    fill: #F68B3A;
+  fill: var(--secondary-color);
+  transition: fill 0.3s ease;
 }
