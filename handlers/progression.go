@@ -452,6 +452,7 @@ func calculateAveragePersonalScoreForPlaylists(data HaloData, targetPlayerId str
 		if !result.PresentAtEndOfMatch {
 			continue
 		}
+
 		// Parse the start time and check if it's before the cutoff date
 		startTime, err := time.Parse(layoutInput, result.Match.MatchInfo.StartTime)
 		if err != nil {
