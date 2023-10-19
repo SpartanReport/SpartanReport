@@ -169,7 +169,9 @@ nav ul li a:hover {
 	position: relative;
   }
   .d-flex{
+	
 	background-color: var(--primary-color);
+	
   }
 
   .main-card-spartan{

@@ -16,16 +16,17 @@
   }
   
   .wave {
-    animation: moveWave1 20s ease-in-out infinite alternate; /* 10s duration */
+    animation: moveWave1 10s ease-in-out infinite alternate; /* 10s duration */
   }
   
   .wave2 {
-    animation: moveWave2 32s ease-in-out infinite alternate; /* 12s duration */
+    animation: moveWave2 16s ease-in-out infinite alternate; /* 12s duration */
   }
   
 
   .custom-shape {
-    position: relative;
+    z-index: 1; /* Lower than the sidebar */
+    position: absolute;
     top: 0;
     left: 0;
     width: 100%;
@@ -35,9 +36,9 @@
 
 .custom-shape svg {
     position: relative;
-    display: block;
-    width: calc(100% + 1.3px);
-    height: 54px;
+    width: calc(100%);
+    height: 64px;
+    padding-bottom: 10px;
 }
 
 .custom-shape .shape-fill {

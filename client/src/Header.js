@@ -2,7 +2,18 @@ import React, { useState, useEffect } from 'react';
 import './header.css';
 import useFetchSpartanInventory from "./useFetchSpartanInventory";
 import { useNavigate, useLocation } from 'react-router-dom';
+function hexToRgb(hex) {
+  // Remove the hash at the start if it's there
+  hex = hex.charAt(0) === '#' ? hex.substr(1) : hex;
 
+  // Parse out the r, g, b values
+  let bigint = parseInt(hex, 16);
+  let r = (bigint >> 16) & 255;
+  let g = (bigint >> 8) & 255;
+  let b = bigint & 255;
+
+  return `${r}, ${g}, ${b}`;
+}
 const Header = ({ gamerInfo }) => {
   const [spartanInventory, isLoading, fetchSpartanInventory] = useFetchSpartanInventory(gamerInfo);
   const [forceFetch, setForceFetch] = useState(false);
@@ -23,7 +34,9 @@ const Header = ({ gamerInfo }) => {
   useEffect(() => {
     if (spartanInventory && spartanInventory.EmblemColors) {
       const { primary, secondary, tertiary } = spartanInventory.EmblemColors;
+      const primaryRgb = hexToRgb(primary);
       document.documentElement.style.setProperty('--primary-color', primary);
+      document.documentElement.style.setProperty('--primary-color-rgb', primaryRgb);
       document.documentElement.style.setProperty('--secondary-color', secondary);
       document.documentElement.style.setProperty('--tertiary-color', tertiary);
     }

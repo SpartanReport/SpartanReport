@@ -79,6 +79,10 @@ type ProgressionDataToSend struct {
 	AverageDurations map[string]string
 }
 
+type PlayerMatchCount struct {
+	MatchmadeMatchesPlayedCount int `json:"MatchmadeMatchesPlayedCount"`
+}
+
 func GetRankImagesFromDB() ([]RankImage, error) {
 	collection := db.GetCollection("rank_images")
 	cur, err := collection.Find(context.TODO(), bson.M{})
@@ -103,8 +107,38 @@ func GetRankImagesFromDB() ([]RankImage, error) {
 
 	return rankImages, nil
 }
+func PopulatePlayerProgressionData(progressionData *ProgressionDataToSend, gamerInfo requests.GamerInfo, c *gin.Context) {
+	progressionData.GamerInfo = gamerInfo
+	careerTrack := GetCareerStats(gamerInfo, c)
+	careerLadder := GetCareerLadder(gamerInfo, c)
+	careerTrack.CurrentProgress.TotalXPEarned = CalculateTotalXPGainedSoFar(careerLadder, careerTrack.CurrentProgress.Rank) + careerTrack.CurrentProgress.PartialProgress
+	GetCareerRankImage(careerLadder, &careerTrack, gamerInfo)
+
+	targetPlayerId := "xuid(" + gamerInfo.XUID + ")"
+	averages, averageDuration := calculateAveragePersonalScoreForPlaylists(progressionData.HaloStats, targetPlayerId)
+
+	// Apply multipliers
+	adjustedAverages := applyMultiplierToScores(averages)
+
+	progressionData.GamerInfo = gamerInfo
+	progressionData.AdjustedAverages = adjustedAverages
+	progressionData.CareerLadder = careerLadder
+	progressionData.CareerTrack = careerTrack
+	progressionData.AverageDurations = averageDuration
+	// Query the database for rank images
+	rankImages, err := GetRankImagesFromDB()
+	if err != nil {
+		HandleError(c, err) // Assume HandleError is a function you've defined to handle errors
+		return
+	}
+
+	progressionData.RankImages = rankImages
+	progressionData.RankImages = rankImages
+
+}
 
 func HandleProgression(c *gin.Context) {
+	// Get GamerInfo from front end
 	var gamerInfo requests.GamerInfo
 	if err := c.ShouldBindJSON(&gamerInfo); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -114,48 +148,27 @@ func HandleProgression(c *gin.Context) {
 	// Check for cached data
 	var progressionData ProgressionDataToSend
 	var rankImages []RankImage
-
 	err := db.GetData("progression_data", bson.M{"gamerinfo.xuid": gamerInfo.XUID}, &progressionData)
+	// Match Data from Database found!
 	if err == nil {
-		progressionData.GamerInfo = gamerInfo
-		careerTrack := GetCareerStats(gamerInfo, c)
-		careerLadder := GetCareerLadder(gamerInfo, c)
-		careerTrack.CurrentProgress.TotalXPEarned = CalculateTotalXPGainedSoFar(careerLadder, careerTrack.CurrentProgress.Rank) + careerTrack.CurrentProgress.PartialProgress
-		GetCareerRankImage(careerLadder, &careerTrack, gamerInfo)
-
-		targetPlayerId := "xuid(" + gamerInfo.XUID + ")"
-		averages, averageDuration := calculateAveragePersonalScoreForPlaylists(progressionData.HaloStats, targetPlayerId)
-
-		// Apply multipliers
-		adjustedAverages := applyMultiplierToScores(averages)
-
-		progressionData.GamerInfo = gamerInfo
-		progressionData.AdjustedAverages = adjustedAverages
-		progressionData.CareerLadder = careerLadder
-		progressionData.CareerTrack = careerTrack
-		progressionData.AverageDurations = averageDuration
-		// Query the database for rank images instead of calling GetAllRankImages
-		rankImages, err := GetRankImagesFromDB()
-		if err != nil {
-			HandleError(c, err) // Assume HandleError is a function you've defined to handle errors
-			return
-		}
-
-		progressionData.RankImages = rankImages
-		progressionData.RankImages = rankImages
-
+		PopulatePlayerProgressionData(&progressionData, gamerInfo, c)
 		c.JSON(http.StatusOK, progressionData)
 		return
 
 	}
+	// Endpoint to get total matches played by user
+	playerMatchCount := PlayerMatchCount{}
+	url := fmt.Sprintf("https://halostats.svc.halowaypoint.com/hi/players/xuid(%s)/matches/count", gamerInfo.XUID)
+	makeAPIRequest(gamerInfo.SpartanKey, url, nil, &playerMatchCount)
+	matchCount := playerMatchCount.MatchmadeMatchesPlayedCount
 
-	// Let's assume you want to fetch 500 matches for this example
-	targetMatchCount := 500
-	allHaloStats, err := GetProgression(gamerInfo, c, targetMatchCount)
+	// Get Every Single Match Stat for the player
+	allHaloStats, err := GetProgression(gamerInfo, c, matchCount)
 	if err != nil {
 		HandleError(c, err)
 		return
 	}
+
 	mergedHaloData := HaloData{}
 	var mu sync.Mutex // Mutex for concurrent writes
 
@@ -164,7 +177,7 @@ func HandleProgression(c *gin.Context) {
 		return
 	}
 	var wg sync.WaitGroup
-
+	// Get Details for each match
 	for _, haloStats := range allHaloStats {
 		// Loop through the matches in each HaloData batch
 		for i := range haloStats.Results {
@@ -176,16 +189,19 @@ func HandleProgression(c *gin.Context) {
 
 				// Fetch and format MatchInfo
 				fetchedMatch, _ := GetMatchStats(c, gamerInfo.SpartanKey, matchID)
-				formattedMatch := formatMatchStats(gamerInfo.SpartanKey, fetchedMatch) // Assuming formatMatchStats returns Match
-				formattedMatch.MatchInfo = formatMatchTimes(formattedMatch.MatchInfo)  // Assuming formatMatchTimes returns MatchInfo
+				formattedMatch := formatMatchStats(gamerInfo.SpartanKey, fetchedMatch)
+				formattedMatch.MatchInfo = formatMatchTimes(formattedMatch.MatchInfo)
 				haloStats.Results[i].Match = formattedMatch
 
 				// For PlaylistInfo
 				playlistAssetID := haloStats.Results[i].Match.MatchInfo.Playlist.AssetId
 				playlistVersionID := haloStats.Results[i].Match.MatchInfo.Playlist.VersionId
-
+				if playlistAssetID == "" || playlistVersionID == "" {
+					return
+				}
 				var playlistInfo PlaylistInfo
 				err := FetchPlaylistDetails(gamerInfo.SpartanKey, playlistAssetID, playlistVersionID, &playlistInfo)
+
 				if err != nil {
 					fmt.Println("Error fetching playlist details ", err)
 					return
@@ -254,6 +270,7 @@ func AreRankImagesStored() (bool, error) {
 
 type RankImageSlice []RankImage
 
+// Bit of a janky approach to sorting each image by rank number but it works!
 func (ris RankImageSlice) Len() int           { return len(ris) }
 func (ris RankImageSlice) Less(i, j int) bool { return ris[i].Rank < ris[j].Rank }
 func (ris RankImageSlice) Swap(i, j int)      { ris[i], ris[j] = ris[j], ris[i] }
@@ -523,18 +540,21 @@ func getPlaylistMultipliers() map[string]float64 {
 	}
 }
 
+// Some playlist allow for higher score multipliers
 func applyMultiplierToScores(averages map[string]float64) map[string]int {
 	multipliers := getPlaylistMultipliers()
 	adjustedAverages := make(map[string]int)
 
 	for playlist, average := range averages {
 		multiplier, exists := multipliers[playlist]
-		if !exists {
-			multiplier = 1.0 // Default multiplier
-		}
 
+		// Default Multiplier
+		if !exists {
+			multiplier = 1.0
+		}
+		// Big Team Battle Multiplier
 		if strings.Contains(playlist, "BTB") || strings.Contains(playlist, "Big Team") {
-			multiplier = 1.8 // Special case for playlists with "BTB" in the title
+			multiplier = 1.8
 		}
 
 		adjustedAverages[playlist] = int(average * multiplier)

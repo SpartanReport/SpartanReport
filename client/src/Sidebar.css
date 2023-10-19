@@ -1,14 +1,19 @@
 #sidebar-wrapper {
-    background-color: #242526;
+    background: rgba(0,0,0,0.3);
     position: fixed;
     height: 100vh;
+    width: 210px; /* You might need to set a width */
+    z-index: 2; /* Make sure this is higher than the SVG */
     overflow-y: auto;
     display: flex;
     flex-direction: column;
+    backdrop-filter: blur(10px);
 }
 
+
 .header-wrapper {
-    background-color: #242526;
+    background: rgba(0,0,0,0.3);
+
     color: #E4E6EB;
     padding: 10px;
     position: fixed;
@@ -16,6 +21,9 @@
     left: 210px;
     right: 0;
     z-index: 1000;
+    backdrop-filter: blur(10px);
+
+
 }
 
 .right-aligned {
@@ -38,9 +46,11 @@
 
 .sidebar-heading {
     color: #E4E6EB;
-    background-color: #128C7E;
+    background-color: rgba(var(--primary-color-rgb), 0.7); /* 0.7 sets 70% opacity */
     padding: 50px;
     font-family: 'Montserrat', sans-serif;
+    backdrop-filter: blur(10px); /* for frosted glass effect */
+    
 }
 
 .clear-cookie-button {

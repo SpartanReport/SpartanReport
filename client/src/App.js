@@ -53,7 +53,6 @@ function App() {
     <div className="d-flex flex-row" style={{ width: '100%' } } id="wrapper">
           {/* Sidebar */}
         <Sidebar clearCookie={clearCookie} />
-        {/* /#sidebar-wrapper */}
             {/* Header */}
             <Header gamerInfo={gamerInfo} />
             {/* Routes */}
