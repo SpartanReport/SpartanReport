@@ -52,8 +52,8 @@
 
 }
 .item-img{
-    width: 200px;
-    height: 200px;
+    width: 225px;
+    height: 220px;
 }
 
 .scrollable-ranks {
@@ -64,9 +64,12 @@
   }
   
   .season-rank-row {
+    background: rgba(7, 7, 7, 0.2);
+    backdrop-filter: blur(10px);
     display: flex;
-    flex-direction: column;
-    height: 100px;
+    flex-direction: row;
+    margin: 10px;
+    height: 250px;
     align-items: center; /* Vertically centers the items, but depends on flex-direction */
   }
   
@@ -75,13 +78,18 @@
     background: rgba(255, 255, 255, 0.1);
 
 }
-.season-rank-card {
-    flex: 2;
+.rank-number{
+    color: white;
+    text-align: center;
+    padding-bottom: 15px;
+    font-size: larger;
+    font-style: italic;
+    font-weight: 900;
+}
+.season-rank-card {    
     background: rgba(255, 255, 255, 0.5);
-    height: 300px;
-    width:200px;
-    min-height: 300px;
-    min-width:200px;
+    height: 260px;
+    width:225px;
     border-radius: 10px;
     border: 1px solid #000000;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);

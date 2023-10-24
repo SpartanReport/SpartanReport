@@ -76,12 +76,14 @@ type InventoryReward struct {
 	Amount            int    `json:"Amount"`
 	Type              string `json:"Type"`
 	ItemImageData     string `json:"ItemImageData"`
+	ItemMetaData      Item   `json:"Item"`
 }
 
 type CurrencyReward struct {
 	CurrencyPath  string `json:"CurrencyPath"`
 	Amount        int    `json:"Amount"`
 	ItemImageData string `json:"ItemImageData"`
+	ItemMetaData  Item   `json:"Item"`
 }
 type Reward struct {
 	InventoryRewards []InventoryReward `json:"InventoryRewards"` // I changed this to a slice
@@ -154,6 +156,7 @@ type SpecificOpsData struct {
 type RewardResult struct {
 	Path      string
 	ImageData string
+	Item      Item
 }
 type StoredData struct {
 	SeasonOperationTrackPath string `bson:"season_operation_track_path"`
@@ -304,7 +307,7 @@ func GetTrackImages(gamerInfo requests.GamerInfo, Ranks []Rank) []Rank {
 			fmt.Println("Error getting item image: ", err)
 			results <- RewardResult{} // Send an empty result to ensure channel doesn't block
 		} else {
-			results <- RewardResult{Path: path, ImageData: rawImageData}
+			results <- RewardResult{Path: path, ImageData: rawImageData, Item: currentItemResponse.CommonData}
 		}
 	}
 
@@ -348,11 +351,14 @@ func GetTrackImages(gamerInfo requests.GamerInfo, Ranks []Rank) []Rank {
 			for idx, invReward := range rank.FreeRewards.InventoryRewards {
 				if invReward.InventoryItemPath == result.Path {
 					rank.FreeRewards.InventoryRewards[idx].ItemImageData = result.ImageData
+					rank.FreeRewards.InventoryRewards[idx].ItemMetaData = result.Item
 				}
 			}
 			for idx, currReward := range rank.FreeRewards.CurrencyRewards {
 				if currReward.CurrencyPath == result.Path {
 					rank.FreeRewards.CurrencyRewards[idx].ItemImageData = result.ImageData
+					rank.FreeRewards.CurrencyRewards[idx].ItemMetaData = result.Item
+
 				}
 			}
 
@@ -360,11 +366,15 @@ func GetTrackImages(gamerInfo requests.GamerInfo, Ranks []Rank) []Rank {
 			for idx, invReward := range rank.PaidRewards.InventoryRewards {
 				if invReward.InventoryItemPath == result.Path {
 					rank.PaidRewards.InventoryRewards[idx].ItemImageData = result.ImageData
+					rank.PaidRewards.InventoryRewards[idx].ItemMetaData = result.Item
+
 				}
 			}
 			for idx, currReward := range rank.PaidRewards.CurrencyRewards {
 				if currReward.CurrencyPath == result.Path {
 					rank.PaidRewards.CurrencyRewards[idx].ItemImageData = result.ImageData
+					rank.PaidRewards.CurrencyRewards[idx].ItemMetaData = result.Item
+
 				}
 			}
 		}
