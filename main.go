@@ -8,6 +8,7 @@ import (
 	"log"
 	"time"
 
+	"cloud.google.com/go/storage"
 	"github.com/gin-gonic/gin"
 	"github.com/newrelic/go-agent/v3/integrations/nrgin"
 	"github.com/newrelic/go-agent/v3/newrelic"
@@ -25,7 +26,13 @@ func main() {
 	if err != nil {
 		fmt.Println("Error with NR!")
 	}
-
+	// Initialize Google Cloud Storage Client
+	ctx := context.Background()
+	client, err := storage.NewClient(ctx)
+	if err != nil {
+		log.Fatalf("Failed to create client: %v", err)
+	}
+	client.Bucket("haloseasondata")
 	// Initialize MongoDB Client
 	db.MongoClient, err = mongo.NewClient(options.Client().ApplyURI("mongodb://localhost:27017"))
 

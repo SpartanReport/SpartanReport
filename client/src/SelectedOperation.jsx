@@ -55,7 +55,10 @@ function SelectedOperation({ gamerInfo, seasonData, handleBackClick, SeasonImage
 
   return (
     <div>
+              <button className="back-button" onClick={handleBackClick}>Back</button>
+
       <div className="operation-container-single">
+        
       <div className="season-card-selected">
             <img className="season-img-selected" src={SeasonImage(seasonData.SeasonMetadataDetails.SeasonImage)} alt="Season Logo" />        
             <div className="text-overlay">
@@ -84,12 +87,16 @@ function SelectedOperation({ gamerInfo, seasonData, handleBackClick, SeasonImage
                 )}
 
             </div>
+            
             </div>
+            
         ))}
+        
         </div>
+        
       </div>
+      
       <div>
-      <button className="back-button" onClick={handleBackClick}>Back</button>
 
       </div>
     </div>

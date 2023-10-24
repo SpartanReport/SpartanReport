@@ -1,12 +1,15 @@
 package halotestapp
 
 import (
+	"context"
+	"encoding/json"
 	"fmt"
 	requests "halotestapp/requests"
 	"net/http"
 	"sort"
 	"time"
 
+	"cloud.google.com/go/storage"
 	"github.com/gin-gonic/gin"
 )
 
@@ -152,6 +155,10 @@ type RewardResult struct {
 	Path      string
 	ImageData string
 }
+type StoredData struct {
+	SeasonOperationTrackPath string `bson:"season_operation_track_path"`
+	Data                     Track  `bson:"data"`
+}
 
 func HandleOperations(c *gin.Context) {
 	var gamerInfo requests.GamerInfo
@@ -211,13 +218,58 @@ func HandleOperationDetails(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+
 	gamerInfo := SpecificOpsData.GamerInfo
 	season := SpecificOpsData.Season
+	key := season.OperationTrackPath
+
+	ctx := context.Background()
+	client, err := storage.NewClient(ctx)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Couldn't initialize GCS client"})
+		return
+	}
+	bucket := client.Bucket("haloseasondata")
+	obj := bucket.Object(key)
+
+	// Try to read the data from Google Cloud Storage first
+	rc, err := obj.NewReader(ctx)
+	if err == nil {
+		// Data exists, decode and return it
+		var trackData Track
+		if err := json.NewDecoder(rc).Decode(&trackData); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Couldn't decode stored data"})
+			return
+		}
+		rc.Close()
+		c.JSON(http.StatusOK, trackData)
+		return
+	} else if err != storage.ErrObjectNotExist {
+		// Some other error occurred
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Couldn't retrieve data"})
+		return
+	}
+
+	// If data doesn't exist, fetch and store it
 	track := GetSeasonRewards(gamerInfo, season)
 	track.Ranks = GetTrackImages(gamerInfo, track.Ranks)
-	fmt.Println("Sending Track Data")
-	c.JSON(http.StatusOK, track)
 
+	// Store the data into Google Cloud Storage
+	wc := obj.NewWriter(ctx)
+	if err := json.NewEncoder(wc).Encode(track); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Couldn't encode data"})
+		return
+	}
+	if err := wc.Close(); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Couldn't write data"})
+		return
+	}
+
+	// Optionally, you can store the Google Cloud Storage URL into MongoDB
+	// storageURL := "gs://haloseasondata/" + key
+	// Your MongoDB storage code here, storing storageURL
+
+	c.JSON(http.StatusOK, track)
 }
 
 func GetSeasonRewards(gamerInfo requests.GamerInfo, season Season) Track {
@@ -230,13 +282,6 @@ func GetSeasonRewards(gamerInfo requests.GamerInfo, season Season) Track {
 	}
 	return trackData
 }
-func printItemDetails(item Item) {
-	fmt.Println("IsCrossCompatible:", item.IsCrossCompatible)
-	fmt.Println("SeasonNumber:", item.SeasonNumber)
-	fmt.Println("Quality:", item.Quality)
-	fmt.Println("Media Path:", item.Media.Media.MediaUrl.Path)
-	fmt.Println("Description:", item.Description.Value) // Assuming Field type has a value field
-}
 
 func GetTrackImages(gamerInfo requests.GamerInfo, Ranks []Rank) []Rank {
 	// Create a channel to receive the results
@@ -248,7 +293,6 @@ func GetTrackImages(gamerInfo requests.GamerInfo, Ranks []Rank) []Rank {
 		currentItemResponse := ItemResponse{}
 		// Make API Request to get item data
 		err := makeAPIRequest(gamerInfo.SpartanKey, url, nil, &currentItemResponse)
-		printItemDetails(currentItemResponse.CommonData)
 		if err != nil {
 			fmt.Println("Error making request for item data: ", err)
 		}
@@ -267,7 +311,6 @@ func GetTrackImages(gamerInfo requests.GamerInfo, Ranks []Rank) []Rank {
 	totalPaths := 0
 
 	for _, rank := range Ranks {
-		fmt.Println("Rank ", rank.Rank)
 		// Free Rewards
 		for _, invReward := range rank.FreeRewards.InventoryRewards {
 			if invReward.InventoryItemPath != "" {
