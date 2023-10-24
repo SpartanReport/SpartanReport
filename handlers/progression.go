@@ -41,11 +41,6 @@ type RewardTrackResponse struct {
 	BoostXp          interface{}     `json:"BoostXp"` // Could be `nil` or a specific type
 }
 
-type Reward struct {
-	InventoryRewards []interface{} `json:"InventoryRewards"`
-	CurrencyRewards  []interface{} `json:"CurrencyRewards"`
-}
-
 type RankInfo struct {
 	Rank              int         `json:"Rank"`
 	FreeRewards       Reward      `json:"FreeRewards"`

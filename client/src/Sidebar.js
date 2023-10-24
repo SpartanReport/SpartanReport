@@ -3,7 +3,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Sidebar.css';
 
-const Sidebar = ({ clearCookie }) => {
+const Sidebar = ({ clearCookie, isAuthenticated, startAuth }) => {
   const navigate = useNavigate();
 
   const handleNavigation = (path) => {
@@ -17,10 +17,14 @@ const Sidebar = ({ clearCookie }) => {
         <button onClick={() => handleNavigation("/")} className="list-group-item list-group-item-action">Account</button>
         <button onClick={() => handleNavigation("/progression")} className="list-group-item list-group-item-action">Progression</button>
         <button onClick={() => handleNavigation("/stats")} className="list-group-item list-group-item-action">Battle History</button>
+        <button onClick={() => handleNavigation("/operations")} className="list-group-item list-group-item-action">Operations</button>
+
         <button onClick={() => handleNavigation("/spartan")} className="list-group-item list-group-item-action">Spartan</button>
       </div>
       <div className="right-aligned">
-        <button className="clear-cookie-button btn btn-danger" onClick={clearCookie}>Sign Out</button>
+        <button className="clear-cookie-button btn btn-danger" onClick={isAuthenticated ? clearCookie : startAuth}>
+            {isAuthenticated ? 'Sign Out' : 'Sign In'}
+        </button>
       </div>
     </div>
   );

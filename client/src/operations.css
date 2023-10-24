@@ -1,0 +1,79 @@
+/* Operations.css */
+
+.operations-container {
+    display: flex;
+    overflow-x: auto;
+    margin: 0 auto;  /* Center horizontally */
+    padding-bottom: 30px;
+    padding-top: 30px;
+    border-radius: 20px;
+
+    background: rgba(0,0,0,0.3);
+    backdrop-filter: blur(10px);
+}
+.operations-container::-webkit-scrollbar {
+    display: none;
+}
+
+.ops-title{
+    color:white;
+
+    padding-top:50px;
+    padding-bottom: 10px;
+    text-align: center;
+}
+.season-name{
+    font-style: italic;
+    text-align: center;
+}
+.season-card {
+    background: rgba(226, 226, 226, 0.8);
+
+    position: relative;
+    border-radius: 5px;
+    margin: 5px;
+    min-width: 300px;
+    border: 1px solid #000000;
+    border-radius: 10px; /* bigger rounded corners */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* softer shadow */
+    transition: all 0.3s ease-in-out;
+
+}
+.season-img{
+    height: 100%;
+    width:100%;
+    max-height: 300px;
+    max-width: 300px;
+}
+
+
+.season-card.active {
+    transform: scale(1.2);
+}
+
+.season-card:hover {
+    transform: scale(1.02); /* Make the card slightly larger */
+    border-radius: 10px; /* bigger rounded corners */
+    cursor: pointer;
+    background-color: #e0e0e0; /* Darken the background a bit */
+    z-index: 2; /* Make it above other elements */
+}
+.season-date{
+    text-align: center;
+    font-style: italic;
+    font-weight: 800;
+}
+.hidden {
+    display: none;
+}
+
+.live-banner {
+    position: absolute;
+    background-color: red;
+    color: white;
+    padding: 5px 15px;
+    border-radius: 5px 0px 0px 0px;
+    height:42px;
+    font-weight: bold;
+    z-index: 3;
+}

@@ -40,9 +40,6 @@ func main() {
 		fmt.Println("Error connecting to MongoDB:", err)
 		return
 	}
-	// You do not need to create the rank_images collection explicitly,
-	// as MongoDB will create it once you start inserting data.
-	// However, if you want to create it explicitly, you can do so like this:
 	err = db.StoreData("rank_images", bson.M{"init": true})
 	if err != nil {
 		log.Fatal(err)
@@ -73,6 +70,8 @@ func main() {
 	r.POST("/spartan", halotestapp.HandleInventory)
 	r.POST("/stats", halotestapp.HandleStats)
 	r.POST("/progression", halotestapp.HandleProgression)
+	r.POST("/operations", halotestapp.HandleOperations)
+	r.POST("/operationdetails", halotestapp.HandleOperationDetails)
 
 	r.POST("/match/:id", halotestapp.HandleMatch)
 

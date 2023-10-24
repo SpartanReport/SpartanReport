@@ -20,6 +20,7 @@
 
 
 .rank-container {
+    
     background-color: #f8f8f8;
     border: 1px solid #e0e0e0;
     transition: transform .3s;
@@ -33,6 +34,7 @@
     border-radius: 10px;
     width: 275px;  /* Adjust width as necessary */
     flex-shrink: 0; /* Prevents resizing */
+    
 }
 .rank-container:hover {
     transform: scale(1.05);
@@ -73,6 +75,7 @@
 }
 
 .rank-row {
+    
     display: flex;
     padding: 10px 15px 20px 25px; /* top, right, bottom, left */
 
@@ -122,6 +125,9 @@
 
 
 .grid-container {
+    background: rgba(0,0,0,0.1);
+    backdrop-filter: blur(10px);
+    
     display: grid;
     grid-template-columns: 1fr 1fr; /* Creates two equally sized columns */
     grid-gap: 20px; /* Adds space between grid items */
@@ -161,7 +167,9 @@
 
 .xp-table thead th {
     padding: 12px 10px;
-    background-color: #ddd;
+    background: rgba(217, 217, 217, 0);
+    backdrop-filter: blur(1px);
+
     border: none;
     font-weight: 600;
 }
@@ -208,6 +216,10 @@
     overflow: hidden;
   }
   .RankTable {
+    background: rgba(184, 184, 184, 0.3);
+    backdrop-filter: blur(1px);
+    border-radius: 10px;
+
     max-height: auto;
     overflow-y: auto; 
     transition: transform 0.3s;
@@ -216,6 +228,9 @@
 
 @media (max-width: 400px) {
     .RankTable {
+        background: rgba(184, 184, 184, 0);
+        backdrop-filter: blur(1px);
+    
         transform: scale(0.8);
     }
 }

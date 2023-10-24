@@ -8,9 +8,11 @@ import Stats from './Stats';
 import Progression from './Progression';
 import MatchStats from './match-stats';
 import Header from './Header';
+import UnauthenticatedContent from './UnauthenticatedContent';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import "./svgwave.css"
+import Operations from './Operations';
 
 function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -52,7 +54,7 @@ function App() {
     <Router>
     <div className="d-flex flex-row" style={{ width: '100%' } } id="wrapper">
           {/* Sidebar */}
-        <Sidebar clearCookie={clearCookie} />
+        <Sidebar clearCookie={clearCookie} isAuthenticated={isAuthenticated} startAuth={startAuth} />
             {/* Header */}
             <Header gamerInfo={gamerInfo} />
             {/* Routes */}
@@ -69,9 +71,11 @@ function App() {
             </div>
             <Routes>
               <Route path="/spartan" element={<Spartan gamerInfo={gamerInfo} spartanInventory={spartanInventory} setSpartanInventory={setSpartanInventory} />} />
-              <Route path="/" element={isAuthenticated ? <AuthenticatedContent gamerInfo={gamerInfo} spartanInventory={spartanInventory}/> : <div><h1>You are not authenticated</h1><button onClick={startAuth}>Authenticate</button></div>} />
+              <Route path="/" element={isAuthenticated ? <AuthenticatedContent gamerInfo={gamerInfo} spartanInventory={spartanInventory}/> : <UnauthenticatedContent startAuth={startAuth} />} />
               <Route path="/match/:matchId" element={<MatchStats gamerInfo={gamerInfo} HaloStats={HaloStats} selectedMatch={selectedMatch} />} />
               <Route path="/stats" element={<Stats gamerInfo={gamerInfo} HaloStats={HaloStats} setHaloStats={setHaloStats} setSelectedMatch={setSelectedMatch} />} />
+              <Route path="/operations" element={<Operations gamerInfo={gamerInfo} />} />
+
               <Route path="/progression" element={<Progression gamerInfo={gamerInfo} HaloStats={HaloStats} setHaloStats={setHaloStats} setSelectedMatch={setSelectedMatch} />} />
             </Routes>
           </div>
