@@ -34,7 +34,7 @@ func main() {
 	}
 	client.Bucket("haloseasondata")
 	// Initialize MongoDB Client
-	db.MongoClient, err = mongo.NewClient(options.Client().ApplyURI("mongodb://localhost:27017"))
+	db.MongoClient, err = mongo.NewClient(options.Client().ApplyURI("mongodb://10.136.201.119:27017/"))
 
 	if err != nil {
 		fmt.Println("Error creating MongoDB client:", err)
@@ -57,6 +57,25 @@ func main() {
 		fmt.Println("Error creating index:", err)
 	}
 	r := gin.Default()
+
+	// Global CORS middleware
+	r.Use(func(c *gin.Context) {
+		c.Header("Access-Control-Allow-Origin", "http://localhost:3000")
+		c.Header("Access-Control-Allow-Credentials", "true")
+		c.Header("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin")
+		c.Header("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, DELETE")
+
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(204)
+			return
+		}
+
+		c.Next()
+	})
+
+	// Existing middleware and routes
+	r.Use(nrgin.Middleware(app))
+
 	r.Use(nrgin.Middleware(app))
 	r.LoadHTMLGlob("client/build/index.html")
 	// Static files

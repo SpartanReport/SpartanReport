@@ -7,6 +7,7 @@ import (
 	requests "halotestapp/requests"
 	"net/http"
 	"sort"
+	"strings"
 	"time"
 
 	"cloud.google.com/go/storage"
@@ -121,13 +122,19 @@ type Track struct {
 type ItemResponse struct {
 	CommonData Item `json:"CommonData"`
 }
-
+type Title struct {
+	Value string `json:"value"`
+}
 type Item struct {
-	IsCrossCompatible bool        `json:"IsCrossCompatible"`
-	SeasonNumber      int         `json:"SeasonNumber"`
-	Quality           string      `json:"Quality"`
-	Media             DisplayPath `json:"DisplayPath"`
-	Description       Field       `json:"Description"`
+	Title             Title  `json:"Title"`
+	IsCrossCompatible bool   `json:"IsCrossCompatible"`
+	SeasonNumber      int    `json:"SeasonNumber"`
+	Quality           string `json:"Quality"`
+	ManufacturerId    int    `json:"ManufacturerId"`
+
+	Media       DisplayPath `json:"DisplayPath"`
+	Description Field       `json:"Description"`
+	Core        string      `json:"Core"`
 }
 type DisplayPath struct {
 	Width  int       `json:"Width"`
@@ -163,6 +170,27 @@ type StoredData struct {
 	Data                     Track  `bson:"data"`
 }
 
+func getCoreFromInventoryItemPath(inventoryItemPath string) string {
+	if strings.Contains(inventoryItemPath, "olympus") {
+		return "Mark VII Armor Core"
+	} else if strings.Contains(inventoryItemPath, "reach") {
+		return "Mark V [B] Core"
+	} else if strings.Contains(inventoryItemPath, "wlv") {
+		return "Rakshasa Core"
+	} else if strings.Contains(inventoryItemPath, "spi") {
+		return "Mirage Core"
+	} else if strings.Contains(inventoryItemPath, "samurai") {
+		return "Yoroi Core"
+	} else if strings.Contains(inventoryItemPath, "eag") {
+		return "Eaglestrike Core"
+	} else if strings.Contains(inventoryItemPath, "fwl") {
+		return "Chimera Core"
+	} else if strings.Contains(inventoryItemPath, "haz") {
+		return "Hazmat Core"
+	}
+	// If none of the keywords match, return "Unknown Core"
+	return "Unknown Core"
+}
 func HandleOperations(c *gin.Context) {
 	var gamerInfo requests.GamerInfo
 	if err := c.ShouldBindJSON(&gamerInfo); err != nil {
@@ -268,10 +296,6 @@ func HandleOperationDetails(c *gin.Context) {
 		return
 	}
 
-	// Optionally, you can store the Google Cloud Storage URL into MongoDB
-	// storageURL := "gs://haloseasondata/" + key
-	// Your MongoDB storage code here, storing storageURL
-
 	c.JSON(http.StatusOK, track)
 }
 
@@ -292,14 +316,17 @@ func GetTrackImages(gamerInfo requests.GamerInfo, Ranks []Rank) []Rank {
 
 	// Function to make an API request and send the result to the channel
 	makeRequest := func(path string) {
+		// Determine the core based on InventoryItemPath
+		core := getCoreFromInventoryItemPath(path)
+		fmt.Println("Determined Core:", core)
 		url := "https://gamecms-hacs.svc.halowaypoint.com/hi/progression/file/" + path
 		currentItemResponse := ItemResponse{}
+
 		// Make API Request to get item data
 		err := makeAPIRequest(gamerInfo.SpartanKey, url, nil, &currentItemResponse)
 		if err != nil {
 			fmt.Println("Error making request for item data: ", err)
 		}
-		// Next, Get the image data for that item
 		itemImagePath := currentItemResponse.CommonData.Media.Media.MediaUrl.Path
 		url = "https://gamecms-hacs.svc.halowaypoint.com/hi/images/file/" + itemImagePath
 		rawImageData, err := makeAPIRequestImage(gamerInfo.SpartanKey, url, nil)
@@ -307,6 +334,7 @@ func GetTrackImages(gamerInfo requests.GamerInfo, Ranks []Rank) []Rank {
 			fmt.Println("Error getting item image: ", err)
 			results <- RewardResult{} // Send an empty result to ensure channel doesn't block
 		} else {
+			currentItemResponse.CommonData.Core = core // Assign Core
 			results <- RewardResult{Path: path, ImageData: rawImageData, Item: currentItemResponse.CommonData}
 		}
 	}
@@ -388,6 +416,16 @@ func GetSeasonMetadata(gamerInfo requests.GamerInfo, season Season) SeasonMetada
 	err := makeAPIRequest(gamerInfo.SpartanKey, url, nil, &metadata)
 	if err != nil {
 		fmt.Println("Error while getting season metadata: ", err)
+		return metadata
+	}
+
+	// Special Case: WC3 and CA
+	if season.OperationTrackPath == "RewardTracks/Operations/S05OpPassM01.json" {
+		metadata.SeasonImage, err = makeAPIRequestImage("", "https://wpassets.halowaypoint.com/wp-content/2023/10/OperationCombinedArms.jpg", nil)
+		return metadata
+	}
+	if season.OperationTrackPath == "RewardTracks/Operations/S05OpPassM02.json" {
+		metadata.SeasonImage, err = makeAPIRequestImage("", "https://wpassets.halowaypoint.com/wp-content/2023/10/OperationWinterContingency.jpg", nil)
 		return metadata
 	}
 	// Get Season Background Image

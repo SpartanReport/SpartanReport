@@ -8,7 +8,7 @@ import axios from 'axios';
 // Function to authenticate user
 const authenticateUser = async () => {
   try {
-    // Replace with your backend URL
+
     const response = await axios.get('http://localhost:8080/account', { withCredentials: true });
     if (response.status === 200) {
       console.log('User authenticated successfully');

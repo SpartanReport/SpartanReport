@@ -52,30 +52,65 @@
 
 }
 .item-img{
-    width: 225px;
-    height: 220px;
+    width: 223px;
+    height: 225px;
+    transform: translateY(-14%);
 }
+.item-data{
+    border-radius: 10px 10px 0 0;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.1);
+    font-style: italic;
+    white-space: nowrap;
+    
+}
+.item-type{
+    text-align: center;
+    background: rgba(255, 255, 255, 0.1);
+    font-style: italic;
+    transform: translateY(-66%);
 
+}
+.item-core{
+    text-align: center;
+    background: rgba(255, 255, 255, 0.1);
+    font-style: italic;
+    font-weight: 700;
+    transform: translateY(-130%);
+    border-radius: 0 0 10px 10px;
+
+}
 .scrollable-ranks {
     transform: scale(0.9);
     display: flex;
     overflow-x: auto;
-    height: 600px;
+    height: 500px;
   }
-  
-  .season-rank-row {
+  .season-rank-container{
+    border-radius: 10px;
+
     background: rgba(7, 7, 7, 0.2);
     backdrop-filter: blur(10px);
+    max-height: 400px;
+  }
+  .season-rank-row {
     display: flex;
     flex-direction: row;
     margin: 10px;
     height: 250px;
     align-items: center; /* Vertically centers the items, but depends on flex-direction */
   }
-  
+
+  .track-label-div{
+    transform: translateY(20%);
+  }
 .track-label{
+    font-style: italic;
     text-align: center;
-    background: rgba(255, 255, 255, 0.1);
+    font-weight: 900;
+    color: white;
+    border-radius: 5px;
+    transform: translateY(160%);
 
 }
 .rank-number{
@@ -88,13 +123,13 @@
 }
 .season-rank-card {    
     background: rgba(255, 255, 255, 0.5);
-    height: 260px;
+    height: 300px;
     width:225px;
     border-radius: 10px;
     border: 1px solid #000000;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     margin-right: 10px;
-    margin-top: 10px;
+    margin-top: 50px;
 }
 
 
@@ -126,3 +161,15 @@
     color: white;
     font-style: italic;
 }
+.background-epic {
+    background: linear-gradient(#6F4196, #6F4196);
+  }
+  
+  .background-legendary {
+    background: linear-gradient(#81652B, #81652B);
+  }
+  
+  .background-rare {
+    background: linear-gradient(#2D597C, #2D597C);
+  }
+  
