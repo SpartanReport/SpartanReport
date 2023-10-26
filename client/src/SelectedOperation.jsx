@@ -55,6 +55,31 @@ function SelectedOperation({ gamerInfo, seasonData, handleBackClick, SeasonImage
     }
   };
 
+  function transformString(str) {
+    let mapping = {
+      "SpartanBackdropImage": "Backdrop",
+      "SpartanEmblem": "Emblem",
+      "ArmorCoating": "Armor Coating",
+      "VehicleCoating": "Vehicle Coating",
+      "WeaponCharm": "Weapon Charm",
+      "WeaponCoating": "Weapon Coating",
+      "ArmorGlove": "Gloves",
+      "ArmorMythicFx": "Mythic Effect",
+      "ArmorFx": "Armor Effect",
+      "ArmorTheme": "Armor Kit"
+    };
+  
+    if (mapping.hasOwnProperty(str)) {
+      return mapping[str];
+    }
+    
+    if (str.startsWith('Armor')) {
+      str = str.substring(5);
+    }
+    
+    return str.replace(/([A-Z])/g, ' $1').trim();
+  }
+  
   const displayRewards = (rank) => {
     const rewards = [];
 
@@ -90,7 +115,7 @@ function SelectedOperation({ gamerInfo, seasonData, handleBackClick, SeasonImage
         name = "Challenge Swap";
       } else {
         imageSrc = SeasonImage(reward.ItemImageData);
-        rewardType = reward.Type;
+        rewardType = transformString(reward.Type);
         name = reward.Item.Title.value
         if (reward.Item.IsCrossCompatible){
           coreDesignation = "Cross Core"

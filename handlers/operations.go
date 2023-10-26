@@ -87,8 +87,8 @@ type CurrencyReward struct {
 	ItemMetaData  Item   `json:"Item"`
 }
 type Reward struct {
-	InventoryRewards []InventoryReward `json:"InventoryRewards"` // I changed this to a slice
-	CurrencyRewards  []CurrencyReward  `json:"CurrencyRewards"`  // I changed this to a slice
+	InventoryRewards []InventoryReward `json:"InventoryRewards"`
+	CurrencyRewards  []CurrencyReward  `json:"CurrencyRewards"`
 }
 type Rank struct {
 	Rank        int    `json:"Rank"`
@@ -318,7 +318,6 @@ func GetTrackImages(gamerInfo requests.GamerInfo, Ranks []Rank) []Rank {
 	makeRequest := func(path string) {
 		// Determine the core based on InventoryItemPath
 		core := getCoreFromInventoryItemPath(path)
-		fmt.Println("Determined Core:", core)
 		url := "https://gamecms-hacs.svc.halowaypoint.com/hi/progression/file/" + path
 		currentItemResponse := ItemResponse{}
 
