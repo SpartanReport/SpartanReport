@@ -160,7 +160,6 @@ function SelectedOperation({ gamerInfo, seasonData, handleBackClick, SeasonImage
           </div>
         </div>
         <p className="date-text"><strong>{seasonData.SeasonMetadataDetails.DateRange.value}</strong></p>
-        <p className="custom-text-3"><strong>Is Active: </strong>{String(seasonData.IsActive)}</p>
         <div className="scrollable-ranks">
         {trackData.Ranks && trackData.Ranks.map((rank, index) => {
           // Check if rank is completed

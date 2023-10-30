@@ -37,8 +37,8 @@
     font-style: italic;
 }
 .season-card {
-    background: rgba(226, 226, 226, 0.8);
-
+    background: rgba(7, 7, 7, 0.2);
+    color: white;
     position: relative;
     border-radius: 5px;
     margin: 5px;
@@ -66,7 +66,7 @@
     transform: scale(1.02); /* Make the card slightly larger */
     border-radius: 10px; /* bigger rounded corners */
     cursor: pointer;
-    background-color: #e0e0e0; /* Darken the background a bit */
+    background: rgba(7, 7, 7, 0.3);
     z-index: 2; /* Make it above other elements */
 }
 .season-date{
