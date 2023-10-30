@@ -13,6 +13,7 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import "./svgwave.css"
 import Operations from './Operations';
+import Store from './store';
 
 function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -54,7 +55,7 @@ function App() {
     <Router>
     <div className="d-flex flex-row" style={{ width: '100%' } } id="wrapper">
           {/* Sidebar */}
-        <Sidebar clearCookie={clearCookie} isAuthenticated={isAuthenticated} startAuth={startAuth} />
+          <Sidebar clearCookie={clearCookie} isAuthenticated={isAuthenticated} startAuth={startAuth} />
             {/* Header */}
             <Header gamerInfo={gamerInfo} />
             {/* Routes */}
@@ -75,8 +76,9 @@ function App() {
               <Route path="/match/:matchId" element={<MatchStats gamerInfo={gamerInfo} HaloStats={HaloStats} selectedMatch={selectedMatch} />} />
               <Route path="/stats" element={<Stats gamerInfo={gamerInfo} HaloStats={HaloStats} setHaloStats={setHaloStats} setSelectedMatch={setSelectedMatch} />} />
               <Route path="/operations" element={<Operations gamerInfo={gamerInfo} />} />
-
               <Route path="/progression" element={<Progression gamerInfo={gamerInfo} HaloStats={HaloStats} setHaloStats={setHaloStats} setSelectedMatch={setSelectedMatch} />} />
+              <Route path="/store" element={<Store gamerInfo={gamerInfo} />} />
+
             </Routes>
           </div>
         </div>

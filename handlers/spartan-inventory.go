@@ -214,15 +214,12 @@ func GetInventory(c *gin.Context, gamerInfo requests.GamerInfo) SpartanInventory
 			fmt.Println(err)
 		}
 		configID := inventoryResponse.PlayerCustomizations[0].Result.Appearance.Emblem.ConfigurationId
-		fmt.Println("Emblem: ", inventoryResponse.PlayerCustomizations[0].Result.Appearance.Emblem)
-		fmt.Println("Emblem ConfigID: ")
 
 		emblemPath := inventoryResponse.PlayerCustomizations[0].Result.Appearance.Emblem.EmblemPath
 		parts := strings.Split(emblemPath, "/")
 		targetPart := parts[len(parts)-1]
 		targetPart = strings.TrimSuffix(targetPart, ".json")
 
-		fmt.Println("Extracted part:", targetPart)
 		emblemData := rawResponse[targetPart].(map[string]interface{})
 		configData := emblemData[fmt.Sprint(configID)]
 
@@ -236,11 +233,9 @@ func GetInventory(c *gin.Context, gamerInfo requests.GamerInfo) SpartanInventory
 			fmt.Println("Error unmarshaling into EmblemInfo:", err)
 		}
 
-		fmt.Println("EmblemInfo:", emblem)
 		emblemPngPath := "https://gamecms-hacs.svc.halowaypoint.com/hi/Waypoint/file/" + emblem.EmblemCmsPath
 		nameplatePngPath := "https://gamecms-hacs.svc.halowaypoint.com/hi/Waypoint/file/" + emblem.NameplateCmsPath
-		fmt.Println("Urls:", emblemPngPath)
-		fmt.Println("Urls:", nameplatePngPath)
+
 		emblem.EmblemImageData = FetchImageData(emblemPngPath, gamerInfo)
 		emblem.NameplateImageData = FetchImageData(nameplatePngPath, gamerInfo)
 		emblemColors := GetColorPercentages(emblem.NameplateImageData)

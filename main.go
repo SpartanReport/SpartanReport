@@ -6,36 +6,36 @@ import (
 	"halotestapp/db"
 	halotestapp "halotestapp/handlers"
 	"log"
+	"os"
 	"time"
 
 	"cloud.google.com/go/storage"
 	"github.com/gin-gonic/gin"
-	"github.com/newrelic/go-agent/v3/integrations/nrgin"
-	"github.com/newrelic/go-agent/v3/newrelic"
+	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"google.golang.org/api/option"
 )
 
 func main() {
-	app, err := newrelic.NewApplication(
-		newrelic.ConfigAppName("Halo Tracker"),
-		newrelic.ConfigLicense("b21e4fbeac174bef0b2e89db026e09b2FFFFNRAL"),
-		newrelic.ConfigAppLogForwardingEnabled(true),
-	)
-	if err != nil {
-		fmt.Println("Error with NR!")
-	}
 	// Initialize Google Cloud Storage Client
 	ctx := context.Background()
-	client, err := storage.NewClient(ctx)
+
+	client, err := storage.NewClient(ctx, option.WithCredentialsFile("./google-key.json"))
 	if err != nil {
 		log.Fatalf("Failed to create client: %v", err)
 	}
 	client.Bucket("haloseasondata")
+	err = godotenv.Load("./initialsetup.env")
+	if err != nil {
+		log.Fatal("Error loading .env file", err)
+	}
+
+	mongodb_host := os.Getenv("MONGODB_HOST")
 
 	// Initialize MongoDB Client
-	db.MongoClient, err = mongo.NewClient(options.Client().ApplyURI("mongodb://10.136.201.119:27017/"))
+	db.MongoClient, err = mongo.NewClient(options.Client().ApplyURI(mongodb_host))
 	if err != nil {
 		fmt.Println("Error creating MongoDB client:", err)
 		return
@@ -76,10 +76,6 @@ func main() {
 		c.Next()
 	})
 
-	// Existing middleware and routes
-	r.Use(nrgin.Middleware(app))
-
-	r.Use(nrgin.Middleware(app))
 	r.LoadHTMLGlob("client/build/index.html")
 	// Static files
 	r.StaticFile("/styles.css", "./client/build/styles.css")
@@ -101,6 +97,7 @@ func main() {
 	r.POST("/progression", halotestapp.HandleProgression)
 	r.POST("/operations", halotestapp.HandleOperations)
 	r.POST("/operationdetails", halotestapp.HandleOperationDetails)
+	r.POST("/store", halotestapp.HandleStore)
 
 	r.POST("/match/:id", halotestapp.HandleMatch)
 
