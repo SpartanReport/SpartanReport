@@ -129,7 +129,7 @@ const Progression = ({ gamerInfo ,HaloStats, setHaloStats, setSelectedMatch}) =>
                 {getRankContainer(careerTrack.CurrentProgress.Rank, true)}
                 {careerTrack.CurrentProgress.Rank+1 < careerLadder.Ranks.length && getRankContainer(careerTrack.CurrentProgress.Rank+1, false)}
               </div>
-              <p>Road to Hero is {(Math.floor((careerTrack.CurrentProgress.TotalXPEarned / 9319351) * 10000) / 100).toFixed(2)}% complete!</p>
+              <p className='HeroProgress'>Road to Hero is {(Math.floor((careerTrack.CurrentProgress.TotalXPEarned / 9319351) * 10000) / 100).toFixed(2)}% complete!</p>
             </div>
           </div>
     
@@ -138,16 +138,17 @@ const Progression = ({ gamerInfo ,HaloStats, setHaloStats, setSelectedMatch}) =>
               <div className="card-header">
                 <h1>Averages Per Playlist</h1>
               </div>
-              <div className="card-body playlist-card-body">
-                <table className="xp-table">
-                  <thead>
-                    <tr>
+              <thead>
+                    <tr className='top-icon-bar'>
                       <th>Playlist</th>
                       <th><i className="xp-icon"></i></th>
                       <th><i className="time-icon"></i></th>
                       <th><i className="rate-icon"></i></th>
                     </tr>
-                  </thead>
+              </thead>
+              <div className="card-body playlist-card-body">
+                <table className="xp-table">
+   
                   <tbody>
                     {playlistMultiplierArray
                       .map((playlistData, index) => {
@@ -160,7 +161,7 @@ const Progression = ({ gamerInfo ,HaloStats, setHaloStats, setSelectedMatch}) =>
                       })
                       .sort((a, b) => b.xpPerMinute - a.xpPerMinute)
                       .map((playlistData, index) => (
-                        <tr key={index}>
+                        <tr className='table-element' key={index}>
                           <td>{playlistData.name}</td>
                           <td>{parseInt(playlistData.adjusted_xp)}</td>
                           <td>{playlistTimes[playlistData.name]} Min</td>
@@ -174,7 +175,7 @@ const Progression = ({ gamerInfo ,HaloStats, setHaloStats, setSelectedMatch}) =>
           </div>
     
           <div className="grid-row-full rank-table-outer-container">
-            <div className="card mb-5">
+            <div className="card mb-5 rank-table-elem">
             <div className='RankTable'>
               <RankTable
                 currentRank={careerTrack.CurrentProgress.Rank}

@@ -29,7 +29,7 @@ const RankTable = ({ rankImages, careerLadder, currentRank }) => {
                     {imagesForTooltip.map((imageData, idx) => {
                         const currentRankIndex = rankIndex + (idx - 1); // Adjusts to get the correct rank index for the Before, Current, and After images
                         return (
-                            <div key={idx}>
+                            <div className="tooltip-rank-slice" key={idx}>
                                 <img
                                     className="skipped-rank-image"
                                     src={`data:image/jpeg;base64,${imageData}`}
@@ -48,7 +48,7 @@ const RankTable = ({ rankImages, careerLadder, currentRank }) => {
 
     return (
         <table className="rank-images-table">
-            <tbody>
+            <tbody className='rank-images-body'>
                 {rankColors.map((color, colorIndex) => (
                     <>
                         <tr key={`${colorIndex}-title`}>
@@ -80,7 +80,7 @@ const RankTable = ({ rankImages, careerLadder, currentRank }) => {
                                                 <div className="static-content">
                                                     <div className="text-container"></div>
                                                     <img
-                                                        className={`rank-image ${isCurrentRank ? "pulse-animation" : ""}`}
+                                                        className={`rank-image-tooltip ${isCurrentRank ? "pulse-animation" : ""}`}
                                                         src={`data:image/jpeg;base64,${imageData}`}
                                                         alt={`Rank ${rankIndex} Icon`}
                                                     />

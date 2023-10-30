@@ -1,7 +1,7 @@
   /* styles.css */
   .rank-image {
-    width: 150px;  /* or whatever width you want */
-    height: auto;  /* maintain aspect ratio */
+    width: 150px;
+    height: auto;
 	margin-bottom: 10px;
 
 }
@@ -9,19 +9,30 @@
     margin: 0 auto;
   }
 .rank-card{
-    max-width: 600px;  /* or whatever maximum width you want */
-    height: 70vh;      /* your existing height setting */
+    max-width: 600px;
+    height: 70vh;
+    background: rgba(7, 7, 7, 0.2);
+    backdrop-filter: blur(10px);
+    border-radius: 10px;
+    border: 3px solid #01010108;
+
+
+
 }
 .playlist-card{
-    max-width: 600px;  /* or whatever maximum width you want */
-    height: 70vh;      /* your existing height setting */
+    max-width: 600px;
+    height: 70vh;
+    background: rgba(7, 7, 7, 0.2);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    border: 3px solid #01010108;
+
 }
 
-
-
 .rank-container {
-    
-    background-color: #f8f8f8;
+    background: rgba(255, 255, 255, 0.129);
+    backdrop-filter: blur(10px);
+    color: white;
     border: 1px solid #e0e0e0;
     transition: transform .3s;
     padding: 20px;
@@ -32,7 +43,7 @@
     text-align: center;
     padding: 20px;
     border-radius: 10px;
-    width: 275px;  /* Adjust width as necessary */
+    width: 275px;
     flex-shrink: 0; /* Prevents resizing */
     
 }
@@ -40,34 +51,19 @@
     transform: scale(1.05);
   }
 .playlist-card-body {
-    padding: 10px;
     max-height: calc(70vh - 50px);
     overflow-y: auto;
-    
+    overflow-x:hidden;
+    border-radius: 10px;
 }
 
-
-.playlist-card-body::-webkit-scrollbar {
-    width: 8px;
+.table-element{
+    color: white;
+    border-bottom: 1px;
 }
-
-.playlist-card-body::-webkit-scrollbar-thumb {
-    background-color: #888;
-    border-radius: 4px;
-}
-
-.playlist-card-body::-webkit-scrollbar-thumb:hover {
-    background-color: #555;
-}
-
-.playlist-card-body::-webkit-scrollbar-track {
-    background-color: #f7f7f7;
-}
-
 .rank-header {
     font-weight: bold;
     margin-bottom: 10px;
-	
 }
 
 .rank-subtext{
@@ -75,17 +71,18 @@
 }
 
 .rank-row {
-    
     display: flex;
     padding: 10px 15px 20px 25px; /* top, right, bottom, left */
-
     gap: 20px; /* Space between containers */
 }
 
 
 .rank-spotlight {
     flex: 1;
-    background-color: #f0f0f0; /* Highlight background */
+    background: rgba(255, 255, 255, 0.129);
+    backdrop-filter: blur(10px);
+    color: white;
+
 }
 .rank-spotlight-image {
     width: 200px;  /* or whatever width you want */
@@ -111,13 +108,14 @@
 }
 .card-header {
     position: sticky;
-    top: 0;
     z-index: 100;  /* To ensure it stays above the other content */
-      color: #333;
-  font-size: 28px;
+    color: white;
+    font-size: 28px;
     border-radius: 10px 10px 0 0;
-    background: linear-gradient(to right, #f0f0f0, #f8f8f8);
+    background: rgba(7, 7, 7, 0.2);
+    backdrop-filter: blur(10px);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 10px;
 }
 .card-body{
     padding: 0; /* Remove the padding */
@@ -149,36 +147,42 @@
   /* Additions to your styles.css */
   .xp-table {
     width: 100%;
-    
-    border-collapse: separate;
+    transform: scale(0.95);
+    border: 1px solid #ffffff30;
+
+
+    border-collapse: separate !important;
+    background: rgba(255, 255, 255, 0.129);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    margin-bottom: 15px;
     border-spacing: 0 8px;
 }
-
-.xp-table tbody tr:nth-child(odd) {
-    background-color: #f7f7f7;
+.xp-table tbody tr{
+    z-index: 1; /* lower than the header */
 }
 
+
 .xp-table tbody tr:hover {
-    background-color: #e0e0e0;
-    transform: scale(1.01);
-    transition: transform 0.2s;
+    transform: scale(1.05);
 }
 
 
 .xp-table thead th {
     padding: 12px 10px;
-    background: rgba(217, 217, 217, 0);
-    backdrop-filter: blur(1px);
+    background: rgb(217, 217, 217);
 
+    backdrop-filter: blur(1px);
+    position: sticky;
+    z-index: 20000000;  /* higher than other elements */
     border: none;
     font-weight: 600;
 }
 
-.xp-table tbody tr:hover {
-    background-color: #F5F5F5;
-}
+
 
 .xp-table td, .xp-table th {
+    top: 0px;  /* 0px if you don't have a navbar, but something is required */
     padding: 8px;
     text-align: center;
 }
@@ -202,6 +206,33 @@
 .rate-icon::before {
     content: "XP/min";
 }
+.top-icon-bar{
+    transform: scale(0.90);
+    color: white;
+    margin-bottom: 10px;
+}
+
+.top-icon-bar th:nth-child(1) {
+    width: 60%;
+    text-align: center;
+}
+
+.top-icon-bar th:nth-child(2) {
+    width: 12%;
+    text-align: center;
+
+}
+
+.top-icon-bar th:nth-child(3) {
+    width: 35%;
+    text-align: center;
+
+    
+}
+
+.top-icon-bar th:nth-child(4) {
+    width: 20%;
+}
 
 .progress-bar {
     height: 5px;
@@ -216,8 +247,6 @@
     overflow: hidden;
   }
   .RankTable {
-    background: rgba(184, 184, 184, 0.3);
-    backdrop-filter: blur(1px);
     border-radius: 10px;
 
     max-height: auto;
@@ -228,25 +257,31 @@
 
 @media (max-width: 400px) {
     .RankTable {
-        background: rgba(184, 184, 184, 0);
-        backdrop-filter: blur(1px);
-    
+
         transform: scale(0.8);
     }
 }
 
+.rank-table-elem{
+    background: rgba(255, 255, 255, 0.029);
+    backdrop-filter: blur(10px);
 
+
+}
 .grid-container {
     display: grid;
     grid-template-rows: auto auto;
     grid-template-columns: 1fr 1fr;
+    
   }
   
   .grid-col {
-    /* Your column styles */
+    border-radius: 10px;
+
   }
   
   .grid-row-full {
+    
     grid-column: 1 / -1;
   }
   
@@ -263,4 +298,11 @@
   .rank-table-outer-container {
     margin: auto;      /* centers the table in the grid cell */
   }
+.HeroProgress{
+    text-align: center;
+    color: white;
+    background: rgba(7, 7, 7, 0.2);
+    backdrop-filter: blur(10px);
+    font-style: italic;
+}
   

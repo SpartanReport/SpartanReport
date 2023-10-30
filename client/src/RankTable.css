@@ -13,8 +13,6 @@
 
 .first-column-content {
     transform: translateX(15%);
-
-    
 }
 
 /* For the last column's tooltip */
@@ -27,17 +25,30 @@
 .rank-image {
     max-width: 50px;
     max-height: 70px;
-    background-color: #F0F0F0; /* Sets background to gray */
+    background: rgba(255, 255, 255, 0.129);
+    backdrop-filter: blur(10px);
     border-radius: 10px; /* for rounded corners */
+    border: 1px solid #ffffff30;
+
     transition: transform .3s; /* hover effect */
 }
 .rank-image:hover {
     transform: scale(1.05); /* zoom in a bit on hover */
 }
 
+.rank-image-tooltip {
+    max-width: 50px;
+    max-height: 70px;
+    background: rgba(255, 255, 255, 0.129);
+    backdrop-filter: blur(10px);
+    border-radius: 10px; /* for rounded corners */
+    border: 1px solid #ffffff30;
+
+    transition: transform .3s; /* hover effect */
+}
 .tooltip-header {
     font-weight: bold;
-    font-size: 1em;
+    font-size: 2em;
     padding: 3px 0;
     border-bottom: 1px solid #ccc;
     margin-bottom: 5px;
@@ -48,9 +59,11 @@
 .card-tooltip {
     border: 1px solid #000000;
     border-radius: 10px; /* bigger rounded corners */
-    padding: 10px;
+    padding: 20px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* softer shadow */
-    background: #f8f8f8; /* light background */
+    background: rgba(4, 4, 4, 0.849);
+    backdrop-filter: blur(200px);
+    color: white;
 }
 
 
@@ -59,10 +72,24 @@
     justify-content: space-between;
     margin: 5px 0;
 }
+.text-container{
+    text-align: center;
+    font-style: italic;
+    font-weight: 700;
+    font-size:medium;
+}
+.tooltip-rank-slice{
+    border: 1px solid #000000;
+    border-radius: 10px;
+    margin: 5px;
+    background: rgba(107, 107, 107, 0.256);
+    backdrop-filter: blur(10px);
 
+}
 .skipped-rank-image {
-    width: 40px; /* adjust as needed */
-    height: 60px; /* adjust as needed */
+    width: 50px; /* adjust as needed */
+    height: 70px; /* adjust as needed */
+    margin: 5px;
 }
 
 .color-label {
@@ -72,8 +99,8 @@
 .tooltip {
     position: absolute;
     z-index: 1000;
-    background-color: #333;
     color: white;
+    
     padding: 10px;
     border-radius: 5px;
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
@@ -85,8 +112,9 @@
 
 
 .current-rank {
-    background-color: red;  /* Highlight with a gold color for example */
+    border: 2px solid #ffffff;
     transition: background-color 0.3s ease; /* Smooth transition */
+    border-radius: 10px;
 }
 
 
@@ -98,7 +126,6 @@
 
 .rankTableContainer {
     
-    background-color: #f8f8f8; /* light background */
     border: 1px solid #e0e0e0; /* light border */
     border-radius: 10px; /* rounded corners */
     transition: transform .3s; /* hover effect */
@@ -115,13 +142,13 @@
 
 
 .rankCategory {
-    background-color: #f8f8f8; /* light background */
     margin: 10px;
     padding: 20px; /* more padding for spaciousness */
     border-radius: 10px; /* rounded corners */
     border: 1px solid #e0e0e0; /* light border */
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* shadow for depth */
     transition: transform .3s; /* hover effect */
+    
 }
 .rankCategory:hover {
     transform: scale(1.05); /* zoom in a bit on hover */
@@ -134,6 +161,9 @@
     width: 100%;
     border-collapse: separate;
     border-spacing: 1px;
+    backdrop-filter: blur(10px);
+    background: rgba(7, 7, 7, 0.2);
+
 }
 
 .row-title-header {
@@ -141,18 +171,21 @@
     font-weight: bold;
     font-size: 24px !important;
     padding: 10px;
+    border-radius: 10px 10px 0px 0px;
+    background: rgba(7, 7, 7, 0.2);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    color: white;
+
 }
 
 .rank-images-table td:hover {
-    background-color: #f5f5f5;
-    cursor: pointer;
+    background: rgba(7, 7, 7, 0.3);
 }
 
 .rank-images-table th,
 .rank-images-table td {
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* shadow for depth */
-    border-radius: 10px; 
-    
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* shadow for depth */    
     font-size: 10px;
     position: relative;
 }
