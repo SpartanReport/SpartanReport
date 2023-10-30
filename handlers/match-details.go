@@ -9,22 +9,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type FileDetail struct {
-	Prefix string `json:"Prefix"`
-}
-
 type AssetStats struct {
-	PlaysRecent int `json:"PlaysRecent"`
-	// ... other fields
-}
-
-type PlaylistInfo struct {
-	AssetId    string     `json:"AssetId"`
-	VersionId  string     `json:"VersionId"`
-	PublicName string     `json:"PublicName"`
-	Files      FileDetail `json:"Files"`
-	AssetStats AssetStats `json:"AssetStats"`
-	// ... add other fields as needed
+	PlaysRecent int `json:"PlaysRecent" gorm:"type:int"`
 }
 
 type Medal struct {
@@ -100,13 +86,6 @@ type Player struct {
 	ParticipationInfo ParticipationInfo `json:"ParticipationInfo"`
 	PlayerTeamStats   []PlayerTeamStats `json:"PlayerTeamStats"`
 	Profile           PlayerProfile     // Add this line to include the PlayerProfile
-}
-
-type Match struct {
-	MatchId   string    `json:"MatchId"`
-	MatchInfo MatchInfo `json:"MatchInfo"`
-	Teams     []Team    `json:"Teams"`
-	Players   []Player  `json:"Players"`
 }
 
 type MatchData map[string]interface{}

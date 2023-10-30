@@ -110,16 +110,10 @@ func PopulatePlayerProgressionData(progressionData *ProgressionDataToSend, gamer
 	GetCareerRankImage(careerLadder, &careerTrack, gamerInfo)
 
 	targetPlayerId := "xuid(" + gamerInfo.XUID + ")"
-	averages, averageDuration := calculateAveragePersonalScoreForPlaylists(progressionData.HaloStats, targetPlayerId)
+	fmt.Println("TargetID: ", targetPlayerId)
 
-	// Apply multipliers
-	adjustedAverages := applyMultiplierToScores(averages)
-
-	progressionData.GamerInfo = gamerInfo
-	progressionData.AdjustedAverages = adjustedAverages
 	progressionData.CareerLadder = careerLadder
 	progressionData.CareerTrack = careerTrack
-	progressionData.AverageDurations = averageDuration
 	// Query the database for rank images
 	rankImages, err := GetRankImagesFromDB()
 	if err != nil {
@@ -129,6 +123,81 @@ func PopulatePlayerProgressionData(progressionData *ProgressionDataToSend, gamer
 
 	progressionData.RankImages = rankImages
 	progressionData.RankImages = rankImages
+	// Fetch match IDs from the progression_data document
+	var dataWithMatchIDs struct {
+		GamerInfo    requests.GamerInfo
+		MatchDetails []TruncatedResultsToStore
+	}
+	err = db.GetData("progression_data", bson.M{"gamerinfo.xuid": gamerInfo.XUID}, &dataWithMatchIDs)
+	if err != nil {
+		HandleError(c, err)
+		return
+	}
+
+	// Extract match IDs to a slice
+	matchIDs := make([]string, len(dataWithMatchIDs.MatchDetails))
+	for i, truncatedResult := range dataWithMatchIDs.MatchDetails {
+		matchIDs[i] = truncatedResult.MatchId
+	}
+
+	// Batch fetching from MongoDB
+	filter := bson.M{"MatchId": bson.M{"$in": matchIDs}}
+	cursor, err := db.GetCollection("detailed_matches").Find(context.TODO(), filter)
+	if err != nil {
+		HandleError(c, err)
+		return
+	}
+
+	matchDataMap := make(map[string]Match)
+	for cursor.Next(context.TODO()) {
+		var detailedMatch Match
+		if err := cursor.Decode(&detailedMatch); err != nil {
+			HandleError(c, err)
+			return
+		}
+		matchDataMap[detailedMatch.MatchId] = detailedMatch
+	}
+
+	cursor.Close(context.TODO())
+
+	var haloData HaloData
+	var mu sync.Mutex
+	var wg sync.WaitGroup
+
+	for _, truncatedResult := range dataWithMatchIDs.MatchDetails {
+		wg.Add(1)
+		go func(matchID string, LastTeamId int, Outcome int, Rank int, PresentAtEndOfMatch bool) {
+			defer wg.Done()
+			detailedMatch, exists := matchDataMap[matchID]
+			if !exists {
+				fmt.Println("Data for MatchId not found:", matchID)
+				return
+			}
+
+			formattedMatch := formatMatchStats(gamerInfo.SpartanKey, detailedMatch)
+			formattedMatch.MatchInfo = formatMatchTimes(formattedMatch.MatchInfo)
+
+			mu.Lock()
+			haloData.Results = append(haloData.Results, Result{Match: detailedMatch, MatchId: matchID, LastTeamId: LastTeamId, Outcome: Outcome, Rank: Rank, PresentAtEndOfMatch: PresentAtEndOfMatch})
+			mu.Unlock()
+		}(truncatedResult.MatchId, truncatedResult.LastTeamId, truncatedResult.Outcome, truncatedResult.Rank, truncatedResult.PresentAtEndOfMatch)
+	}
+
+	wg.Wait()
+
+	progressionData.HaloStats = haloData
+	progressionData.HaloStats.ResultCount = len(haloData.Results)
+	progressionData.HaloStats.Count = len(haloData.Results)
+
+	averages, averageDuration := calculateAveragePersonalScoreForPlaylists(progressionData.HaloStats, targetPlayerId)
+
+	fmt.Println("Averages: ", averages)
+	// Apply multipliers
+	adjustedAverages := applyMultiplierToScores(averages)
+
+	progressionData.GamerInfo = gamerInfo
+	progressionData.AdjustedAverages = adjustedAverages
+	progressionData.AverageDurations = averageDuration
 
 }
 
@@ -149,7 +218,6 @@ func HandleProgression(c *gin.Context) {
 		PopulatePlayerProgressionData(&progressionData, gamerInfo, c)
 		c.JSON(http.StatusOK, progressionData)
 		return
-
 	}
 	// Endpoint to get total matches played by user
 	playerMatchCount := PlayerMatchCount{}
@@ -171,6 +239,7 @@ func HandleProgression(c *gin.Context) {
 		HandleError(c, err)
 		return
 	}
+
 	var wg sync.WaitGroup
 	// Get Details for each match
 	for _, haloStats := range allHaloStats {
@@ -188,6 +257,39 @@ func HandleProgression(c *gin.Context) {
 				formattedMatch.MatchInfo = formatMatchTimes(formattedMatch.MatchInfo)
 				haloStats.Results[i].Match = formattedMatch
 
+				mu.Lock()
+				mergedHaloData.Results = append(mergedHaloData.Results, haloStats.Results[i])
+				mu.Unlock()
+
+			}(haloStats, i)
+		}
+	}
+
+	wg.Wait() // Wait for all goroutines to complete
+
+	var MatchIDsToStore []string
+	var LastTeamIdsToStore []int
+	var OutcomesToStore []int
+	var RankToStore []int
+	var PresentAtEndOfMatch []bool
+
+	for _, haloStats := range allHaloStats {
+		for i := range haloStats.Results {
+			wg.Add(1)
+
+			go func(haloStats HaloData, i int) {
+				defer wg.Done()
+				matchID := haloStats.Results[i].MatchId
+				TeamID := haloStats.Results[i].LastTeamId
+				Outcome := haloStats.Results[i].Outcome
+				Present := haloStats.Results[i].PresentAtEndOfMatch
+				Rank := haloStats.Results[i].Rank
+
+				detailedMatch, _ := GetMatchStats(c, gamerInfo.SpartanKey, matchID)
+				formattedMatch := formatMatchStats(gamerInfo.SpartanKey, detailedMatch)
+				formattedMatch.MatchInfo = formatMatchTimes(formattedMatch.MatchInfo)
+				haloStats.Results[i].Match = formattedMatch
+
 				// For PlaylistInfo
 				playlistAssetID := haloStats.Results[i].Match.MatchInfo.Playlist.AssetId
 				playlistVersionID := haloStats.Results[i].Match.MatchInfo.Playlist.VersionId
@@ -195,29 +297,46 @@ func HandleProgression(c *gin.Context) {
 					return
 				}
 				var playlistInfo PlaylistInfo
+				fmt.Println("Checking Playlist Details")
 				err := FetchPlaylistDetails(gamerInfo.SpartanKey, playlistAssetID, playlistVersionID, &playlistInfo)
 
 				if err != nil {
 					fmt.Println("Error fetching playlist details ", err)
 					return
 				} else {
+					// Add playlist info to BOTH storage match and match info to be returned
+					formattedMatch.MatchInfo.PlaylistInfo = playlistInfo
 					haloStats.Results[i].Match.MatchInfo.PlaylistInfo = playlistInfo
+
 				}
+
+				// Save detailed match data to a new collection in MongoDB
+				err = db.StoreDataMatch("detailed_matches", formattedMatch, matchID)
+				if err != nil {
+					fmt.Println("Error storing detailed match:", err)
+					return
+				}
+
 				mu.Lock()
-				mergedHaloData.Results = append(mergedHaloData.Results, haloStats.Results[i])
+				MatchIDsToStore = append(MatchIDsToStore, matchID)
+				LastTeamIdsToStore = append(LastTeamIdsToStore, TeamID)
+				OutcomesToStore = append(OutcomesToStore, Outcome)
+				RankToStore = append(RankToStore, Rank)
+				PresentAtEndOfMatch = append(PresentAtEndOfMatch, Present)
+
 				mu.Unlock()
 			}(haloStats, i)
 		}
 	}
 
-	wg.Wait() // Wait for all goroutines to complete
+	wg.Wait()
 	careerTrack := GetCareerStats(gamerInfo, c)
 	careerLadder := GetCareerLadder(gamerInfo, c)
 	careerTrack.CurrentProgress.TotalXPEarned = CalculateTotalXPGainedSoFar(careerLadder, careerTrack.CurrentProgress.Rank) + careerTrack.CurrentProgress.PartialProgress
+
 	rankImages, err = GetRankImagesFromDB()
 	if err != nil {
-		HandleError(c, err) // Assume HandleError is a function you've defined to handle errors
-		return
+		fmt.Println("Error getting rank images from database ", err)
 	}
 
 	targetPlayerId := "xuid(" + gamerInfo.XUID + ")"
@@ -237,19 +356,38 @@ func HandleProgression(c *gin.Context) {
 	}
 	data.RankImages = rankImages
 
-	dataToStore := ProgressionDataToSend{
-		HaloStats: mergedHaloData,
+	dataToStore := struct {
+		GamerInfo    requests.GamerInfo
+		MatchDetails []TruncatedResultsToStore
+	}{
 		GamerInfo: gamerInfo,
 	}
 
+	// Populate the MatchDetails slice
+	for i := range MatchIDsToStore {
+		dataToStore.MatchDetails = append(dataToStore.MatchDetails, TruncatedResultsToStore{
+			MatchId:             MatchIDsToStore[i],
+			LastTeamId:          LastTeamIdsToStore[i],
+			Outcome:             OutcomesToStore[i],
+			Rank:                RankToStore[i],
+			PresentAtEndOfMatch: PresentAtEndOfMatch[i],
+		})
+	}
 	// Cache the data for future use
 	err = db.StoreData("progression_data", dataToStore)
 	if err != nil {
 		HandleError(c, err)
 		return
 	}
+	var progressionDataSend ProgressionDataToSend
+	err = db.GetData("progression_data", bson.M{"gamerinfo.xuid": gamerInfo.XUID}, &progressionDataSend)
+	// Match Data from Database found!
+	if err == nil {
+		PopulatePlayerProgressionData(&progressionDataSend, gamerInfo, c)
+		c.JSON(http.StatusOK, progressionDataSend)
+		return
+	}
 
-	c.JSON(http.StatusOK, data)
 }
 
 func AreRankImagesStored() (bool, error) {
@@ -271,6 +409,7 @@ func (ris RankImageSlice) Less(i, j int) bool { return ris[i].Rank < ris[j].Rank
 func (ris RankImageSlice) Swap(i, j int)      { ris[i], ris[j] = ris[j], ris[i] }
 
 func GetAllRankImages(careerLadder CareerLadderResponse, gamerInfo requests.GamerInfo) ([]RankImage, error) {
+	fmt.Println("Getting Rank Images..")
 	var rankImages RankImageSlice
 	var mu sync.Mutex
 	var wg sync.WaitGroup
@@ -461,6 +600,7 @@ func calculateAveragePersonalScoreForPlaylists(data HaloData, targetPlayerId str
 		return map[string]float64{}, nil
 	}
 	for _, result := range data.Results {
+		fmt.Println(result.Match.MatchInfo.PlaylistInfo.PublicName)
 		if !result.PresentAtEndOfMatch {
 			continue
 		}

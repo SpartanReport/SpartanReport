@@ -14,56 +14,9 @@ import (
 var matchInfoMutex sync.Mutex
 var playlistInfoMutex sync.Mutex
 
-type MatchInfo struct {
-	StartTime           string       `json:"StartTime"`
-	EndTime             string       `json:"EndTime"`
-	Duration            string       `json:"Duration"`
-	LifecycleMode       int          `json:"LifecycleMode"`
-	GameVariantCategory int          `json:"GameVariantCategory"`
-	LevelId             string       `json:"LevelId"`
-	MapVariant          Asset        `json:"MapVariant"`
-	UgcGameVariant      Asset        `json:"UgcGameVariant"`
-	Playlist            Asset        `json:"Playlist"`
-	PlaylistInfo        PlaylistInfo `json:"PlaylistInfo"`
-	PlaylistMapModePair Asset        `json:"PlaylistMapModePair"`
-	ClearanceId         string       `json:"ClearanceId"`
-	PlaylistExperience  int          `json:"PlaylistExperience"`
-	SeasonId            string       `json:"SeasonId"`
-	PlayableDuration    string       `json:"PlayableDuration"`
-	TeamsEnabled        bool         `json:"TeamsEnabled"`
-	TeamScoringEnabled  bool         `json:"TeamScoringEnabled"`
-	GameplayInteraction int          `json:"GameplayInteraction"`
-	FormattedStartTime  string
-	FormattedEndTime    string
-	PublicName          string `json:"PublicName"`
-	MapImagePath        string `json:"MapImagePath"`
-}
-
-type Result struct {
-	MatchId             string `json:"MatchId"`
-	Match               Match  `json:"Match"`
-	LastTeamId          int    `json:"LastTeamId"`
-	Outcome             int    `json:"Outcome"`
-	Rank                int    `json:"Rank"`
-	PresentAtEndOfMatch bool   `json:"PresentAtEndOfMatch"`
-}
-
-type HaloData struct {
-	Start       int      `json:"Start"`
-	Count       int      `json:"Count"`
-	ResultCount int      `json:"ResultCount"`
-	Results     []Result `json:"Results"`
-}
 type TemplateData struct {
 	HaloStats HaloData
 	GamerInfo requests.GamerInfo // Assuming GamerInfo is of type requests.GamerInfo
-}
-
-// Define a common Asset struct
-type Asset struct {
-	AssetKind int    `json:"AssetKind"`
-	AssetId   string `json:"AssetId"`
-	VersionId string `json:"VersionId"`
 }
 
 const GamerInfoKey = "gamerInfoKey"

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"halotestapp/db"
 	requests "halotestapp/requests"
 	"net/http"
 	"sort"
@@ -28,9 +29,10 @@ type Season struct {
 	OperationTrackPath    string `json:"OperationTrackPath"`
 	SeasonMetadata        string `json:"SeasonMetadata"`
 	SeasonMetadataDetails SeasonMetadata
-	StartDate             Date `json:"StartDate"`
-	EndDate               Date `json:"EndDate"`
-	IsActive              bool `json:"IsActive"`
+	StartDate             Date                  `json:"StartDate"`
+	EndDate               Date                  `json:"EndDate"`
+	IsActive              bool                  `json:"IsActive"`
+	SeasonProgression     OperationRewardTracks `json:"UserSeasonProgression"`
 }
 
 type Event struct {
@@ -151,8 +153,9 @@ type MediaURL struct {
 }
 
 type OperationsData struct {
-	Seasons   Seasons
-	GamerInfo requests.GamerInfo
+	Seasons         Seasons
+	GamerInfo       requests.GamerInfo
+	UserProgression UserSeasonProgression
 }
 type SpecificOpsData struct {
 	GamerInfo requests.GamerInfo `json:"gamerInfo"`
@@ -168,6 +171,41 @@ type RewardResult struct {
 type StoredData struct {
 	SeasonOperationTrackPath string `bson:"season_operation_track_path"`
 	Data                     Track  `bson:"data"`
+}
+
+type CurrentProgressSeason struct {
+	Rank              int  `json:"Rank"`
+	PartialProgress   int  `json:"PartialProgress"`
+	IsOwned           bool `json:"IsOwned"`
+	HasReachedMaxRank bool `json:"HasReachedMaxRank"`
+}
+
+type OperationRewardTracks struct {
+	RewardTrackPath  string          `json:"RewardTrackPath"`
+	TrackType        string          `json:"TrackType"`
+	CurrentProgress  CurrentProgress `json:"CurrentProgress"`
+	PreviousProgress interface{}     `json:"PreviousProgress"`
+	IsOwned          bool            `json:"IsOwned"`
+	BaseXp           interface{}     `json:"BaseXp"`
+	BoostXp          interface{}     `json:"BoostXp"`
+}
+
+type UserSeasonProgression struct {
+	ActiveOperationRewardTrackPath    string                  `json:"ActiveOperationRewardTrackPath"`
+	OperationRewardTracks             []OperationRewardTracks `json:"OperationRewardTracks"`
+	ScheduledOperationRewardTrackPath string                  `json:"ScheduledOperationRewardTrackPath"`
+}
+
+func appendMatchingSeasonProgression(seasons []Season, userSeasonProgression UserSeasonProgression) []Season {
+	for i := range seasons {
+		for _, operationRewardTrack := range userSeasonProgression.OperationRewardTracks {
+			if operationRewardTrack.RewardTrackPath == seasons[i].OperationTrackPath {
+				seasons[i].SeasonProgression = operationRewardTrack
+				break
+			}
+		}
+	}
+	return seasons
 }
 
 func getCoreFromInventoryItemPath(inventoryItemPath string) string {
@@ -233,6 +271,20 @@ func HandleOperations(c *gin.Context) {
 		season := &seasons.Seasons[i]
 		season.SeasonMetadataDetails = GetSeasonMetadata(gamerInfo, *season)
 
+	}
+	userProgress := UserSeasonProgression{}
+
+	// Get Season Progress
+	if gamerInfo.XUID != "" {
+		url := "https://economy.svc.halowaypoint.com/hi/players/xuid(" + gamerInfo.XUID + ")/rewardtracks/operations?view=all"
+		hdrs := map[string]string{}
+		hdrs["343-clearance"] = gamerInfo.ClearanceCode
+		err = makeAPIRequest(gamerInfo.SpartanKey, url, hdrs, &userProgress)
+		if err != nil {
+			fmt.Println("Error while getting user season progression: ", err)
+			return
+		}
+		seasons.Seasons = appendMatchingSeasonProgression(seasons.Seasons, userProgress)
 	}
 
 	data := OperationsData{
@@ -334,6 +386,7 @@ func GetTrackImages(gamerInfo requests.GamerInfo, Ranks []Rank) []Rank {
 			results <- RewardResult{} // Send an empty result to ensure channel doesn't block
 		} else {
 			currentItemResponse.CommonData.Core = core // Assign Core
+
 			results <- RewardResult{Path: path, ImageData: rawImageData, Item: currentItemResponse.CommonData}
 		}
 	}
@@ -379,6 +432,8 @@ func GetTrackImages(gamerInfo requests.GamerInfo, Ranks []Rank) []Rank {
 				if invReward.InventoryItemPath == result.Path {
 					rank.FreeRewards.InventoryRewards[idx].ItemImageData = result.ImageData
 					rank.FreeRewards.InventoryRewards[idx].ItemMetaData = result.Item
+					db.StoreData("item_data", rank.FreeRewards.InventoryRewards[idx])
+
 				}
 			}
 			for idx, currReward := range rank.FreeRewards.CurrencyRewards {
@@ -394,6 +449,8 @@ func GetTrackImages(gamerInfo requests.GamerInfo, Ranks []Rank) []Rank {
 				if invReward.InventoryItemPath == result.Path {
 					rank.PaidRewards.InventoryRewards[idx].ItemImageData = result.ImageData
 					rank.PaidRewards.InventoryRewards[idx].ItemMetaData = result.Item
+					fmt.Println("Loading in ", rank.PaidRewards.InventoryRewards[idx].ItemMetaData.Title)
+					db.StoreData("item_data", rank.PaidRewards.InventoryRewards[idx])
 
 				}
 			}
