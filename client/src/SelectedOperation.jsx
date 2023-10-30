@@ -4,6 +4,7 @@ import "./selectedoperation.css";
 import xpboostImage from './xpboost.png';
 import currencyImage from './credit.png';
 import challengeSwap from './challengeswap.png';
+import checkmark from "./checkmark.svg"
 
 function SelectedOperation({ gamerInfo, seasonData, handleBackClick, SeasonImage }) {
   const [trackData, setTrack] = useState([]);
@@ -19,6 +20,7 @@ function SelectedOperation({ gamerInfo, seasonData, handleBackClick, SeasonImage
         const response = await axios.post('http://localhost:8080/operationdetails', payload);
         setTrack(response.data);
         console.log(response.data)
+        console.log(seasonData.UserSeasonProgression.CurrentProgress)
       } catch (error) {
         console.error("Error fetching Spartan inventory:", error);
       }
@@ -160,17 +162,24 @@ function SelectedOperation({ gamerInfo, seasonData, handleBackClick, SeasonImage
         <p className="date-text"><strong>{seasonData.SeasonMetadataDetails.DateRange.value}</strong></p>
         <p className="custom-text-3"><strong>Is Active: </strong>{String(seasonData.IsActive)}</p>
         <div className="scrollable-ranks">
-          {trackData.Ranks && trackData.Ranks.map((rank, index) => (
-            <div key={index} className="season-rank-container">
-              <div className="rank-number">Rank {index + 1}</div>
+        {trackData.Ranks && trackData.Ranks.map((rank, index) => {
+          // Check if rank is completed
+          const isCompleted = index < seasonData.UserSeasonProgression.CurrentProgress.Rank;
+          return (
+            <div key={index} className={`season-rank-container ${isCompleted ? "completed-rank" : ""}`}>
+                <div className="rank-number">
+                  {isCompleted && <img src={checkmark} className="completed-checkmark" alt="Completed" />}
+                  {index + 1}
+                </div>
               <div className="season-rank-row">
                 {displayRewards(rank)}
               </div>
             </div>
-          ))}
-        </div>
+          )
+        })}
       </div>
     </div>
+  </div>
   );
 }
 

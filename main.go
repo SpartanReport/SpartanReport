@@ -33,9 +33,9 @@ func main() {
 		log.Fatalf("Failed to create client: %v", err)
 	}
 	client.Bucket("haloseasondata")
+
 	// Initialize MongoDB Client
 	db.MongoClient, err = mongo.NewClient(options.Client().ApplyURI("mongodb://10.136.201.119:27017/"))
-
 	if err != nil {
 		fmt.Println("Error creating MongoDB client:", err)
 		return
@@ -53,9 +53,12 @@ func main() {
 	}
 	defer db.MongoClient.Disconnect(ctx)
 
+	err = db.CreateIndex("detailed_matches", bson.D{{"MatchId", 1}})
 	if err != nil {
 		fmt.Println("Error creating index:", err)
+		return
 	}
+
 	r := gin.Default()
 
 	// Global CORS middleware

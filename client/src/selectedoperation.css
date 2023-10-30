@@ -64,6 +64,7 @@
     white-space: nowrap;
     
 }
+
 .item-type{
     text-align: center;
     background: rgba(255, 255, 255, 0.1);
@@ -84,7 +85,7 @@
     transform: scale(0.9);
     display: flex;
     overflow-x: auto;
-    height: 500px;
+    height: 450px;
   }
   .season-rank-container{
     border-radius: 10px;
@@ -102,6 +103,7 @@
   }
 
   .track-label-div{
+    padding-top: 10px;
     transform: translateY(20%);
   }
 .track-label{
@@ -115,12 +117,15 @@
 }
 .rank-number{
     color: white;
-    text-align: center;
+    background: rgba(7, 7, 7, 0.431);
     padding-bottom: 15px;
     font-size: larger;
     font-style: italic;
     font-weight: 900;
+    padding-left: 10%;
 }
+
+
 .season-rank-card {    
     background: rgba(255, 255, 255, 0.5);
     height: 300px;
@@ -128,10 +133,18 @@
     border-radius: 10px;
     border: 1px solid #000000;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    margin-right: 10px;
-    margin-top: 50px;
-}
+    margin-top: 60px;
+    margin-left:10px;
+    margin-right:10px;
 
+}
+.season-rank-card:hover{
+  transform: scale(1.05); /* Make the card slightly larger */
+  border-radius: 15px; /* bigger rounded corners */
+  cursor: pointer;
+  background-color: #e0e0e0; /* Darken the background a bit */
+
+}
 
 .text-overlay {
     position: absolute;
@@ -173,3 +186,14 @@
     background: linear-gradient(#2D597C, #2D597C);
   }
   
+  .completed-rank {
+    border: 2px solid green; /* or whatever color you like */
+  }
+  
+  .completed-checkmark {
+    width: 20px;
+    height:20px;
+    margin-right: 10px;    
+    border-radius: 5px;
+    background-color: green;
+  }

@@ -21,7 +21,7 @@ const Progression = ({ gamerInfo ,HaloStats, setHaloStats, setSelectedMatch}) =>
           // Use gamerInfo in the Axios POST request
           const response = await axios.post('http://localhost:8080/progression', gamerInfo);
           console.log(response.data.AverageDurations)
-          console.log(response.data.HaloStats)
+          console.log("Halo Stats" , response.data.HaloStats)
           console.log(response.data.careerLadder)
           console.log(response.data.RankImages)
 
