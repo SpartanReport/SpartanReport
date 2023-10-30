@@ -1,6 +1,6 @@
-import useFetchSpartanInventory from "./useFetchSpartanInventory";
+import useFetchSpartanInventory from "../useFetchSpartanInventory";
 import { useEffect } from "react";
-import "./styles.css"
+import "../Styles/styles.css"
 function AuthenticatedContent({ gamerInfo }) {
   const [spartanInventory, isLoading, fetchSpartanInventory] = useFetchSpartanInventory(gamerInfo);
 

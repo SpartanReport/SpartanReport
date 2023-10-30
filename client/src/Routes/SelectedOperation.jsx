@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react'; 
 import axios from 'axios';
-import "./selectedoperation.css";
-import xpboostImage from './xpboost.png';
-import currencyImage from './credit.png';
-import challengeSwap from './challengeswap.png';
-import checkmark from "./checkmark.svg"
+import "../Styles/selectedoperation.css";
+import xpboostImage from '../xpboost.png';
+import currencyImage from '../credit.png';
+import challengeSwap from '../challengeswap.png';
+import checkmark from "../checkmark.svg"
 
 function SelectedOperation({ gamerInfo, seasonData, handleBackClick, SeasonImage }) {
   const [trackData, setTrack] = useState([]);

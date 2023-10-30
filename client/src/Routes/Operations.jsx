@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import './operations.css';
+import '../Styles/operations.css';
 import SelectedOperation from './SelectedOperation';
 
 const Operations = ({ gamerInfo }) => {

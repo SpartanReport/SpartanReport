@@ -76,10 +76,10 @@ func main() {
 		c.Next()
 	})
 
-	r.LoadHTMLGlob("client/build/index.html")
+	r.LoadHTMLGlob("../client/build/index.html")
 	// Static files
-	r.StaticFile("/styles.css", "./client/build/styles.css")
-	r.Static("/static", "./client/build/static")
+	r.StaticFile("/styles.css", "../client/build/src/Styles/styles.css")
+	r.Static("/static", "../client/build/src/Styles")
 
 	// Routes without middleware
 	r.GET("/", halotestapp.HandleWelcome)

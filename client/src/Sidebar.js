@@ -1,7 +1,7 @@
 // Sidebar.js
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import './Sidebar.css';
+import './Styles/Sidebar.css';
 
 const Sidebar = ({ clearCookie, isAuthenticated, startAuth }) => {
   const navigate = useNavigate();

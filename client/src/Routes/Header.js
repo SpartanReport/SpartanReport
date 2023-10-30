@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import './header.css';
-import useFetchSpartanInventory from "./useFetchSpartanInventory";
+import '../Styles/header.css';
+import useFetchSpartanInventory from "../useFetchSpartanInventory";
 import { useNavigate, useLocation } from 'react-router-dom';
 function hexToRgb(hex) {
   // Remove the hash at the start if it's there

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import "./styles.css"
-import "./store.css"
+import "../Styles/styles.css"
+import "../Styles/store.css"
 
 const Store = ({ gamerInfo }) => {
     const [isLoading, setIsLoading] = useState(true);

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Tooltip } from 'react-tippy';
 import 'tippy.js/dist/tippy.css'; // don't forget the CSS
-import "./RankTable.css";
+import "../Styles/RankTable.css";
 
 const RankTable = ({ rankImages, careerLadder, currentRank }) => {
         if (!careerLadder || !careerLadder.Ranks) {

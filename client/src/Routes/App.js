@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import "./styles.css"
+import "../Styles/styles.css"
 import 'bootstrap/dist/css/bootstrap.min.css';
 import AuthenticatedContent from './AuthenticatedContent';
 import Spartan from './Spartan';
 import Stats from './Stats';
 import Progression from './Progression';
 import MatchStats from './match-stats';
-import Header from './Header';
+import Header from './Header'
 import UnauthenticatedContent from './UnauthenticatedContent';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import Sidebar from './Sidebar';
-import "./svgwave.css"
+import Sidebar from '../Sidebar';
+import "../Styles/svgwave.css"
 import Operations from './Operations';
 import Store from './store';
 

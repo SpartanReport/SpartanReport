@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import useFetchSpartanInventory from './useFetchSpartanInventory';
-import "./styles.css"
+import useFetchSpartanInventory from '../useFetchSpartanInventory';
+import "../Styles/styles.css"
 
 // Include gamerInfo in the function signature
 const Spartan = ({ gamerInfo}) => {
