@@ -12,7 +12,7 @@ Spartan Report is a project designed to track various statistics and data for Ha
 # Server Setup
 The Back-End of this project is written in Go. Running the backend requires a MongoDB server to be set up. [You may follow this walkthrough](https://www.mongodb.com/docs/manual/installation/) to get this up and running
 - Clone the repository:
-   - `git clone https://github.com/mirackara/HaloTracker.git`
+   - `git clone https://github.com/mirackara/SpartanReport.git`
  
 - Navigate to Server folder
   - `cd Server`
