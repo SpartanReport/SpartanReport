@@ -1,4 +1,4 @@
-package halotestapp
+package spartanreport
 
 import (
 	"encoding/base64"

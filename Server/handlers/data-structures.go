@@ -1,6 +1,6 @@
-package halotestapp
+package spartanreport
 
-import requests "halotestapp/requests"
+import requests "spartanreport/requests"
 
 // Struct stored in
 type ProgressionDataToStore struct {

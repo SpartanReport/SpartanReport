@@ -1,8 +1,8 @@
-package halotestapp
+package spartanreport
 
 import (
-	requests "halotestapp/requests"
 	"net/http"
+	requests "spartanreport/requests"
 	"sync"
 	"time"
 

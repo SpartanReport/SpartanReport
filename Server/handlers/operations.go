@@ -1,13 +1,13 @@
-package halotestapp
+package spartanreport
 
 import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"halotestapp/db"
-	requests "halotestapp/requests"
 	"net/http"
 	"sort"
+	"spartanreport/db"
+	requests "spartanreport/requests"
 	"strings"
 	"time"
 

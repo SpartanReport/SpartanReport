@@ -1,10 +1,10 @@
-package halotestapp
+package spartanreport
 
 import (
 	"encoding/json"
 	"fmt"
-	requests "halotestapp/requests"
 	"net/http"
+	requests "spartanreport/requests"
 	"sync"
 	"time"
 

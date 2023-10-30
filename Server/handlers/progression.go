@@ -1,16 +1,16 @@
-package halotestapp
+package spartanreport
 
 import (
 	"context"
 	"encoding/base64"
 	"fmt"
-	"halotestapp/db"
-	requests "halotestapp/requests"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"regexp"
 	"sort"
+	"spartanreport/db"
+	requests "spartanreport/requests"
 	"strconv"
 	"strings"
 	"sync"

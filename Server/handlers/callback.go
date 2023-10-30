@@ -1,9 +1,9 @@
-package halotestapp
+package spartanreport
 
 import (
 	"fmt"
-	requests "halotestapp/requests"
 	"net/http"
+	requests "spartanreport/requests"
 )
 
 // handleCallback handles the OAuth callback and processes the authorization code

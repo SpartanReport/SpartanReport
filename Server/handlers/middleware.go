@@ -1,11 +1,11 @@
-package halotestapp
+package spartanreport
 
 import (
 	"encoding/json"
 	"fmt"
-	requests "halotestapp/requests"
 	"io/ioutil"
 	"net/http"
+	requests "spartanreport/requests"
 
 	"github.com/gin-gonic/gin"
 )

@@ -3,10 +3,10 @@ package main
 import (
 	"context"
 	"fmt"
-	"halotestapp/db"
-	halotestapp "halotestapp/handlers"
 	"log"
 	"os"
+	"spartanreport/db"
+	spartanreport "spartanreport/handlers"
 	"time"
 
 	"cloud.google.com/go/storage"
@@ -82,24 +82,19 @@ func main() {
 	r.Static("/static", "../client/build/src/Styles")
 
 	// Routes without middleware
-	r.GET("/", halotestapp.HandleWelcome)
-
-	// Wrap the standard http HandlerFunc to gin.HandlerFunc
+	r.GET("/", spartanreport.HandleWelcome)
 	r.GET("/callback", func(c *gin.Context) {
-		halotestapp.HandleCallback(c.Writer, c.Request)
+		spartanreport.HandleCallback(c.Writer, c.Request)
 	})
-	r.GET("/startAuth", halotestapp.HandleAuth)
-
-	// Grouping routes that require gamer info
-	r.GET("/account", halotestapp.HandleAuthenticated)
-	r.POST("/spartan", halotestapp.HandleInventory)
-	r.POST("/stats", halotestapp.HandleStats)
-	r.POST("/progression", halotestapp.HandleProgression)
-	r.POST("/operations", halotestapp.HandleOperations)
-	r.POST("/operationdetails", halotestapp.HandleOperationDetails)
-	r.POST("/store", halotestapp.HandleStore)
-
-	r.POST("/match/:id", halotestapp.HandleMatch)
+	r.GET("/startAuth", spartanreport.HandleAuth)
+	r.GET("/account", spartanreport.HandleAuthenticated)
+	r.POST("/spartan", spartanreport.HandleInventory)
+	r.POST("/stats", spartanreport.HandleStats)
+	r.POST("/progression", spartanreport.HandleProgression)
+	r.POST("/operations", spartanreport.HandleOperations)
+	r.POST("/operationdetails", spartanreport.HandleOperationDetails)
+	r.POST("/store", spartanreport.HandleStore)
+	r.POST("/match/:id", spartanreport.HandleMatch)
 
 	fmt.Println("Server started at :8080")
 	r.Run(":8080")
