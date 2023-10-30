@@ -18,8 +18,9 @@ const Sidebar = ({ clearCookie, isAuthenticated, startAuth }) => {
         <button onClick={() => handleNavigation("/progression")} className="list-group-item list-group-item-action">Progression</button>
         <button onClick={() => handleNavigation("/stats")} className="list-group-item list-group-item-action">Battle History</button>
         <button onClick={() => handleNavigation("/operations")} className="list-group-item list-group-item-action">Operations</button>
-
         <button onClick={() => handleNavigation("/spartan")} className="list-group-item list-group-item-action">Spartan</button>
+        <button onClick={() => handleNavigation("/store")} className="list-group-item list-group-item-action">Store</button>
+
       </div>
       <div className="right-aligned">
         <button className="clear-cookie-button btn btn-danger" onClick={isAuthenticated ? clearCookie : startAuth}>
