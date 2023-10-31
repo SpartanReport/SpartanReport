@@ -71,3 +71,25 @@
     width: 90%; /* Take up the full width of the container */
     border-radius: 0px 0px 10px 10px;
 }
+.rank-img{
+    position: relative;
+    height:80%;
+    width:80%;
+    transform: translateX(12%);
+}
+.card-footer-rank {
+    transform: translateY(50%);
+    border-radius: 0px 0px 10px 10px;
+
+    text-align: center;
+    color: white;
+    background: rgba(7, 7, 7, 0.2);
+    backdrop-filter: blur(10px);
+    font-style: italic;
+
+  }
+
+.progression-card-size {
+    width: 200px;  /* Set your own width */
+    height: 300px; /* Set your own height */
+  }

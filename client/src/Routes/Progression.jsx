@@ -72,7 +72,6 @@ const Progression = ({ gamerInfo ,HaloStats, setHaloStats, setSelectedMatch}) =>
   console.log(careerLadder)
 
   const getRankImageData = (rankIndex) => {
-    // Look up the rank image in the rankImages array
     const rankImage = rankImages[rankIndex].Image
     console.log("Rank Image: ", rankImage)
     return rankImage

@@ -94,6 +94,8 @@ func main() {
 	r.POST("/operations", spartanreport.HandleOperations)
 	r.POST("/operationdetails", spartanreport.HandleOperationDetails)
 	r.POST("/store", spartanreport.HandleStore)
+	r.POST("/ranking", spartanreport.SendRanks)
+
 	r.POST("/match/:id", spartanreport.HandleMatch)
 
 	fmt.Println("Server started at :8080")

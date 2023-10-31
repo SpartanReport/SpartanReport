@@ -78,6 +78,30 @@ type PlayerMatchCount struct {
 	MatchmadeMatchesPlayedCount int `json:"MatchmadeMatchesPlayedCount"`
 }
 
+func SendRanks(c *gin.Context) {
+	var gamerInfo requests.GamerInfo
+	if err := c.ShouldBindJSON(&gamerInfo); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	careerTrack := GetCareerStats(gamerInfo, c)
+	careerLadder := GetCareerLadder(gamerInfo, c)
+	careerTrack.CurrentProgress.TotalXPEarned = CalculateTotalXPGainedSoFar(careerLadder, careerTrack.CurrentProgress.Rank) + careerTrack.CurrentProgress.PartialProgress
+
+	rankImages, err := GetRankImagesFromDB()
+	if err != nil {
+		fmt.Println("Error getting rank images from database ", err)
+	}
+	data := ProgressionDataToSend{
+		GamerInfo:    gamerInfo,
+		CareerTrack:  careerTrack,
+		CareerLadder: careerLadder,
+		RankImages:   rankImages,
+	}
+	c.JSON(http.StatusOK, data)
+
+}
+
 func GetRankImagesFromDB() ([]RankImage, error) {
 	collection := db.GetCollection("rank_images")
 	cur, err := collection.Find(context.TODO(), bson.M{})
@@ -173,9 +197,6 @@ func PopulatePlayerProgressionData(progressionData *ProgressionDataToSend, gamer
 				fmt.Println("Data for MatchId not found:", matchID)
 				return
 			}
-
-			formattedMatch := formatMatchStats(gamerInfo.SpartanKey, detailedMatch)
-			formattedMatch.MatchInfo = formatMatchTimes(formattedMatch.MatchInfo)
 
 			mu.Lock()
 			haloData.Results = append(haloData.Results, Result{Match: detailedMatch, MatchId: matchID, LastTeamId: LastTeamId, Outcome: Outcome, Rank: Rank, PresentAtEndOfMatch: PresentAtEndOfMatch})
