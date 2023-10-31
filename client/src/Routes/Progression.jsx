@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useLocation } from 'react-router-dom'; // Import useLocation
 import "../Styles/progression.css"
-import "../Styles/svgwave.css"
 import RankTable from './RankTable';
 
 const Progression = ({ gamerInfo ,HaloStats, setHaloStats, setSelectedMatch}) => {

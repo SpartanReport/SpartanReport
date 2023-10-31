@@ -132,7 +132,6 @@ const Store = ({ gamerInfo }) => {
     
     return (
         <div>
-            <h1 className="ops-title">Store</h1>
             <div className="offerings-container">
                 {renderOfferings()}
             </div>

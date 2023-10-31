@@ -1,0 +1,195 @@
+.navbar-container {
+  text-align: center;
+  font-size: medium;
+  padding: 10px 20px;
+  padding: 0; 
+  margin-left: 50px;
+  position: absolute;
+}
+.header-wrapper {
+  background: rgba(0,0,0,0.3);
+  color: #E4E6EB;
+  padding: 5px;
+  position: fixed;
+  bottom: 0;
+  left: 0px;
+  z-index: 1;
+  backdrop-filter: blur(10px);
+}
+
+
+.spartan-title {
+  font-family: 'Oswald', sans-serif;
+  font-size: 24px;
+  padding-left:15px;
+  color: #80cde9;
+  margin-bottom: 0px;
+}
+
+.title-container {
+  margin-top:10px;
+  margin-left:50px;
+  text-align: center;
+  width: 95%;
+  position: absolute;
+  background-color: #273b44;
+  border-left: 5px solid #80cde9;
+  border-right: 40px solid #1D435D;
+}
+
+.App-nav {
+  display: flex;
+  margin-top: 50px;
+  gap: 15px;
+}
+
+.nav-button {
+  font-family: 'Oswald', sans-serif;
+  font-size:large;
+  color: #80cde9;
+  background-color: transparent;
+  border: none;
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  flex: 1;
+  border-top: 2px solid #477289;
+  position: relative;
+  flex-wrap:nowrap;
+  white-space: nowrap;
+}
+
+.nav-button-wrapper {
+  position: relative;
+  display: flex;
+  flex: 1;
+  padding: 0;
+  margin: 0;
+}
+
+  /* Top-left dot */
+  .nav-button-wrapper::before {
+    content: ''; 
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    width: 2px;
+    height: 2px;
+    background-color: #80cde9;
+    z-index: 10;
+}
+
+/* Top-right dot */
+.nav-button-wrapper::after {
+    content: '';  
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    width: 2px;
+    height: 2px;
+    background-color: #80cde9;
+    z-index: 1;
+}
+
+/* Bottom-left dot */
+.nav-button::before {
+    content: ''; 
+    position: absolute;
+    bottom: 0px;
+    left: 0px;
+    width: 2px;
+    height: 2px;
+    background-color: #80cde9;
+}
+
+/* Bottom-right dot */
+.nav-button::after {
+    content: '';  
+    position: absolute;
+    bottom: 0px;
+    right: 0px;
+    width: 2px;
+    height: 2px;
+    background-color: #80cde9;
+}
+  
+.nav-button:hover {
+  background-color: #477289;
+  border-top: 2px solid #80cde9;
+  color: #FFF; /* Setting text color to white */
+
+}
+
+
+/* Active button styling */
+.nav-button.active {
+  color: #FFF; /* Setting text color to white */
+  background-color: #477289;
+  border-top: 2px solid #80cde9;
+}
+
+/* Change the dot colors to white for active button */
+.nav-button.active::before, 
+.nav-button.active::after {
+  background-color: #FFF; /* Bottom dots */
+}
+
+.nav-button:hover::before, 
+.nav-button:hover::after {
+  background-color: #FFF; /* Bottom dots during hover */
+}
+
+/* Change the top dot colors to white for the wrapper containing the hovered/active button */
+.nav-button-wrapper:hover::before, 
+.nav-button-wrapper:hover::after,
+.nav-button-wrapper .nav-button.active + ::before, 
+.nav-button-wrapper .nav-button.active + ::after {
+  background-color: #FFF; /* Top dots */
+}
+
+
+.nav-button-wrapper.active-wrapper::before, 
+.nav-button-wrapper.active-wrapper::after {
+  background-color: #FFF; /* Top dots */
+}
+
+.hamburger-button {
+
+  cursor: pointer;
+}
+
+
+.dropdown-menu {
+  position: absolute;
+  margin-top: 60px;
+  z-index: 10;
+  background-color: transparent;
+  background: rgba(0, 0, 0, 0);
+  backdrop-filter: blur(10px);
+  flex-direction: column;
+  display:flex; /* Ensuring it is displayed */
+  z-index: 101;
+}
+
+.nav-button:hover {
+  background-color: #477289;
+  border-top: 2px solid #80cde9;
+  color: #FFF;
+}
+
+.nav-button.active {
+  color: #FFF;
+  background-color: #477289;
+  border-top: 2px solid #80cde9;
+}
+
+#page-content-wrapper {
+  margin-top: 150px;
+  margin-left: 50px;
+  margin-right:50px;
+}
+
+.dropdown-menu button {
+  margin-top: 5px;
+  margin-bottom: 5px;
+}

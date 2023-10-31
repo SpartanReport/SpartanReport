@@ -62,7 +62,6 @@ const Operations = ({ gamerInfo }) => {
     };
     return (
         <div>
-            <h1 className="ops-title">Operations</h1>
             {selectedSeason === null ? (
                 <div className="operations-container">
                     {operationsData.map((season, index) => (

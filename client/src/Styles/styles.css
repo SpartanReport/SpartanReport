@@ -14,7 +14,7 @@
   }
 
 html {
-  background-color: var(--primary-color);
+  background-color: #1A282E;
   	background-size: cover; /* This will cover the entire viewport */
     background-repeat: no-repeat; /* This will prevent the image from repeating */
 }
@@ -168,7 +168,7 @@ nav ul li a:hover {
   }
   .d-flex{
 	
-	background-color: var(--primary-color);
+    background-color: #1A282E;
 	
   }
 
