@@ -1,11 +1,70 @@
 .offerings-container {
     display: flex;
     flex-wrap: wrap;
-    gap: 0px; /* No gaps between the items */
+    gap: 5px;
+    margin-bottom: 100px;
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+}
+
+.offering-row {
+    display: flex;
+    flex-direction: column; /* Stacking vertically */
+    flex-wrap: nowrap;
+    margin-bottom: 5px; /* Added this to give 5px margin at the bottom of each row */
+}
+
+.offering.active {
+    transform: scale(1.2);
+}
+
+.offering:hover {
+    transform: scale(1.02); /* Make the card slightly larger */
+    border-radius: 10px; /* bigger rounded corners */
+    cursor: pointer;
+    background: rgba(7, 7, 7, 0.3);
+    z-index: 2; /* Make it above other elements */
 }
 
 .offering {
+    color: white;
     box-sizing: border-box;
-    border: 1px solid black; /* Adding a border to visualize each card */
-    margin: 10px;
+    border-radius: 10px;
+    border: 1px solid black;
+    background: rgba(7, 7, 7, 0.2);
+    border-radius: 5px;
+    border: 1px solid #000000;
+    border-radius: 10px; /* bigger rounded corners */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* softer shadow */
+    transition: all 0.3s ease;
+    margin-bottom: 5px; /* Adding margin-bottom to every offering */
+}
+
+.offering:nth-child(2n) {
+    margin-bottom: 0; /* Remove margin-bottom from every second offering */
+}
+.offer-footer{
+    text-align: center;
+    font-size: small;
+    background: rgba(7, 7, 7, 0.64);
+}
+.offer-footer-2x2{
+    text-align: center;
+    font-size: small;
+    background: rgba(7, 7, 7, 0.64);
+    transform: translateY(-100%);
+
+}
+.offering-title {
+    text-align: center;
+    font-size: small;
+}
+
+.offering-img {
+    height: 88%;  /* Take up the full height of the container */
+    object-fit:contain;  /* Will cover the space without warping, but might clip some of the image off */
+    width: 100%; /* Take up the full width of the container */
+    max-height: 400px;  /* Adjust as needed */
+    max-width: 400px; /* Adjust as needed */
+    border-radius: 0px 0px 10px 10px;
 }

@@ -1,6 +1,7 @@
 package spartanreport
 
 import (
+	"fmt"
 	"net/http"
 	requests "spartanreport/requests"
 	"sync"
@@ -52,7 +53,9 @@ type StoreDataToReturn struct {
 	StoreData StoreData
 }
 type OfferingDetails struct {
-	Title                           string  `json:"Title"`
+	Title struct {
+		Value string `json:"value"`
+	} `json:"Title"`
 	Description                     string  `json:"Description"`
 	Quality                         string  `json:"Quality"`
 	WidthHint                       int     `json:"WidthHint"`
@@ -73,6 +76,7 @@ type OfferingDetails struct {
 	PriceColorOverrideRGB           *string `json:"PriceColorOverrideRGB"`
 	PriceShadowColorOverrideRGB     *string `json:"PriceShadowColorOverrideRGB"`
 	HasFlair                        bool    `json:"HasFlair"`
+	OfferingImage                   string  `json:"OfferingImage"`
 }
 
 func HandleStore(c *gin.Context) {
@@ -88,23 +92,27 @@ func HandleStore(c *gin.Context) {
 
 	makeAPIRequest(gamerInfo.SpartanKey, url, hdrs, &store)
 	basePath := "https://gamecms-hacs.svc.halowaypoint.com/hi/Progression/file/"
+
 	var wg sync.WaitGroup
 	wg.Add(len(store.Offerings))
 
 	for i := range store.Offerings {
+		// Get detailed offering data
 		go func(i int) {
 			defer wg.Done() // Decrement the counter when the goroutine completes
 
 			fullPath := basePath + store.Offerings[i].OfferingDisplayPath
 			var offeringDetails OfferingDetails // Replace with your actual struct
 			makeAPIRequest(gamerInfo.SpartanKey, fullPath, hdrs, &offeringDetails)
-
 			// Safely update the original Offering object
 			store.Offerings[i].OfferingDetails = offeringDetails
+			fmt.Println(offeringDetails.Title.Value)
+
+			url := "https://gamecms-hacs.svc.halowaypoint.com/hi/Images/file/" + store.Offerings[i].OfferingDetails.ObjectImagePath
+			store.Offerings[i].OfferingDetails.OfferingImage, _ = makeAPIRequestImage(gamerInfo.SpartanKey, url, hdrs)
+
 		}(i)
 	}
-
-	// Wait for all API requests to complete
 	wg.Wait()
 
 	data := StoreDataToReturn{
