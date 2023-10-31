@@ -28,12 +28,7 @@ html {
 	padding: 50px;
   }
 
-  .card-title {
-	text-align: center;
-	font-size: 24px;
-	font-weight: bold;
-	margin-top: 10px;
-  }
+
   .card-header{
 	text-align: center;
 
@@ -43,16 +38,19 @@ html {
 	height: auto;
   }
   .main-cards {
-	background-color: #F8F8F8;
-	border-radius: 20px;
-	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.793);
-	display: flex;
-	flex-direction: column;  /* New: Items will stack vertically */
-	align-items: center;  /* Horizontally center-align items */
-	justify-content: top;  /* Vertically center-align items */
-	overflow: hidden;
-	position: relative;
+    color: white;
+    box-sizing: border-box;
+    border-radius: 10px;
+    border: 1px solid black;
+    background: rgba(7, 7, 7, 0.2);
+    border-radius: 5px;
+    border: 1px solid #000000;
+    border-radius: 10px; /* bigger rounded corners */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* softer shadow */
+    transition: all 0.3s ease;
+    margin-bottom: 5px; /* Adding margin-bottom to every offering */
   }
+
 .container {
 	margin: 0 auto;
 	padding: 20px;

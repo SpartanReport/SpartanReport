@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import "../Styles/styles.css"
 import 'bootstrap/dist/css/bootstrap.min.css';
-import AuthenticatedContent from './AuthenticatedContent';
+import Home from './Home';
 import Spartan from './Spartan';
 import Stats from './Stats';
 import Progression from './Progression';
@@ -72,7 +72,7 @@ function App() {
             </div>
             <Routes>
               <Route path="/spartan" element={<Spartan gamerInfo={gamerInfo} spartanInventory={spartanInventory} setSpartanInventory={setSpartanInventory} />} />
-              <Route path="/" element={isAuthenticated ? <AuthenticatedContent gamerInfo={gamerInfo} spartanInventory={spartanInventory}/> : <UnauthenticatedContent startAuth={startAuth} />} />
+              <Route path="/" element={isAuthenticated ? <Home gamerInfo={gamerInfo} spartanInventory={spartanInventory}/> : <UnauthenticatedContent startAuth={startAuth} />} />
               <Route path="/match/:matchId" element={<MatchStats gamerInfo={gamerInfo} HaloStats={HaloStats} selectedMatch={selectedMatch} />} />
               <Route path="/stats" element={<Stats gamerInfo={gamerInfo} HaloStats={HaloStats} setHaloStats={setHaloStats} setSelectedMatch={setSelectedMatch} />} />
               <Route path="/operations" element={<Operations gamerInfo={gamerInfo} />} />

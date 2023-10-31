@@ -1,0 +1,73 @@
+.welcome-title{
+    color:rgb(213, 213, 213);
+    padding-top:60px;
+    padding-left:50px;
+    padding-bottom: 10px;
+    text-align: center;
+    font-style: italic;
+    font-size: large;
+}
+
+.main-grid-container{
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 100px;
+    border-radius: 10px;
+    margin-left:20px;
+    margin-right:20px;
+    background: rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.31); /* softer shadow */
+    backdrop-filter: blur(10px);
+}
+.card-header-spartan {
+    border-radius:10px 10px 0px 0px ;
+    text-align: center;
+    color: white;
+    background: rgba(7, 7, 7, 0.2);
+    backdrop-filter: blur(10px);
+    font-style: italic;
+
+  }
+.card-footer-spartan {
+    transform: translateY(-50%);
+    border-radius: 0px 0px 10px 10px;
+
+    text-align: center;
+    color: white;
+    background: rgba(7, 7, 7, 0.2);
+    backdrop-filter: blur(10px);
+    font-style: italic;
+
+  }
+.welcome-cards {
+    color: white;
+    font-style: italic;
+    border-radius: 10px;
+    border: 1px solid black;
+    background: rgba(7, 7, 7, 0.2);
+    border: 1px solid #000000;
+    border-radius: 10px; /* bigger rounded corners */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.269); /* softer shadow */
+    transition: all 0.3s ease;
+}
+
+.welcome-cards.active {
+    transform: scale(1.2);
+}
+
+.welcome-cards:hover {
+    transform: scale(1.02); /* Make the card slightly larger */
+    border-radius: 10px; /* bigger rounded corners */
+    cursor: pointer;
+    background: rgba(7, 7, 7, 0.3);
+    z-index: 2; /* Make it above other elements */
+}
+
+
+  .spartan-img {
+    transform: translateY(-4%);
+    position: relative;
+    height: 90%;  /* Take up the full height of the container */
+    width: 90%; /* Take up the full width of the container */
+    border-radius: 0px 0px 10px 10px;
+}
