@@ -46,53 +46,47 @@ const Stats = ({ gamerInfo ,HaloStats, setHaloStats, setSelectedMatch}) => {
 
   return (
     <div>
-      {/* Gamer Info Card */}
-      <div className="card mb-5">
-        <div className="card-body">
-          <h5 className="card-title">{gamerInfo.gamertag}</h5>
-          <div className="row align-items-center"> {/* Bootstrap row and alignment class */}
-            <div className="col-3"> {/* Bootstrap column class */}
-              <img src={gamerInfo.gamerpic.medium} alt="Medium Gamerpic" className="rounded" />
-            </div>
-          </div>
-        </div>
+      <div className="title-container-matches">
+        <h1 className="matches-title-home">BATTLE LOG</h1>
       </div>
-      {/* Match Stats */}
-      <div className="card mb-5">
-          <div className="card-header">
-            < h1>Matches</h1>
-          </div>
-          <div className="matches">
-            {HaloStats.Results.map((result, index) => (
-              <Link 
-              key={result.MatchId} 
-              to={`/match/${result.MatchId}`}
-              onClick={() => {
-                setSelectedMatch(result.Match);
-                navigate(`/match/${result.Match.MatchId}`);
-              }}
-              className="match-link">
-              <div className="match" >
-                <img src={result.Match.MatchInfo.MapImagePath} alt="Map" className="match-img" />
-                  <div className="info-col">
-                    <p className="map-name">{result.Match.MatchInfo.PublicName}</p>
-                    <p className="playlist">{result.Match.MatchInfo.PlaylistInfo.PublicName}</p>
-                  </div>
-                  <div className="time-col">
-                    <p>End Time: {result.Match.MatchInfo.FormattedEndTime}</p>
-                    <p>Start Time: {result.Match.MatchInfo.FormattedStartTime}</p>
-                  </div>
-                  {HaloStats.Results[index].PresentAtEndOfMatch ? '' : 'Left Match Early :('}
-                </div>
+      <div>
 
-              </Link>
-            ))}
+{/* Match Stats */}
+<div className="welcome-cards-matches">
+
+    <div className="matches">
+      {HaloStats.Results.map((result, index) => (
+        <Link 
+        key={result.MatchId} 
+        to={`/match/${result.MatchId}`}
+        onClick={() => {
+          setSelectedMatch(result.Match);
+          navigate(`/match/${result.Match.MatchId}`);
+        }}
+        className="match-link">
+        <div className="match" >
+          <img src={result.Match.MatchInfo.MapImagePath} alt="Map" className="match-img" />
+            <div className="info-col">
+              <p className="map-name">{result.Match.MatchInfo.PublicName}</p>
+              <p className="playlist">{result.Match.MatchInfo.PlaylistInfo.PublicName}</p>
+            </div>
+            <div className="time-col">
+              <p>End Time: {result.Match.MatchInfo.FormattedEndTime}</p>
+              <p>Start Time: {result.Match.MatchInfo.FormattedStartTime}</p>
+            </div>
+            {HaloStats.Results[index].PresentAtEndOfMatch ? '' : 'Left Match Early :('}
           </div>
-      </div>
-      <Routes>
-        <Route path="match/:matchId" element={<MatchStats HaloStats={HaloStats} gamerInfo={gamerInfo} />} />
-      </Routes>
+
+        </Link>
+      ))}
     </div>
+</div>
+<Routes>
+  <Route path="match/:matchId" element={<MatchStats HaloStats={HaloStats} gamerInfo={gamerInfo} />} />
+</Routes>
+</div>
+    </div>
+
   );
 };
 

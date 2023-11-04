@@ -13,6 +13,7 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Navbar from './Navbar'
 import Operations from './Operations';
 import Store from './store';
+import ItemDetailsPage from './itemdetails';
 
 function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -70,7 +71,7 @@ function App() {
               <Route path="/operations" element={<Operations gamerInfo={gamerInfo} />} />
               <Route path="/progression" element={<Progression gamerInfo={gamerInfo} HaloStats={HaloStats} setHaloStats={setHaloStats} setSelectedMatch={setSelectedMatch} />} />
               <Route path="/store" element={<Store gamerInfo={gamerInfo} />} />
-
+              <Route path="/item-details" element={<ItemDetailsPage />} />
             </Routes>
           </div>
         </div>

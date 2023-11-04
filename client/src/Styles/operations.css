@@ -6,10 +6,11 @@
     margin: 0 auto;  /* Center horizontally */
     padding-bottom: 30px;
     padding-top: 30px;
-    border-radius: 20px;
-
-    background: rgba(0,0,0,0.3);
+    border: 5px solid #32525E;
+    background: rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.31);
     backdrop-filter: blur(10px);
+    border-radius: 10px;
 }
 .operations-container::-webkit-scrollbar {
     display: none;
@@ -21,33 +22,108 @@
     padding-bottom: 10px;
     text-align: center;
 }
+
 .season-name{
-    font-style: italic;
+    font-family: 'Oswald', sans-serif;
     text-align: center;
+    font-style: normal;
+    font-size: 18px;
+    padding-left: 10px;
+    margin-bottom:0px;
+    color: white;
+    background-color: #4389BA;
+    z-index: 100;
 }
+.live-banner {
+    position: absolute;
+    background-color: red;
+    color: white;
+    padding: 0px 15px;
+    font-weight: bold;
+}
+
 .ops-days{
     text-align: center;
-    font-style: italic;
-    font-weight: bold;
+    font-family: 'Oswald', sans-serif;
+    font-size: 14px;
+    padding-left: 15px;
+    color: white;
+    margin-bottom: 0px;
+    z-index:100;
+    background-color: #4389BA;
+
+
 }
 .ops-date{
     text-align: center;
     font-size: small;
     font-style: italic;
-}
-.season-card {
-    background: rgba(7, 7, 7, 0.2);
+    font-family: 'Oswald', sans-serif;
+    font-size: 14px;
+    padding-left: 15px;
     color: white;
-    position: relative;
-    border-radius: 5px;
-    margin: 5px;
-    min-width: 300px;
-    border: 1px solid #000000;
-    border-radius: 10px; /* bigger rounded corners */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* softer shadow */
-    transition: all 0.3s ease-in-out;
+    margin-bottom: 0px;
+    z-index:100;
+    background-color: #4389BA;
 
 }
+
+
+
+.season-card {
+    color: white;
+    background: rgba(7, 7, 7, 0.2);
+    border: 5px solid #32525E;
+    border-top: 5px solid #477289;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.269);
+    transition: all 0.3s ease;
+    position: relative;
+    margin: 5px;
+    margin-top:50px;
+    min-width: 300px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* softer shadow */
+}
+
+.title-container-operations {
+    margin-top: 10px;
+    margin-left: 50px;
+    text-align: center;
+    width: 85%;
+    position: absolute;
+    background-color: #273b44;
+    border-left: 5px solid #80cde9;
+    border-right: 40px solid #1D435D;
+    z-index: 10;
+    
+  }
+  
+  .subheader-container-operations {
+    margin-top: 50px;
+    margin-left: 50px;
+    text-align: left;
+    width: 85%;
+    position: absolute;
+    background-color: #4389BA;
+    z-index: 10;
+  }
+  
+  .operations-title-operations {
+    font-family: 'Oswald', sans-serif;
+    font-size: 24px;
+    padding-left: 15px;
+    color: white;
+    z-index:100;
+  }
+  
+  .spartan-subheader-home {
+    font-family: 'Oswald', sans-serif;
+    font-size: 18px;
+    padding-left: 40px;
+    margin-top: 5px;
+    padding-bottom: 5px;
+    color: white;
+  }
+  
 .season-img{
     height: 100%;
     object-fit: cover;
@@ -63,8 +139,9 @@
 
 .season-card:hover {
     transform: scale(1.02); /* Make the card slightly larger */
-    border-radius: 10px; /* bigger rounded corners */
     cursor: pointer;
+    border: 5px solid #81CDE9;
+
     background: rgba(7, 7, 7, 0.3);
     z-index: 2; /* Make it above other elements */
 }
@@ -77,13 +154,3 @@
     display: none;
 }
 
-.live-banner {
-    position: absolute;
-    background-color: red;
-    color: white;
-    padding: 5px 15px;
-    border-radius: 5px 0px 0px 0px;
-    height:42px;
-    font-weight: bold;
-    z-index: 3;
-}

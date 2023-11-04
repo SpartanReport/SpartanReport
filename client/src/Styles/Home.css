@@ -6,6 +6,7 @@
   text-align: center;
   font-style: italic;
   font-size: large;
+
 }
 
 .main-grid-container {
@@ -18,6 +19,7 @@
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.31);
   backdrop-filter: blur(10px);
 }
+
 
 .spartan-title-home {
   font-family: 'Oswald', sans-serif;
@@ -123,7 +125,9 @@
 .welcome-cards-spartan.active {
   transform: scale(1.2);
 }
-
+.nav-button .back{
+  padding-left: 10px;
+}
 .welcome-cards-spartan:hover {
   transform: scale(1.02);
   cursor: pointer;

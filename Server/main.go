@@ -27,6 +27,7 @@ func main() {
 		log.Fatalf("Failed to create client: %v", err)
 	}
 	client.Bucket("haloseasondata")
+
 	err = godotenv.Load("./initialsetup.env")
 	if err != nil {
 		log.Fatal("Error loading .env file", err)

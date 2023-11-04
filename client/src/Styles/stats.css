@@ -1,7 +1,46 @@
-body, .card {
-    margin: 0;
-    padding: 0;
+
+.welcome-cards-matches {
+    color: white;
+    height: 30%;
+    background: rgba(7, 7, 7, 0.2);
+    border: 5px solid #32525E;
+    border-top: 5px solid #477289;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.269);
+    transition: all 0.3s ease;
+    margin-top: 70px;
+  
+  }
+  .info-col{
+    color: white;
+  }
+  .match-row{
+    color:white;
+  }
+.time-col{
+    color: white;
 }
-.container {
+  .matches{
+    margin-top: 50px;
+    margin-left: 50px;
+    font-family: 'Oswald', sans-serif;
+
+  }
+
+  .matches-title-home {
+    font-family: 'Oswald', sans-serif;
+    font-size: 24px;
+    color: white;
+    margin-bottom: 0px;
 }
 
+.title-container-matches {
+    margin-top: 10px;
+    margin-left: 50px;
+    text-align: center;
+    width: 85%;
+    position: absolute;
+    background-color: #273b44;
+    border-left: 5px solid #80cde9;
+    border-right: 40px solid #1D435D;
+  }
+  

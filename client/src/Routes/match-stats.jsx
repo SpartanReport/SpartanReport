@@ -35,7 +35,34 @@ const MatchStats = ({gamerInfo, HaloStats,selectedMatch}) => {
   if (!MatchStats) {
     return <div>No Spartan Stats Data</div>;
   }
-
+  function convertISO8601ToMinutesSeconds(duration) {
+    // Match the duration parts using a regular expression
+    const matches = duration.match(/PT(\d+M)?(\d+(\.\d+)?S)?/);
+  
+    if (!matches) {
+      throw new Error('Invalid duration format');
+    }
+  
+    let minutes = 0;
+    let seconds = 0;
+  
+    // If the minutes part is found, parse it as an integer
+    if (matches[1]) {
+      minutes = parseInt(matches[1]);
+    }
+  
+    // If the seconds part is found, parse it as a float and round it
+    if (matches[2]) {
+      seconds = Math.round(parseFloat(matches[2]));
+    }
+  
+    // Format seconds to ensure it has a leading zero if less than 10
+    const formattedSeconds = seconds < 10 ? `0${seconds}` : seconds;
+  
+    // Return the formatted time string
+    return `${minutes}:${formattedSeconds}`;
+  }
+  
   return (
     <>
 {/* Match Stats Card */}
@@ -49,19 +76,16 @@ const MatchStats = ({gamerInfo, HaloStats,selectedMatch}) => {
   <div className="card-body">
     
     <h5 className="card-title">Match Stats</h5>
-    <h1>{selectedMatch.MatchInfo.PublicName}</h1>
-    <p>{selectedMatch.MatchInfo.PlaylistInfo.PublicName}</p>
+    <h3>{selectedMatch.MatchInfo.PlaylistInfo.PublicName} {selectedMatch.MatchInfo.PublicName}</h3>
 
-    <div className="row">
-
+    <div className="row match-row">
       <div className="col">
         <div className="col-md-6">
             <img src={selectedMatch.MatchInfo.MapImagePath} alt="" className="img-fluid scaled-image" />
         </div>
         <p>Start Time: {selectedMatch.MatchInfo.FormattedStartTime}</p>
         <p>End Time: {selectedMatch.MatchInfo.FormattedEndTime}</p>
-        <p>Duration: {selectedMatch.MatchInfo.Duration}</p>
-        <p>Playable Duration: {selectedMatch.MatchInfo.PlayableDuration}</p>
+        <p>Duration: {convertISO8601ToMinutesSeconds(selectedMatch.MatchInfo.PlayableDuration)}</p>
       </div>
     </div>
   </div>

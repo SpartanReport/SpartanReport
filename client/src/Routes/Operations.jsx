@@ -62,8 +62,13 @@ const Operations = ({ gamerInfo }) => {
     };
     return (
         <div>
+
             {selectedSeason === null ? (
-                <div className="operations-container">
+                <div>
+                    <div className="title-container-operations">
+                        <h1 className="operations-title-operations">OPERATIONS</h1>
+                    </div>  
+                    <div className="operations-container">
                     {operationsData.map((season, index) => (
                         <div
                             key={index}
@@ -80,6 +85,7 @@ const Operations = ({ gamerInfo }) => {
                             <p className='ops-days'>{calculateDays(season.SeasonMetadataDetails.DateRange.value)}</p>
                         </div>
                     ))}
+                </div>
                 </div>
             ) : (
                 <SelectedOperation

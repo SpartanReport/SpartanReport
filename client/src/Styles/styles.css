@@ -95,9 +95,14 @@ nav ul li a:hover {
 	margin-bottom: 10px;  /* Adds space below each card */
 	transition: background-color 0.3s ease;  /* Animation */
 	margin-top: 5px;	
-  }
+  border: 5px solid #32525E;
+  border-top: 5px solid #477289;
+
+}
   .match:hover {
-	background-color: #f2f2f2;  /* Background color when hovered */
+    border: 5px solid #81CDE9;
+    background: rgba(71, 114, 137, 0.3);
+
   }
   
   .match-img {
