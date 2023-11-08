@@ -21,7 +21,6 @@ import (
 func main() {
 	// Initialize Google Cloud Storage Client
 	ctx := context.Background()
-
 	client, err := storage.NewClient(ctx, option.WithCredentialsFile("./google-key.json"))
 	if err != nil {
 		log.Fatalf("Failed to create client: %v", err)

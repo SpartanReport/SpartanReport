@@ -88,7 +88,6 @@ func HandleChallengeDeck(c *gin.Context) {
 			err := makeAPIRequest(gamerInfo.SpartanKey, challengeURL, hdrs, &chalDetail)
 			if err != nil {
 				fmt.Println("Error fetching Challenge Detail: ", err)
-				continue
 			}
 			deck.ActiveChallenges[i].ChallengeDetail = chalDetail
 		}

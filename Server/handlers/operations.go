@@ -295,17 +295,49 @@ func HandleOperations(c *gin.Context) {
 	c.JSON(http.StatusOK, data)
 }
 
+func LoadArmorCores(gamerInfo requests.GamerInfo, armorcore string) {
+	url := "https://gamecms-hacs.svc.halowaypoint.com/hi/progression/file/cores/armorcores/" + armorcore + ".json"
+	currentItemResponse := ItemResponse{}
+
+	// Make API Request to get item data
+	err := makeAPIRequest(gamerInfo.SpartanKey, url, nil, &currentItemResponse)
+	if err != nil {
+		fmt.Println("Error making request for item data: ", err)
+	}
+	itemImagePath := currentItemResponse.CommonData.Media.Media.MediaUrl.Path
+	url = "https://gamecms-hacs.svc.halowaypoint.com/hi/images/file/" + itemImagePath
+	rawImageData, err := makeAPIRequestImage(gamerInfo.SpartanKey, url, nil)
+	path := "cores/armorcores/" + armorcore + ".json"
+	t := RewardResult{Path: path, ImageData: rawImageData, Item: currentItemResponse.CommonData}
+	/*
+		type InventoryReward struct {
+			InventoryItemPath string `json:"InventoryItemPath"`
+			Amount            int    `json:"Amount"`
+			Type              string `json:"Type"`
+			ItemImageData     string `json:"ItemImageData"`
+			ItemMetaData      Item   `json:"Item"`
+		}
+	*/
+	reward := InventoryReward{}
+	reward.InventoryItemPath = t.Path
+	reward.Amount = 1
+	reward.Type = "ArmorCore"
+	reward.ItemImageData = rawImageData
+	reward.ItemMetaData = currentItemResponse.CommonData
+	reward.ItemMetaData.Core = armorcore
+	db.StoreData("item_data", reward)
+
+}
+
 func HandleOperationDetails(c *gin.Context) {
 	var SpecificOpsData SpecificOpsData
 	if err := c.ShouldBindJSON(&SpecificOpsData); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-
 	gamerInfo := SpecificOpsData.GamerInfo
 	season := SpecificOpsData.Season
 	key := season.OperationTrackPath
-
 	ctx := context.Background()
 	client, err := storage.NewClient(ctx)
 	if err != nil {
@@ -314,6 +346,8 @@ func HandleOperationDetails(c *gin.Context) {
 	}
 	bucket := client.Bucket("haloseasondata")
 	obj := bucket.Object(key)
+
+	// Quick Function to load all armor cores
 
 	// Try to read the data from Google Cloud Storage first
 	rc, err := obj.NewReader(ctx)
@@ -386,7 +420,6 @@ func GetTrackImages(gamerInfo requests.GamerInfo, Ranks []Rank) []Rank {
 			results <- RewardResult{} // Send an empty result to ensure channel doesn't block
 		} else {
 			currentItemResponse.CommonData.Core = core // Assign Core
-
 			results <- RewardResult{Path: path, ImageData: rawImageData, Item: currentItemResponse.CommonData}
 		}
 	}

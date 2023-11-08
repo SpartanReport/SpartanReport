@@ -104,8 +104,12 @@ const Progression = ({ gamerInfo ,HaloStats, setHaloStats, setSelectedMatch}) =>
                 />
                 <p>{rankTitle} Grade {rankGrade}</p>
                 {isSpotlight ? (
-                    <div className="progress-container">
-                        <progress value={partialProgress} max={xpRequiredForNextRank}></progress>
+                    <div className="progressBarProgression">
+                        <div 
+                          className="progressBarFillProgression" 
+                          style={{ width: `${(partialProgress/xpRequiredForNextRank) * 100}%` }}
+                        >
+                        </div>
                     </div>
                 ) : ""}
                 {isSpotlight ? (
@@ -116,9 +120,16 @@ const Progression = ({ gamerInfo ,HaloStats, setHaloStats, setSelectedMatch}) =>
     }; 
     
     return (
-      <div className="grid-container">
+      <div className="grid-container main-grid-container-progression">
+          <div className="title-container-home">
+            <h1 className="spartan-title-home">PROGRESSION</h1>
+          </div>
+          <div className="subheader-container-home">
+          <svg className="diamond-icon" id="Layer_2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22.92 22.92"><defs></defs><g id="Layer_3"><g><path class="cls-1" d="M11.46,0L0,11.46l11.46,11.46,11.46-11.46L11.46,0ZM3.41,11.46L11.46,3.41l8.05,8.05-8.05,8.05L3.41,11.46Z"/><rect class="cls-1" x="8.16" y="8.16" width="6.59" height="6.59" transform="translate(-4.75 11.46) rotate(-45)"/></g></g></svg>
+            <h1 className="spartan-subheader-home">RANK PROGRESS</h1>
+          </div>
       
-          <div className="grid-col">
+          <div className="grid-col-6">
             <div className="card mb-5 rank-card" style={{height: '70vh'}}>
               <div className="card-header">
                 <h1>Rank</h1>
@@ -131,7 +142,7 @@ const Progression = ({ gamerInfo ,HaloStats, setHaloStats, setSelectedMatch}) =>
             </div>
           </div>
     
-          <div className="grid-col">
+          <div className="grid-col-6">
             <div className="card mb-5 playlist-card">
               <div className="card-header">
                 <h1>Averages Per Playlist</h1>
@@ -171,7 +182,10 @@ const Progression = ({ gamerInfo ,HaloStats, setHaloStats, setSelectedMatch}) =>
               </div>
             </div>
           </div>
-    
+          <div className="subheader-container-rank-table">
+          <svg className="diamond-icon" id="Layer_2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22.92 22.92"><defs></defs><g id="Layer_3"><g><path class="cls-1" d="M11.46,0L0,11.46l11.46,11.46,11.46-11.46L11.46,0ZM3.41,11.46L11.46,3.41l8.05,8.05-8.05,8.05L3.41,11.46Z"/><rect class="cls-1" x="8.16" y="8.16" width="6.59" height="6.59" transform="translate(-4.75 11.46) rotate(-45)"/></g></g></svg>
+            <h1 className="spartan-subheader-home">RANK TABLE</h1>
+          </div>
           <div className="grid-row-full rank-table-outer-container">
             <div className="card mb-5 rank-table-elem">
             <div className='RankTable'>

@@ -73,7 +73,7 @@ function GetCard({card,navigation}){
   return null
 }
 function Home({ gamerInfo }) {
-  const [spartanInventory, isLoading, fetchSpartanInventory] = useFetchSpartanInventory(gamerInfo);
+  const { spartanInventory, armoryRow, isLoading, fetchSpartanInventory } =  useFetchSpartanInventory(gamerInfo);
   const [spartanRank, fetchSpartanRank] = useFetchSpartanRank(gamerInfo);
   const [challengeDeck, isLoadingChallenge, challengeError] = useFetchChallengeDeck(gamerInfo);
   const navigate = useNavigate();

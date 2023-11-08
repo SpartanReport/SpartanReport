@@ -120,10 +120,10 @@ const MatchStats = ({gamerInfo, HaloStats,selectedMatch}) => {
                     borderSpacing: '0'
                   }} ></td>
                   <td className="gamerpic-td">
-                    <img src={player.Profile?.gamerpic.small} alt="Medium Gamerpic" />
+                    <img src={player.Profile?.gamerpic.small} alt="" />
                   </td>
                   <td className="gamertag-td">
-                    {player.Profile?.gamertag || "Unknown"}
+                    {player.Profile?.gamertag || "Bot"}
                   </td>
                   <td className="kills-td">
                     {player.PlayerTeamStats[0]?.Stats?.CoreStats?.Kills}

@@ -15,7 +15,7 @@ function hexToRgb(hex) {
   return `${r}, ${g}, ${b}`;
 }
 const Header = ({ gamerInfo }) => {
-  const [spartanInventory, isLoading, fetchSpartanInventory] = useFetchSpartanInventory(gamerInfo);
+  const { spartanInventory, armoryRow, isLoading, fetchSpartanInventory } = useFetchSpartanInventory(gamerInfo);
   const [forceFetch, setForceFetch] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();

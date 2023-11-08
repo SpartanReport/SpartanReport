@@ -6,6 +6,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"spartanreport/db"
 	requests "spartanreport/requests"
 	"strings"
 
@@ -146,6 +147,18 @@ type CoreDetails struct {
 		} `json:"DisplayPath"`
 	} `json:"CommonData"`
 }
+type ArmoryRowData struct {
+	ID            int    `json:"id"`
+	Name          string `json:"name"`
+	IsHighlighted bool   `json:"isHighlighted"`
+	Image         string `json:"Image,omitempty"`
+	Description   string `json:"Description,omitempty"`
+}
+
+type DataToReturn struct {
+	PlayerInventory []SpartanInventory
+	ArmoryRow       []ArmoryRowData
+}
 
 func HandleInventory(c *gin.Context) {
 	var gamerInfo requests.GamerInfo
@@ -153,84 +166,90 @@ func HandleInventory(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-
 	playerInventory := GetInventory(c, gamerInfo)
-	c.JSON(http.StatusOK, playerInventory)
+	includeArmory := c.Query("includeArmory") == "true"
+	data := DataToReturn{
+		PlayerInventory: playerInventory,
+	}
+	if includeArmory {
+		objects := []ArmoryRowData{}
+		var results = []InventoryReward{}
+
+		err := db.QueryDataByType("item_data", "ArmorCore", &results)
+		for i, reward := range results {
+			coreData := ArmoryRowData{}
+			coreData.ID = i + 1
+			coreData.Name = reward.ItemMetaData.Title.Value
+			coreData.IsHighlighted = false
+			coreData.Image = reward.ItemImageData
+			coreData.Description = reward.ItemMetaData.Description.Value
+
+			// Mark core if it's the equipped core
+			if reward.ItemMetaData.Core == playerInventory[0].CoreDetails.CommonData.Id {
+				coreData.IsHighlighted = true
+			}
+			fmt.Printf("Iteration %d: %v\n", i, reward.ItemMetaData.Core)
+			objects = append(objects, coreData)
+		}
+		if err != nil {
+			fmt.Println("Error querying item data")
+		}
+		data.ArmoryRow = objects
+
+	}
+
+	c.JSON(http.StatusOK, data)
 }
 
-func GetInventory(c *gin.Context, gamerInfo requests.GamerInfo) SpartanInventory {
-	hdrs := http.Header{}
+func GetInventory(c *gin.Context, gamerInfo requests.GamerInfo) []SpartanInventory {
+	fmt.Println("Getting Inventory!")
+	hdrs := map[string]string{}
+	hdrs["343-clearance"] = gamerInfo.ClearanceCode
+	hdrs["Accept"] = "application/json"
 
-	hdrs.Set("X-343-Authorization-Spartan", gamerInfo.SpartanKey)
-	hdrs.Set("343-clearance", gamerInfo.ClearanceCode)
-
-	hdrs.Set("Accept", "application/json")
-
-	client := &http.Client{}
-	req, err := http.NewRequest("GET", "https://economy.svc.halowaypoint.com/hi/customization?players=xuid("+gamerInfo.XUID+")", nil)
-	if err != nil {
-		fmt.Println("oops")
-		fmt.Println(err)
-	}
-
-	req.Header = hdrs
-	resp, err := client.Do(req)
-	if err != nil {
-		fmt.Println(err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		bodyBytes, _ := ioutil.ReadAll(resp.Body)
-		fmt.Printf("Received a non-OK status code %d. Response body: %s\n", resp.StatusCode, string(bodyBytes))
-	}
-
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		fmt.Println("Failed to read response body:", err)
-		return SpartanInventory{}
-	}
-
-	// Check if the response body is empty
-	if len(body) == 0 {
-		fmt.Println("Received an empty response body")
-		return SpartanInventory{}
-	}
-
-	// Unmarshal the response body into the inventoryResponse variable
 	var inventoryResponse InventoryResponse
-	err = json.Unmarshal(body, &inventoryResponse)
-	if err != nil {
-		fmt.Println("Error unmarshaling inventory:", err)
-		return SpartanInventory{}
-	}
+	url := "https://economy.svc.halowaypoint.com/hi/customization?players=xuid(" + gamerInfo.XUID + ")"
+	fmt.Println("querying ", url)
+	makeAPIRequest(gamerInfo.SpartanKey, url, hdrs, &inventoryResponse)
 
-	if len(inventoryResponse.PlayerCustomizations) > 0 {
-		FetchCoreDetails(&inventoryResponse.PlayerCustomizations[0].Result, gamerInfo)
+	spartanInventories := make([]SpartanInventory, 0, len(inventoryResponse.PlayerCustomizations))
+	fmt.Println("Spartan Customization Length: ", len(inventoryResponse.PlayerCustomizations))
+	for _, customization := range inventoryResponse.PlayerCustomizations {
+		FetchCoreDetails(&customization.Result, gamerInfo)
+		// Logic for fetching the emblem path and processing emblem data
 		var rawResponse map[string]interface{}
-
 		if err := makeAPIRequest(gamerInfo.SpartanKey, "https://gamecms-hacs.svc.halowaypoint.com/hi/Waypoint/file/images/emblems/mapping.json", nil, &rawResponse); err != nil {
-			fmt.Println(err)
+			c.Error(err)
+			continue // Skip this iteration due to error
 		}
-		configID := inventoryResponse.PlayerCustomizations[0].Result.Appearance.Emblem.ConfigurationId
 
-		emblemPath := inventoryResponse.PlayerCustomizations[0].Result.Appearance.Emblem.EmblemPath
+		configID := customization.Result.Appearance.Emblem.ConfigurationId
+		emblemPath := customization.Result.Appearance.Emblem.EmblemPath
 		parts := strings.Split(emblemPath, "/")
 		targetPart := parts[len(parts)-1]
 		targetPart = strings.TrimSuffix(targetPart, ".json")
 
-		emblemData := rawResponse[targetPart].(map[string]interface{})
-		configData := emblemData[fmt.Sprint(configID)]
+		emblemData, found := rawResponse[targetPart].(map[string]interface{})
+		if !found {
+			c.Error(fmt.Errorf("Emblem data for %s not found", targetPart))
+			continue // Skip this iteration due to error
+		}
+		configData, found := emblemData[fmt.Sprint(configID)]
+		if !found {
+			c.Error(fmt.Errorf("Config data for ID %v not found", configID))
+			continue // Skip this iteration due to error
+		}
 
 		configDataBytes, err := json.Marshal(configData)
 		if err != nil {
-			fmt.Println("Error marshaling config data:", err)
+			c.Error(err)
+			continue // Skip this iteration due to error
 		}
 
 		var emblem EmblemInfo
 		if err := json.Unmarshal(configDataBytes, &emblem); err != nil {
-			fmt.Println("Error unmarshaling into EmblemInfo:", err)
+			c.Error(err)
+			continue // Skip this iteration due to error
 		}
 
 		emblemPngPath := "https://gamecms-hacs.svc.halowaypoint.com/hi/Waypoint/file/" + emblem.EmblemCmsPath
@@ -239,13 +258,15 @@ func GetInventory(c *gin.Context, gamerInfo requests.GamerInfo) SpartanInventory
 		emblem.EmblemImageData = FetchImageData(emblemPngPath, gamerInfo)
 		emblem.NameplateImageData = FetchImageData(nameplatePngPath, gamerInfo)
 		emblemColors := GetColorPercentages(emblem.NameplateImageData)
-		inventoryResponse.PlayerCustomizations[0].Result.EmblemInfo = emblem
-		inventoryResponse.PlayerCustomizations[0].Result.EmblemColors = emblemColors
+		customization.Result.EmblemInfo = emblem
+		customization.Result.EmblemColors = emblemColors
 
-		return inventoryResponse.PlayerCustomizations[0].Result
+		// Add the customized SpartanInventory to the slice.
+		spartanInventories = append(spartanInventories, customization.Result)
 	}
+	fmt.Println("Done!")
 
-	return SpartanInventory{}
+	return spartanInventories
 }
 
 func FetchCoreDetails(spartanInventory *SpartanInventory, gamerInfo requests.GamerInfo) {

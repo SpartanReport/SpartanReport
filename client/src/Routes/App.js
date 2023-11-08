@@ -30,6 +30,7 @@ function App() {
         const response = await axios.get('http://localhost:8080/account', { withCredentials: true });
         setIsAuthenticated(true);
         setGamerInfo(response.data.gamerInfo);
+        console.log(response.data.gamerInfo)
       } catch (error) {
         setIsAuthenticated(false);
       }

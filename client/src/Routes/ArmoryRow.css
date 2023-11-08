@@ -1,0 +1,96 @@
+.objectCard {
+    border: 1px solid black;
+    margin: 5px;
+    cursor: pointer;
+    min-width: 200px;
+    height: 200px;
+    box-sizing: border-box;
+    color: white;
+    background: rgba(7, 7, 7, 0.2);
+    border: 5px solid #32525E;
+    border-top: 5px solid #477289;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.269);
+    transition: all 0.3s ease;
+
+  }
+  .highlightedObjectCardRow{
+    border: 1px solid white;
+    margin: 5px;
+    cursor: pointer;
+    min-width: 200px;
+    height: 200px;
+    box-sizing: border-box;
+    color: white;
+    background: rgba(7, 7, 7, 0.2);
+    border: 5px solid #81CDE9;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.269);
+    transition: all 0.3s ease;
+  }
+  .HighlightedImageCard{
+    max-height:100%; max-width:100%;
+    margin: auto;
+    display: block;
+
+  }
+  .ImageCard{
+    max-height:80%; max-width:77.25%;
+    margin: auto;
+    display: block;
+  }
+
+  .card-subheader {
+    font-family: 'Oswald', sans-serif;
+    text-align: center;
+    font-style: normal;
+    font-size: 18px;
+    color: white;
+    background-color: #4389BA;
+  }
+  
+  .highlightedObjectCard {
+    margin: 5px;
+    background-color: lightblue;
+    height: 375px;
+    width: 375px;
+    box-sizing: border-box;
+    color: white;
+    background: rgba(7, 7, 7, 0.2);
+    border: 5px solid #32525E;
+    border-top: 5px solid #477289;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.269);
+    transition: all 0.3s ease;
+
+  }
+  
+  .objectsDisplay {
+    display: grid;
+    grid-auto-rows: 250px;
+    grid-column-gap: 55px;
+    overflow-x: auto;
+    padding: 10px;
+    
+    align-content: start;
+  }
+  
+  .container {
+    display: flex;
+    overflow: hidden;
+    height: 100%;
+    width: 100%;
+  }
+  
+  .highlightedCardContainer {
+    flex: none;
+    padding: 5px;
+    padding-top: 70px;
+    overflow: visible;
+  }
+  
+  .cardContainer {
+    flex-grow: 1;
+    overflow: hidden;
+    padding: 5px;
+    
+    padding-top:20px;
+  }
+  

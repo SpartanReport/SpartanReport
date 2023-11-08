@@ -20,6 +20,19 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
+func initCache() {
+	// Initialize the cache
+	cacheOnce.Do(func() {
+		cache = make(map[string][]RankImage)
+	})
+}
+
+var (
+	cache      map[string][]RankImage // Cache variable to store rank images
+	cacheOnce  sync.Once              // Ensures the cache is only initialized once
+	cacheMutex sync.RWMutex           // Read Write mutex for cache access
+)
+
 type CurrentProgress struct {
 	TotalXPEarned        int    `json:"TotalXPEarned"`
 	Rank                 int    `json:"Rank"`
@@ -79,16 +92,36 @@ type PlayerMatchCount struct {
 }
 
 func SendRanks(c *gin.Context) {
+	initCache()
 	var gamerInfo requests.GamerInfo
 	if err := c.ShouldBindJSON(&gamerInfo); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	start := time.Now()
 	careerTrack := GetCareerStats(gamerInfo, c)
-	careerLadder := GetCareerLadder(gamerInfo, c)
-	careerTrack.CurrentProgress.TotalXPEarned = CalculateTotalXPGainedSoFar(careerLadder, careerTrack.CurrentProgress.Rank) + careerTrack.CurrentProgress.PartialProgress
+	duration := time.Since(start)
+	fmt.Printf("GetCareerStats took %s\n", duration)
 
+	start = time.Now()
+	careerLadder := GetCareerLadder(gamerInfo, c)
+	duration = time.Since(start)
+	fmt.Printf("GetCareerLadder took %s\n", duration)
+
+	start = time.Now()
+	careerTrack.CurrentProgress.TotalXPEarned = CalculateTotalXPGainedSoFar(careerLadder, careerTrack.CurrentProgress.Rank) + careerTrack.CurrentProgress.PartialProgress
+	duration = time.Since(start)
+	fmt.Printf("CalculateTotalXPGainedSoFar took %s\n", duration)
+
+	start = time.Now()
 	rankImages, err := GetRankImagesFromDB()
+	if err != nil {
+		// Handle error
+		fmt.Printf("GetRankImagesFromDB encountered an error: %s\n", err)
+		return
+	}
+	duration = time.Since(start)
+	fmt.Printf("GetRankImagesFromDB took %s\n", duration)
 	if err != nil {
 		fmt.Println("Error getting rank images from database ", err)
 	}
@@ -103,6 +136,15 @@ func SendRanks(c *gin.Context) {
 }
 
 func GetRankImagesFromDB() ([]RankImage, error) {
+	cacheMutex.RLock()
+	cached, exists := cache["rank_images"]
+	cacheMutex.RUnlock()
+
+	if exists {
+		return cached, nil // Return from cache if exists
+	}
+
+	// Load from the database as cache is empty
 	collection := db.GetCollection("rank_images")
 	cur, err := collection.Find(context.TODO(), bson.M{})
 	if err != nil {
@@ -113,16 +155,19 @@ func GetRankImagesFromDB() ([]RankImage, error) {
 	var rankImages []RankImage
 	for cur.Next(context.TODO()) {
 		var rankImage RankImage
-		err := cur.Decode(&rankImage)
-		if err != nil {
+		if err := cur.Decode(&rankImage); err != nil {
 			return nil, err
 		}
 		rankImages = append(rankImages, rankImage)
 	}
-
 	if err := cur.Err(); err != nil {
 		return nil, err
 	}
+
+	// Populate the cache
+	cacheMutex.Lock()
+	cache["rank_images"] = rankImages
+	cacheMutex.Unlock()
 
 	return rankImages, nil
 }

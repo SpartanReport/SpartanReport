@@ -59,3 +59,25 @@ func StoreManyData(collectionName string, data []interface{}) error {
 	_, err := collection.InsertMany(context.TODO(), data)
 	return err
 }
+
+// QueryDataByType queries the item_data collection with a filter on the type field.
+func QueryDataByType(collectionName string, filterType string, data interface{}) error {
+	collection := GetCollection(collectionName)
+	filter := bson.M{"type": filterType} // Create a filter for the type field
+
+	// Query the collection
+	cur, err := collection.Find(context.TODO(), filter)
+	if err != nil {
+		fmt.Printf("Error querying data in collection %s with filter %v: %v\n", collectionName, filter, err)
+		return err
+	}
+	defer cur.Close(context.TODO())
+
+	// Decode the results into the data interface
+	if err := cur.All(context.TODO(), data); err != nil {
+		fmt.Printf("Error decoding results into data interface: %v\n", err)
+		return err
+	}
+
+	return nil
+}
