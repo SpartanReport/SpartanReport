@@ -153,6 +153,7 @@ type ArmoryRowData struct {
 	IsHighlighted bool   `json:"isHighlighted"`
 	Image         string `json:"Image,omitempty"`
 	Description   string `json:"Description,omitempty"`
+	CoreId        string `json:"CoreId"`
 }
 
 type DataToReturn struct {
@@ -183,7 +184,7 @@ func HandleInventory(c *gin.Context) {
 			coreData.IsHighlighted = false
 			coreData.Image = reward.ItemImageData
 			coreData.Description = reward.ItemMetaData.Description.Value
-
+			coreData.CoreId = reward.ItemMetaData.Core
 			// Mark core if it's the equipped core
 			if reward.ItemMetaData.Core == playerInventory[0].CoreDetails.CommonData.Id {
 				coreData.IsHighlighted = true

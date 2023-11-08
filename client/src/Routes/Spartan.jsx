@@ -91,7 +91,7 @@ const Spartan = ({ gamerInfo }) => {
         <h1 className="spartan-subheader-home">Armor Core</h1>
       </div>
       <div className="armory-row">
-      <ArmoryRow objects={armoryRow}/>
+      <ArmoryRow objects={armoryRow} gamerInfo={gamerInfo}/>
       </div>
       
     </div>
