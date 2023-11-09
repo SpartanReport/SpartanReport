@@ -1,7 +1,7 @@
 import useFetchSpartanInventory from "../useFetchSpartanInventory";
 import useFetchSpartanRank from "../FetchSpartanRank";
 import useFetchChallengeDeck from "../FetchSpartanChallenges"
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import "../Styles/Home.css"
 import { useNavigate } from 'react-router-dom';
 
@@ -73,7 +73,7 @@ function GetCard({card,navigation}){
   return null
 }
 function Home({ gamerInfo }) {
-  const { spartanInventory, armoryRow, isLoading, fetchSpartanInventory } =  useFetchSpartanInventory(gamerInfo);
+  const { spartanInventory, armoryRow,helmetRow, isLoading, fetchSpartanInventory } = useFetchSpartanInventory(gamerInfo);
   const [spartanRank, fetchSpartanRank] = useFetchSpartanRank(gamerInfo);
   const [challengeDeck, isLoadingChallenge, challengeError] = useFetchChallengeDeck(gamerInfo);
   const navigate = useNavigate();

@@ -13,6 +13,19 @@ type ArmorCoreEquip struct {
 	Core      string
 }
 
+type Items struct {
+	InventoryItems []ItemsInInventory `json:"Items"`
+}
+
+type ItemsInInventory struct {
+	Amount        int    `json:"Amount"`
+	ItemId        string `json:"ItemId"`
+	ItemPath      string `json:"ItemPath"`
+	ItemType      string `json:"ItemType"`
+	ItemImageData string `json:"ItemImageData"`
+	ItemMetaData  Item   `json:"Item"`
+}
+
 func HandleEquipArmor(c *gin.Context) {
 	var ArmorCoreData ArmorCoreEquip
 	if err := c.ShouldBindJSON(&ArmorCoreData); err != nil {

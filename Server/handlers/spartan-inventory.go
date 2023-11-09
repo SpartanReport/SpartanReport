@@ -1,16 +1,25 @@
 package spartanreport
 
 import (
+	"bytes"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"image"
+	"image/color"
+	"image/draw"
+	"image/jpeg"
+	"image/png"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"spartanreport/db"
 	requests "spartanreport/requests"
+	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 type ISO8601Date struct {
@@ -154,11 +163,24 @@ type ArmoryRowData struct {
 	Image         string `json:"Image,omitempty"`
 	Description   string `json:"Description,omitempty"`
 	CoreId        string `json:"CoreId"`
+	Type          string `json:"Type"`
+}
+
+type ArmoryRowHelmets struct {
+	ID            int    `json:"id"`
+	Name          string `json:"name"`
+	IsHighlighted bool   `json:"isHighlighted"`
+	Image         string `json:"Image,omitempty"`
+	CoreId        string `json:"CoreId"`
+	IsCrossCore   bool   `json:"IsCrossCore"`
+	Type          string `json:"Type"`
 }
 
 type DataToReturn struct {
-	PlayerInventory []SpartanInventory
-	ArmoryRow       []ArmoryRowData
+	PlayerInventory  []SpartanInventory
+	ArmoryRow        []ArmoryRowData
+	ArmoryRowHelmets []ArmoryRowHelmets
+	Items            Items
 }
 
 func HandleInventory(c *gin.Context) {
@@ -174,10 +196,43 @@ func HandleInventory(c *gin.Context) {
 	}
 	if includeArmory {
 		objects := []ArmoryRowData{}
-		var results = []InventoryReward{}
+		var coreResults = []InventoryReward{}
+		// Get Player Inventory
+		var InventoryResults = Items{}
+		url := "https://economy.svc.halowaypoint.com/hi/players/xuid(" + gamerInfo.XUID + ")/Inventory"
+		hdrs := map[string]string{}
+		hdrs["343-clearance"] = gamerInfo.ClearanceCode
+		makeAPIRequest(gamerInfo.SpartanKey, url, hdrs, &InventoryResults)
+		formatted_data, err := json.MarshalIndent(InventoryResults, "", " ")
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		fmt.Println("Inventory Results: ", string(formatted_data))
+		var missingItems Items
+		var existingItems Items
+		for _, item := range InventoryResults.InventoryItems {
+			var existingItem ItemsInInventory
+			if isExcludedItemType(item.ItemType) {
+				continue
+			}
+			err := db.GetData("item_data", bson.M{"inventoryitempath": item.ItemPath}, &existingItem)
+			if err != nil {
+				// Item not found in DB, add to missing items
+				missingItems.InventoryItems = append(missingItems.InventoryItems, item)
+			} else {
+				// Item found, add to existing items
+				existingItems.InventoryItems = append(existingItems.InventoryItems, existingItem)
+			}
+		}
+		fetchedItems := GetInventoryItemImages(gamerInfo, missingItems)
+		var completeItems Items
 
-		err := db.QueryDataByType("item_data", "ArmorCore", &results)
-		for i, reward := range results {
+		completeItems.InventoryItems = append(existingItems.InventoryItems, fetchedItems.InventoryItems...)
+		data.Items = completeItems
+		// Get Armor Cores
+		err = db.QueryDataByType("item_data", "ArmorCore", &coreResults)
+		for i, reward := range coreResults {
 			coreData := ArmoryRowData{}
 			coreData.ID = i + 1
 			coreData.Name = reward.ItemMetaData.Title.Value
@@ -185,6 +240,7 @@ func HandleInventory(c *gin.Context) {
 			coreData.Image = reward.ItemImageData
 			coreData.Description = reward.ItemMetaData.Description.Value
 			coreData.CoreId = reward.ItemMetaData.Core
+			coreData.Type = "ArmorCore"
 			// Mark core if it's the equipped core
 			if reward.ItemMetaData.Core == playerInventory[0].CoreDetails.CommonData.Id {
 				coreData.IsHighlighted = true
@@ -196,10 +252,220 @@ func HandleInventory(c *gin.Context) {
 			fmt.Println("Error querying item data")
 		}
 		data.ArmoryRow = objects
-
 	}
 
+	// Aggregate Armory Row For Helmets
+	helmets := []ArmoryRowHelmets{}
+	for i, item := range data.Items.InventoryItems {
+		if item.ItemType == "ArmorHelmet" {
+			helmet := ArmoryRowHelmets{}
+			helmet.ID = i
+			helmet.Image = item.ItemImageData
+			if item.ItemPath == playerInventory[0].ArmorCores.ArmorCores[0].Themes[0].HelmetPath {
+				helmet.IsHighlighted = true
+			}
+			helmet.CoreId = item.ItemMetaData.Core
+			helmet.Name = item.ItemMetaData.Title.Value
+			helmet.Type = "ArmorHelmet"
+			helmets = append(helmets, helmet)
+		}
+	}
+	data.ArmoryRowHelmets = helmets
+
 	c.JSON(http.StatusOK, data)
+}
+
+func GetInventoryItemImages(gamerInfo requests.GamerInfo, Items Items) Items {
+	// Create a channel to receive the results
+	results := make(chan RewardResult)
+
+	// Function to make an API request and send the result to the channel
+	makeRequest := func(path string) {
+		// Determine the core based on InventoryItemPath
+		core := getCoreFromInventoryItemPath(path)
+		url := "https://gamecms-hacs.svc.halowaypoint.com/hi/progression/file/" + path
+		currentItemResponse := ItemResponse{}
+
+		// Make API Request to get item data
+		err := makeAPIRequest(gamerInfo.SpartanKey, url, nil, &currentItemResponse)
+		if err != nil {
+			fmt.Println("Error making request for item data: ", err)
+		}
+		itemImagePath := currentItemResponse.CommonData.Media.Media.MediaUrl.Path
+		url = "https://gamecms-hacs.svc.halowaypoint.com/hi/images/file/" + itemImagePath
+		rawImageData, err := makeAPIRequestImage(gamerInfo.SpartanKey, url, nil)
+		if err != nil {
+			fmt.Println("Error getting image data: ", err)
+		}
+		rawImageData, err = convertBase64PNGToJPEGString(rawImageData, "#0F181B")
+		if err != nil {
+			// fmt.Println("Error getting item image: ", err)
+			results <- RewardResult{} // Send an empty result to ensure channel doesn't block
+		} else {
+			currentItemResponse.CommonData.Core = core // Assign Core
+			results <- RewardResult{Path: path, ImageData: rawImageData, Item: currentItemResponse.CommonData}
+		}
+	}
+
+	totalPaths := 0
+	var filteredRewards []ItemsInInventory
+
+	for _, item := range Items.InventoryItems {
+		if item.ItemPath != "" {
+			if !isExcludedItemType(item.ItemType) {
+				go makeRequest(item.ItemPath)
+				totalPaths++
+				filteredRewards = append(filteredRewards, item)
+			}
+		}
+	}
+
+	// Replace the original InventoryRewards with the filtered list
+	Items.InventoryItems = filteredRewards
+
+	// Collect results from the channel and update the InventoryReward structs
+	for i := 0; i < totalPaths; i++ {
+		result := <-results
+
+		// Image is broken
+		if result.Item.Title.Value == "" {
+			continue
+		}
+		for _, item := range Items.InventoryItems {
+			// Update Free Rewards
+			if item.ItemPath == result.Path {
+				item.ItemImageData = result.ImageData
+				item.ItemMetaData = result.Item
+				err := db.StoreDataItem("item_data", item, item.ItemPath)
+				if err != nil {
+					fmt.Println("Error When attempting to add data into item db")
+				}
+
+			}
+		}
+	}
+	return Items
+}
+
+// convertBase64PNGToJPEGString converts a base64 encoded PNG string to a base64 encoded JPEG string.
+// It sets transparent regions of the PNG to a specified background color.
+func convertBase64PNGToJPEGString(pngBase64String string, backgroundColor string) (string, error) {
+	// Decode the base64 string to get the raw PNG data
+	pngData, err := base64.StdEncoding.DecodeString(pngBase64String)
+	if err != nil {
+		return "", err
+	}
+
+	// Decode PNG data
+	img, err := png.Decode(bytes.NewReader(pngData))
+	if err != nil {
+		return "", err
+	}
+
+	// Parse the background color
+	bgColor, err := parseHexColor(backgroundColor)
+	if err != nil {
+		return "", err
+	}
+
+	// Replace transparent color
+	replacedImg := replaceTransparency(img, bgColor)
+
+	// Create a buffer to store JPEG data
+	buf := new(bytes.Buffer)
+
+	// Encode the image to JPEG with quality 75
+	options := &jpeg.Options{Quality: 75}
+	if err := jpeg.Encode(buf, replacedImg, options); err != nil {
+		return "", err
+	}
+
+	// Encode the JPEG data to a base64 string
+	jpegString := base64.StdEncoding.EncodeToString(buf.Bytes())
+
+	return jpegString, nil
+}
+
+// parseHexColor parses a hex color string.
+func parseHexColor(s string) (color.RGBA, error) {
+	var c color.RGBA
+	if len(s) != 7 || s[0] != '#' {
+		return c, fmt.Errorf("invalid color format")
+	}
+
+	r, err := strconv.ParseUint(s[1:3], 16, 8)
+	if err != nil {
+		return c, err
+	}
+	g, err := strconv.ParseUint(s[3:5], 16, 8)
+	if err != nil {
+		return c, err
+	}
+	b, err := strconv.ParseUint(s[5:7], 16, 8)
+	if err != nil {
+		return c, err
+	}
+
+	c.R = uint8(r)
+	c.G = uint8(g)
+	c.B = uint8(b)
+	c.A = 255 // Assuming full opacity for the target color
+
+	return c, nil
+}
+
+// replaceTransparency replaces the transparent areas of the image with the given background color.
+func replaceTransparency(img image.Image, bgColor color.RGBA) image.Image {
+	bounds := img.Bounds()
+	newImg := image.NewRGBA(bounds)
+	draw.Draw(newImg, bounds, &image.Uniform{bgColor}, bounds.Min, draw.Src)
+
+	for y := bounds.Min.Y; y < bounds.Max.Y; y++ {
+		for x := bounds.Min.X; x < bounds.Max.X; x++ {
+			_, _, _, a := img.At(x, y).RGBA()
+			if a == 0 {
+				newImg.Set(x, y, bgColor)
+			} else {
+				newImg.Set(x, y, img.At(x, y))
+			}
+		}
+	}
+
+	return newImg
+}
+
+// matchColor checks if the colors are equal.
+func matchColor(r, g, b uint32, c color.RGBA) bool {
+	// Normalize the RGB values to 0-255 range
+	r, g, b = r>>8, g>>8, b>>8
+	return uint8(r) == c.R && uint8(g) == c.G && uint8(b) == c.B
+}
+
+func isExcludedItemType(itemType string) bool {
+	excludedTypes := map[string]bool{
+		"WeaponEmblem":                  true,
+		"SpartanEmblem":                 true,
+		"WeaponCoating":                 true,
+		"VehicleCoating":                true,
+		"VehicleEmblem":                 true,
+		"VehicleTheme":                  true,
+		"SpartanVoice":                  true,
+		"SpartanActionPose":             true,
+		"ArmorFx":                       true,
+		"AiColor":                       true,
+		"ArmorEmblem":                   true,
+		"WeaponTheme":                   true,
+		"WeaponAlternateGeometryRegion": true,
+		"SpartanBackdropImage":          true,
+		"WeaponCharm":                   true,
+		"ArmorMythicFx":                 true,
+		"WeaponDeathFx":                 true,
+		"AiModel":                       true,
+		"AiTheme":                       true,
+	}
+
+	_, found := excludedTypes[itemType]
+	return found
 }
 
 func GetInventory(c *gin.Context, gamerInfo requests.GamerInfo) []SpartanInventory {

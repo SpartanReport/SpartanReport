@@ -14,7 +14,7 @@ const Spartan = ({ gamerInfo }) => {
 
   useEffect(() => {
     fetchSpartanInventory();
-  }, [fetchSpartanInventory]);
+  }, []);
 
   // Scroll synchronization handlers
   const syncScrollTop = () => {
@@ -91,9 +91,11 @@ const Spartan = ({ gamerInfo }) => {
         <h1 className="spartan-subheader-home">Armor Core</h1>
       </div>
       <div className="armory-row">
-      <ArmoryRow objects={armoryRow} gamerInfo={gamerInfo}/>
+      <ArmoryRow objects={armoryRow.ArmoryRow} gamerInfo={gamerInfo}/>
       </div>
-      
+            <div className="armory-row">
+      <ArmoryRow objects={armoryRow.ArmoryRowHelmets} gamerInfo={gamerInfo}/>
+      </div>
     </div>
   );
 };

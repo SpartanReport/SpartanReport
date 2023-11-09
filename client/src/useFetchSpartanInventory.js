@@ -18,7 +18,7 @@ const useFetchSpartanInventory = (gamerInfo, includeArmory = false) => {
 
       setSpartanInventory(response.data.PlayerInventory[0]);
       if (includeArmory) {
-        setArmoryRow(response.data.ArmoryRow); // This will only be set if includeArmory is true
+        setArmoryRow(response.data); // This will only be set if includeArmory is true
       }
       setIsLoading(false);
       setIsFetched(true); // Set the flag

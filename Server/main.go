@@ -54,6 +54,8 @@ func main() {
 	defer db.MongoClient.Disconnect(ctx)
 
 	err = db.CreateIndex("detailed_matches", bson.D{{"MatchId", 1}})
+	err = db.CreateIndex("item_data", bson.D{{"inventoryitempath", 1}})
+
 	if err != nil {
 		fmt.Println("Error creating index:", err)
 		return
@@ -75,11 +77,6 @@ func main() {
 
 		c.Next()
 	})
-
-	r.LoadHTMLGlob("../client/build/index.html")
-	// Static files
-	r.StaticFile("/styles.css", "../client/build/src/Styles/styles.css")
-	r.Static("/static", "../client/build/src/Styles")
 
 	// Routes without middleware
 	r.GET("/", spartanreport.HandleWelcome)

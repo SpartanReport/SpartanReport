@@ -4,7 +4,14 @@ import './ArmoryRow.css'; // Make sure to import your CSS file here
 const ObjectCard = ({ object, isHighlighted, onClick }) => {
   const cardClassName = isHighlighted ? 'highlightedObjectCardRow' : 'objectCard';
   const base64ImageData = object.Image;
-  const imageSrc = `data:image/png;base64,${base64ImageData}`;
+  let imageSrc;
+
+  if (object.Type !== "ArmorCore"){
+    imageSrc = `data:image/jpeg;base64,${base64ImageData}`;
+  }else{
+    imageSrc = `data:image/png;base64,${base64ImageData}`;
+
+  }
 
   return (
     <div className={cardClassName} onClick={() => onClick(object)}>
@@ -17,8 +24,16 @@ const ObjectCard = ({ object, isHighlighted, onClick }) => {
 
 const HighlightedObjectCard = ({ object }) => {
   const base64ImageData = object.Image;
-  const imageSrc = `data:image/png;base64,${base64ImageData}`;
+  let imageSrc;
 
+  if (object.Type !== "ArmorCore"){
+    imageSrc = `data:image/jpeg;base64,${base64ImageData}`;
+    console.log(imageSrc)
+
+  }else{
+    imageSrc = `data:image/png;base64,${base64ImageData}`;
+
+  }
   return (
     <div className="highlightedObjectCard">
       <p className='card-subheader'>{object.name}</p>

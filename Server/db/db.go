@@ -29,6 +29,19 @@ func StoreDataMatch(collectionName string, data interface{}, uniqueFieldValue st
 	return err
 }
 
+func StoreDataItem(collectionName string, data interface{}, uniqueFieldValue string) error {
+	collection := GetCollection(collectionName)
+	uniqueField := "inventoryitempath"
+
+	// Use the upsert option: Insert if it doesn't exist, otherwise update.
+	opts := options.Update().SetUpsert(true)
+	filter := bson.M{uniqueField: uniqueFieldValue}
+	update := bson.M{"$set": data}
+
+	_, err := collection.UpdateOne(context.TODO(), filter, update, opts)
+	return err
+}
+
 func StoreData(collectionName string, data interface{}) error {
 	collection := GetCollection(collectionName)
 	_, err := collection.InsertOne(context.TODO(), data)
@@ -46,8 +59,24 @@ func GetData(collectionName string, filter bson.M, result interface{}) error {
 	return nil
 }
 
-func CreateIndex(collectionName string, keys bson.D) error {
+func BulkGetData(collectionName string, filter bson.M, result interface{}) error {
+	collection := GetCollection(collectionName)
 
+	cursor, err := collection.Find(context.TODO(), filter)
+	if err != nil {
+		fmt.Printf("Error finding data in collection %s with filter %v: %v\n", collectionName, filter, err)
+		return err
+	}
+	defer cursor.Close(context.TODO())
+
+	if err := cursor.All(context.TODO(), result); err != nil {
+		fmt.Printf("Error decoding data: %v\n", err)
+		return err
+	}
+
+	return nil
+}
+func CreateIndex(collectionName string, keys bson.D) error {
 	collection := GetCollection(collectionName)
 	indexModel := mongo.IndexModel{Keys: keys}
 	_, err := collection.Indexes().CreateOne(context.TODO(), indexModel)
