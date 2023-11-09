@@ -11,7 +11,6 @@ import (
 
 	"cloud.google.com/go/storage"
 	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -20,19 +19,15 @@ import (
 
 func main() {
 	// Initialize Google Cloud Storage Client
+	mongodb_host := os.Getenv("MONGODB_HOST")
+	fmt.Println("host: ", mongodb_host)
+
 	ctx := context.Background()
 	client, err := storage.NewClient(ctx, option.WithCredentialsFile("./google-key.json"))
 	if err != nil {
 		log.Fatalf("Failed to create client: %v", err)
 	}
 	client.Bucket("haloseasondata")
-
-	err = godotenv.Load("./initialsetup.env")
-	if err != nil {
-		log.Fatal("Error loading .env file", err)
-	}
-
-	mongodb_host := os.Getenv("MONGODB_HOST")
 
 	// Initialize MongoDB Client
 	db.MongoClient, err = mongo.NewClient(options.Client().ApplyURI(mongodb_host))

@@ -1,10 +1,21 @@
 version: '3.8'
 
 services:
+  mongodb:
+    image: mongo:latest
+    volumes:
+      - mongo-data:/data/db
+    ports:
+      - "27017:27017"
+
   server:
     build: ./Server
     ports:
       - "8080:8080"
+    environment:
+      - MONGODB_HOST=mongodb://mongodb:27017/
+    depends_on:
+      - mongodb
 
   client:
     build: ./client
@@ -12,3 +23,6 @@ services:
       - "3000:80"
     depends_on:
       - server
+
+volumes:
+  mongo-data:

@@ -28,9 +28,10 @@ func initCache() {
 }
 
 var (
-	cache      map[string][]RankImage // Cache variable to store rank images
-	cacheOnce  sync.Once              // Ensures the cache is only initialized once
-	cacheMutex sync.RWMutex           // Read Write mutex for cache access
+	cache         map[string][]RankImage // Cache variable to store rank images
+	cacheOnce     sync.Once              // Ensures the cache is only initialized once
+	cacheMutex    sync.RWMutex           // Read Write mutex for cache access
+	isCacheLoaded bool
 )
 
 type CurrentProgress struct {
@@ -399,7 +400,8 @@ func HandleProgression(c *gin.Context) {
 	careerTrack := GetCareerStats(gamerInfo, c)
 	careerLadder := GetCareerLadder(gamerInfo, c)
 	careerTrack.CurrentProgress.TotalXPEarned = CalculateTotalXPGainedSoFar(careerLadder, careerTrack.CurrentProgress.Rank) + careerTrack.CurrentProgress.PartialProgress
-
+	rankImages, err = GetAllRankImages(careerLadder, gamerInfo)
+	fmt.Println("Got All Rank Images!")
 	rankImages, err = GetRankImagesFromDB()
 	if err != nil {
 		fmt.Println("Error getting rank images from database ", err)
@@ -476,6 +478,12 @@ func (ris RankImageSlice) Swap(i, j int)      { ris[i], ris[j] = ris[j], ris[i] 
 
 func GetAllRankImages(careerLadder CareerLadderResponse, gamerInfo requests.GamerInfo) ([]RankImage, error) {
 	fmt.Println("Getting Rank Images..")
+	cacheMutex.RLock()
+	if isCacheLoaded {
+		cacheMutex.RUnlock()
+		return nil, nil
+	}
+	cacheMutex.RUnlock()
 	var rankImages RankImageSlice
 	var mu sync.Mutex
 	var wg sync.WaitGroup
@@ -508,7 +516,9 @@ func GetAllRankImages(careerLadder CareerLadderResponse, gamerInfo requests.Game
 			return nil, err
 		}
 	}
-
+	cacheMutex.Lock()
+	isCacheLoaded = true
+	cacheMutex.Unlock()
 	return rankImages, nil
 }
 func getRankImageData(rankIndex int, careerLadder CareerLadderResponse, gamerInfo requests.GamerInfo) (string, error) {
