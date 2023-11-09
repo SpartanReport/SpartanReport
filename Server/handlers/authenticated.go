@@ -13,7 +13,9 @@ import (
 
 func HandleAuthenticated(c *gin.Context) {
 	// Set CORS headers
-	c.Header("Access-Control-Allow-Origin", "http://localhost:3000")
+	host := os.Getenv("HOST")
+
+	c.Header("Access-Control-Allow-Origin", host)
 	c.Header("Access-Control-Allow-Credentials", "true")
 
 	SpartanCookie, err := c.Cookie("SpartanToken")
