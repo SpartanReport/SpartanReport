@@ -14,16 +14,14 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"google.golang.org/api/option"
 )
 
 func main() {
-	// Initialize Google Cloud Storage Client
 	mongodb_host := os.Getenv("MONGODB_HOST")
-	fmt.Println("host: ", mongodb_host)
-
+	host := os.Getenv("HOST")
+	// Initialize Google Cloud Storage Client
 	ctx := context.Background()
-	client, err := storage.NewClient(ctx, option.WithCredentialsFile("./google-key.json"))
+	client, err := storage.NewClient(ctx)
 	if err != nil {
 		log.Fatalf("Failed to create client: %v", err)
 	}
@@ -60,7 +58,7 @@ func main() {
 
 	// Global CORS middleware
 	r.Use(func(c *gin.Context) {
-		c.Header("Access-Control-Allow-Origin", "http://localhost:3000")
+		c.Header("Access-Control-Allow-Origin", host)
 		c.Header("Access-Control-Allow-Credentials", "true")
 		c.Header("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin")
 		c.Header("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, DELETE")

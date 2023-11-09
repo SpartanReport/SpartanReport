@@ -19,7 +19,10 @@ function SelectedOperation({ gamerInfo, seasonData, handleBackClick, SeasonImage
           gamerInfo,
           seasonData,
         };
-        const response = await axios.post('http://localhost:8080/operationdetails', payload);
+
+        const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8080'; // Fallback URL if the env variable is not set
+
+        const response = await axios.post(`${apiUrl}/operationdetails`, payload);
         setTrack(response.data);
         console.log(response.data)
         console.log(seasonData.UserSeasonProgression.CurrentProgress)

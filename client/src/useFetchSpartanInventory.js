@@ -12,7 +12,9 @@ const useFetchSpartanInventory = (gamerInfo, includeArmory = false) => {
 
     try {
       const queryParams = includeArmory ? '?includeArmory=true' : '';
-      const response = await axios.post(`http://localhost:8080/spartan${queryParams}`, gamerInfo);
+
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8080'; // Fallback URL if the env variable is not set
+      const response = await axios.post(`${apiUrl}/spartan${queryParams}`, gamerInfo);
 
       console.log(response);
 

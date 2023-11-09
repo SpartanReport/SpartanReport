@@ -7,6 +7,12 @@ COPY package*.json ./
 
 RUN npm install
 
+# Accept build-time arguments
+ARG REACT_APP_API_URL
+
+# Set the environment variable
+ENV REACT_APP_API_URL $REACT_APP_API_URL
+
 COPY . .
 
 RUN npm run build

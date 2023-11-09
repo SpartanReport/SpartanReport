@@ -10,7 +10,9 @@ const Operations = ({ gamerInfo }) => {
     useEffect(() => {
         const fetchOperations = async () => {
             try {
-                const response = await axios.post('http://localhost:8080/operations', gamerInfo);
+                
+                const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8080'; // Fallback URL if the env variable is not set
+                const response = await axios.post(`${apiUrl}/operations`, gamerInfo);
                 setOperations(response.data.Seasons.Seasons);
                 console.log(response.data.Seasons.Seasons)
             } catch (error) {

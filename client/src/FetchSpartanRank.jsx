@@ -9,7 +9,8 @@ const useFetchSpartanRank = (gamerInfo) => {
       if (isFetched && !force) return;
   
       try {
-        const response = await axios.post('http://localhost:8080/ranking', gamerInfo);
+        const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8080'; // Fallback URL if the env variable is not set
+        const response = await axios.post(`${apiUrl}/ranking`, gamerInfo);
         console.log(response.data);
         setSpartanRank(response.data);
         setIsFetched(true);

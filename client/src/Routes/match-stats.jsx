@@ -17,7 +17,9 @@ const MatchStats = ({gamerInfo, HaloStats,selectedMatch}) => {
           gamerInfo,
           selectedMatch,
         };
-        const response = await axios.post(`http://localhost:8080/match/${matchId}`, payload);
+        const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8080'; // Fallback URL if the env variable is not set
+
+        const response = await axios.post(`${apiUrl}/match/${matchId}`, payload);
         setMatchStats(response.data);
       } catch (error) {
         console.error("Error fetching match details:", error);

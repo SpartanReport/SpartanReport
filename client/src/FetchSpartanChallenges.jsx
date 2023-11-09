@@ -10,7 +10,8 @@ function useFetchChallengeDeck(gamerInfo) {
     const fetchData = async () => {
       setIsLoading(true);
       try {
-        const response = await axios.post('http://localhost:8080/challengedeck', gamerInfo);
+        const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8080'; // Fallback URL if the env variable is not set
+        const response = await axios.post(`${apiUrl}/challengedeck`, gamerInfo);
         setChallengeDeck(response.data);
         console.log("Challenge Deck!")
       } catch (err) {

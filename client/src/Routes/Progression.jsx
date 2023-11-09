@@ -18,7 +18,8 @@ const Progression = ({ gamerInfo ,HaloStats, setHaloStats, setSelectedMatch}) =>
       const fetchSpartanInventory = async () => {
         try {
           // Use gamerInfo in the Axios POST request
-          const response = await axios.post('http://localhost:8080/progression', gamerInfo);
+          const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8080'; // Fallback URL if the env variable is not set
+          const response = await axios.post(`${apiUrl}/progression`, gamerInfo);
           console.log(response.data.AverageDurations)
           console.log("Halo Stats" , response.data.HaloStats)
           console.log(response.data.careerLadder)

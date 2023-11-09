@@ -8,7 +8,8 @@ import axios from 'axios';
 const authenticateUser = async () => {
   try {
 
-    const response = await axios.get('http://localhost:8080/account', { withCredentials: true });
+    const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8080'; // Fallback URL if the env variable is not set
+    const response = await axios.get(`${apiUrl}/account`, { withCredentials: true });
     if (response.status === 200) {
       console.log('User authenticated successfully');
       return response.data;

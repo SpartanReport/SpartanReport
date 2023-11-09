@@ -9,7 +9,13 @@ services:
       - "27017:27017"
 
   server:
-    build: ./Server
+    build: 
+      context: ./Server
+      # This is your react-client host address
+      args:
+        HOST: localhost:3000
+        REDIRECT-HOST: localhost:8080
+
     ports:
       - "8080:8080"
     environment:
@@ -17,8 +23,14 @@ services:
     depends_on:
       - mongodb
 
+
+
   client:
-    build: ./client
+    build: 
+      context: ./client
+      args:
+      # This is your go backend host address
+        REACT_APP_API_URL: http://localhost:8080
     ports:
       - "3000:80"
     depends_on:

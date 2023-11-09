@@ -87,15 +87,15 @@ type Seasons struct {
 var discoveredRoutes = make(map[string]bool)
 var httpClient = &http.Client{}
 
-func RequestLink() string {
+func RequestLink(clientID string, redirectURI string) string {
+
 	// Base URL for Microsoft OAuth 2.0 Authorization
 	baseURL := "https://login.live.com/oauth20_authorize.srf"
-
 	// Query parameters
 	params := url.Values{}
-	params.Add("client_id", "4267a656-30e6-4027-a973-edf079a6b52b")
+	params.Add("client_id", clientID)
 	params.Add("response_type", "code")
-	params.Add("redirect_uri", "http://localhost:8080/callback")
+	params.Add("redirect_uri", redirectURI)
 	params.Add("scope", "Xboxlive.signin")
 
 	// Generate the complete URL
@@ -106,6 +106,7 @@ func RequestLink() string {
 
 func RequestOAuth(clientID string, clientSecret string, redirectURI string, authCode string) []byte {
 	oauthTokenURL := "https://login.live.com/oauth20_token.srf"
+
 	data := url.Values{}
 	data.Set("client_id", clientID)
 	data.Set("client_secret", clientSecret)

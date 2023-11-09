@@ -2,10 +2,13 @@ package spartanreport
 
 import (
 	"fmt"
+	"log"
 	"net/http"
+	"os"
 	requests "spartanreport/requests"
 
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 )
 
 func HandleAuthenticated(c *gin.Context) {
@@ -17,7 +20,15 @@ func HandleAuthenticated(c *gin.Context) {
 	XBLToken, err := c.Cookie("XBLToken")
 
 	if err != nil {
-		c.Redirect(http.StatusSeeOther, requests.RequestLink())
+		err := godotenv.Load("azure-keys.env")
+		if err != nil {
+			log.Fatal("Error loading .env file", err)
+		}
+
+		clientID := os.Getenv("CLIENT_ID")
+		redirectURI := os.Getenv("REDIRECT_URI")
+
+		c.Redirect(http.StatusSeeOther, requests.RequestLink(clientID, redirectURI))
 		return
 	}
 
@@ -37,7 +48,15 @@ func HandleAuthenticated(c *gin.Context) {
 }
 
 func HandleAuth(c *gin.Context) {
-	authURL := requests.RequestLink()
+	err := godotenv.Load("azure-keys.env")
+	if err != nil {
+		log.Fatal("Error loading .env file", err)
+	}
+
+	clientID := os.Getenv("CLIENT_ID")
+	redirectURI := os.Getenv("REDIRECT_URI")
+
+	authURL := requests.RequestLink(clientID, redirectURI)
 	c.Redirect(http.StatusSeeOther, authURL)
 
 }

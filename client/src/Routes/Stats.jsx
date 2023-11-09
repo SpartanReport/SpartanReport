@@ -14,7 +14,8 @@ const Stats = ({ gamerInfo ,HaloStats, setHaloStats, setSelectedMatch}) => {
       const fetchSpartanInventory = async () => {
         try {
           // Use gamerInfo in the Axios POST request
-          const response = await axios.post('http://localhost:8080/stats', gamerInfo);
+          const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8080'; // Fallback URL if the env variable is not set
+          const response = await axios.post(`${apiUrl}/stats`, gamerInfo);
           console.log(response.data.HaloStats)
           setHaloStats(response.data.HaloStats);
         } catch (error) {
