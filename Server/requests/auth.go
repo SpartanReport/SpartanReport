@@ -144,8 +144,7 @@ func ProcessAuthCode(code string, w http.ResponseWriter, r *http.Request) {
 		Name:  "XBLToken",
 		Value: SpartanResp.XBLToken,
 	})
-	// Redirect to authenticated page
 	host := os.Getenv("HOST")
-
+	// Redirect to authenticated page
 	http.Redirect(w, r, host, http.StatusSeeOther)
 }

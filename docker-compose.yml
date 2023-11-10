@@ -13,8 +13,8 @@ services:
       context: ./Server
       # This is your react-client host address
       args:
-        HOST: localhost:3000
-        REDIRECT-HOST: localhost:8080
+        HOST: http://localhost:3000
+        REDIRECT-HOST: http://localhost:8080
 
     ports:
       - "8080:8080"

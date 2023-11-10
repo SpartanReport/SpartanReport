@@ -100,7 +100,6 @@ func RequestLink(clientID string, redirectURI string) string {
 
 	// Generate the complete URL
 	authURL := fmt.Sprintf("%s?%s", baseURL, params.Encode())
-
 	return authURL
 }
 

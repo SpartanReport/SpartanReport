@@ -12,15 +12,9 @@ import (
 )
 
 func HandleAuthenticated(c *gin.Context) {
-	// Set CORS headers
-	host := os.Getenv("HOST")
-
-	c.Header("Access-Control-Allow-Origin", host)
-	c.Header("Access-Control-Allow-Credentials", "true")
 
 	SpartanCookie, err := c.Cookie("SpartanToken")
 	XBLToken, err := c.Cookie("XBLToken")
-
 	if err != nil {
 		err := godotenv.Load("azure-keys.env")
 		if err != nil {
