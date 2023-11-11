@@ -6,15 +6,19 @@ import "../Styles/spartan.css";
 
 
 const Spartan = ({ gamerInfo }) => {
-  const { spartanInventory, armoryRow, isLoading, fetchSpartanInventory } = useFetchSpartanInventory(gamerInfo, true);
+  const [highlightedCoreId, setHighlightedCoreId] = useState(null);
+  const [highlightedHelmetId, setHighlightedHelmetId] = useState(null);
 
+  const { spartanInventory, armoryRow,setArmoryRow, isLoading, fetchSpartanInventory, currentlyEquipped, setCurrentlyEquipped} = useFetchSpartanInventory(gamerInfo, true,setHighlightedCoreId,setHighlightedHelmetId,highlightedCoreId, highlightedHelmetId);
   // Refs for both scrollable rows
   const topRowRef = useRef(null);
   const bottomRowRef = useRef(null);
 
   useEffect(() => {
     fetchSpartanInventory();
+
   }, []);
+
 
   // Scroll synchronization handlers
   const syncScrollTop = () => {
@@ -57,7 +61,33 @@ const Spartan = ({ gamerInfo }) => {
   if (!spartanInventory) {
     return <div>No Spartan Inventory Data</div>;
   }
-
+  const resetHighlight = (newHighlightedId, itemType) => {
+    console.log("RESSSETING ", newHighlightedId,itemType)
+    if (itemType === "ArmorCore") {
+      const updatedArmoryRow = armoryRow.ArmoryRow.map(obj => ({
+        ...obj,
+        isHighlighted: obj.Type === itemType && obj.id === newHighlightedId
+      }));
+      setArmoryRow({ ...armoryRow, ArmoryRow: updatedArmoryRow });
+    } else if (itemType === "ArmorHelmet") {
+      const updatedArmoryRowHelmets = armoryRow.ArmoryRowHelmets.map(obj => ({
+        ...obj,
+        isHighlighted: obj.Type === itemType && obj.id === newHighlightedId
+      }));
+      setArmoryRow({ ...armoryRow, ArmoryRowHelmets: updatedArmoryRowHelmets });
+    }
+  };
+  
+  
+  const handleEquipItem = (item) => {
+    console.log(item.Type)
+    if (item.Type === "ArmorCore") {
+      setCurrentlyEquipped(prev => ({ ...prev, CurrentlyEquippedCore: item }));
+    } else if (item.Type === "ArmorHelmet") {
+      setCurrentlyEquipped(prev => ({ ...prev, CurrentlyEquippedHelmet: item }));
+    }
+    console.log("Set New Items! ")
+  };
   const coreDetails = spartanInventory.CoreDetails;
   const base64ImageData = coreDetails.CommonData.ImageData;
   const imageSrc = `data:image/png;base64,${base64ImageData}`;
@@ -91,10 +121,10 @@ const Spartan = ({ gamerInfo }) => {
         <h1 className="spartan-subheader-home">Armor Core</h1>
       </div>
       <div className="armory-row">
-      <ArmoryRow objects={armoryRow.ArmoryRow} gamerInfo={gamerInfo}/>
+        <ArmoryRow objects={armoryRow.ArmoryRow}  resetHighlight={resetHighlight} fullObjects={armoryRow} gamerInfo={gamerInfo} onEquipItem={handleEquipItem}   currentlyEquipped={currentlyEquipped} setHighlightedCoreId={setHighlightedCoreId} setHighlightedHelmetId={setHighlightedHelmetId} highlightedId={highlightedCoreId}   />
       </div>
-            <div className="armory-row">
-      <ArmoryRow objects={armoryRow.ArmoryRowHelmets} gamerInfo={gamerInfo}/>
+      <div className="armory-row">
+        <ArmoryRow objects={armoryRow.ArmoryRowHelmets} resetHighlight={resetHighlight}   fullObjects={armoryRow} gamerInfo={gamerInfo} onEquipItem={handleEquipItem}   currentlyEquipped={currentlyEquipped} setHighlightedHelmetId={setHighlightedHelmetId} highlightedId={highlightedHelmetId} />
       </div>
     </div>
   );

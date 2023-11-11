@@ -28,7 +28,6 @@ const HighlightedObjectCard = ({ object }) => {
 
   if (object.Type !== "ArmorCore"){
     imageSrc = `data:image/jpeg;base64,${base64ImageData}`;
-    console.log(imageSrc)
 
   }else{
     imageSrc = `data:image/png;base64,${base64ImageData}`;
@@ -62,23 +61,16 @@ const ObjectsDisplay = ({ objects, highlightedId, onObjectClick }) => {
   );
 };
 
-const ArmoryRow = ({ objects,gamerInfo }) => {
-  const [highlightedId, setHighlightedId] = useState(null);
-
-  useEffect(() => {
-    const highlightedObject = objects.find(obj => obj.isHighlighted) || objects[0];
-    if (highlightedObject) {
-      setHighlightedId(highlightedObject.id);
-    }
-  }, [objects]);
+const ArmoryRow = ({ objects, fullObjects, resetHighlight, gamerInfo, onEquipItem, currentlyEquipped, highlightedId, setHighlightedCoreId,setHighlightedHelmetId }) => {
 
 
-  const sendCoreSelection = async (gamerInfo, coreId) => {
+  const sendEquip = async (gamerInfo, currentlyEquipped) => {
     const payload = {
       GamerInfo: gamerInfo,
-      Core: coreId,
+      CurrentlyEquipped: currentlyEquipped
     };
 
+    console.log("Sending ", payload)
     try {
       const response = await fetch('http://localhost:8080/armorcore', {
         method: 'POST',
@@ -94,22 +86,50 @@ const ArmoryRow = ({ objects,gamerInfo }) => {
 
       const data = await response.json();
       console.log('Response data:', data);
+      return data
     } catch (error) {
       console.error('There was an error!', error);
     }
   };
-
-
-  const handleObjectClick = (object) => {
+  const handleObjectClick = async (object) => {
     if (object.id !== highlightedId) {
-      console.log(`Clicked object ID: ${object.CoreId}`); // Log the ID to the console
-      sendCoreSelection(gamerInfo, object.CoreId);
-      setHighlightedId(object.id);
+        object.isHighlighted = true;
+        onEquipItem(object); // Call the handler when an item is clicked
+
+        let dataToSend = { ...currentlyEquipped };
+        if (object.Type === "ArmorHelmet") {
+          dataToSend.CurrentlyEquippedCore.GetInv = false;
+
+            dataToSend.CurrentlyEquippedHelmet = object;
+            await sendEquip(gamerInfo, dataToSend);
+              resetHighlight(object.id, object.Type);
+              setHighlightedHelmetId(object.id); // Update highlighted helmet ID
+          } else if (object.Type === "ArmorCore") {
+            console.log("Fetching Core Inventory!!!!!")
+            dataToSend.CurrentlyEquippedCore = object;
+            dataToSend.CurrentlyEquippedCore.GetInv = true;
+            setHighlightedCoreId(object.id); // Update highlighted core ID
+
+            // Backend request
+            const response = await sendEquip(gamerInfo, dataToSend);
+            console.log("Received!!! ", response)
+
+            if (response && response.Themes[0].HelmetPath) {
+              // Find the new highlighted helmet
+              const newHighlightedHelmet = fullObjects.ArmoryRowHelmets.find(helmet => helmet.CorePath === response.Themes[0].HelmetPath);
+              if (newHighlightedHelmet) {
+                setHighlightedHelmetId(newHighlightedHelmet.id); // Update highlighted helmet ID
+                resetHighlight(newHighlightedHelmet.id, "ArmorHelmet");
+              }
+            }
+        }
     }
-  };
+};
+
 
   const highlightedObject = objects.find(obj => obj.id === highlightedId);
 
+  
   return (
     <div className="container">
       <div className="highlightedCardContainer">

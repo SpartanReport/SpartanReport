@@ -164,6 +164,7 @@ type ArmoryRowData struct {
 	Description   string `json:"Description,omitempty"`
 	CoreId        string `json:"CoreId"`
 	Type          string `json:"Type"`
+	GetInv        bool   `json:"GetInv"`
 }
 
 type ArmoryRowHelmets struct {
@@ -174,13 +175,20 @@ type ArmoryRowHelmets struct {
 	CoreId        string `json:"CoreId"`
 	IsCrossCore   bool   `json:"IsCrossCore"`
 	Type          string `json:"Type"`
+	CorePath      string `json:"CorePath"`
+}
+
+type CurrentlyEquipped struct {
+	Helmet ArmoryRowHelmets `json:"CurrentlyEquippedHelmet"`
+	Core   ArmoryRowData    `json:"CurrentlyEquippedCore"`
 }
 
 type DataToReturn struct {
-	PlayerInventory  []SpartanInventory
-	ArmoryRow        []ArmoryRowData
-	ArmoryRowHelmets []ArmoryRowHelmets
-	Items            Items
+	PlayerInventory   []SpartanInventory
+	ArmoryRow         []ArmoryRowData
+	ArmoryRowHelmets  []ArmoryRowHelmets
+	CurrentlyEquipped CurrentlyEquipped
+	Items             Items
 }
 
 func HandleInventory(c *gin.Context) {
@@ -209,6 +217,7 @@ func HandleInventory(c *gin.Context) {
 			return
 		}
 		fmt.Println("Inventory Results: ", string(formatted_data))
+		fmt.Println("Current Core: ", playerInventory[0].CoreDetails.CommonData.Id)
 		var missingItems Items
 		var existingItems Items
 		for _, item := range InventoryResults.InventoryItems {
@@ -244,6 +253,7 @@ func HandleInventory(c *gin.Context) {
 			// Mark core if it's the equipped core
 			if reward.ItemMetaData.Core == playerInventory[0].CoreDetails.CommonData.Id {
 				coreData.IsHighlighted = true
+				data.CurrentlyEquipped.Core = coreData
 			}
 			fmt.Printf("Iteration %d: %v\n", i, reward.ItemMetaData.Core)
 			objects = append(objects, coreData)
@@ -253,20 +263,24 @@ func HandleInventory(c *gin.Context) {
 		}
 		data.ArmoryRow = objects
 	}
-
+	fmt.Println("Equipped Helmet: ", playerInventory[0].ArmorCores.ArmorCores[0].Themes[0].HelmetPath)
 	// Aggregate Armory Row For Helmets
 	helmets := []ArmoryRowHelmets{}
 	for i, item := range data.Items.InventoryItems {
 		if item.ItemType == "ArmorHelmet" {
 			helmet := ArmoryRowHelmets{}
 			helmet.ID = i
+			helmet.CorePath = item.ItemPath
 			helmet.Image = item.ItemImageData
 			if item.ItemPath == playerInventory[0].ArmorCores.ArmorCores[0].Themes[0].HelmetPath {
 				helmet.IsHighlighted = true
 			}
 			helmet.CoreId = item.ItemMetaData.Core
 			helmet.Name = item.ItemMetaData.Title.Value
+			helmet.IsCrossCore = item.ItemMetaData.IsCrossCompatible
 			helmet.Type = "ArmorHelmet"
+			data.CurrentlyEquipped.Helmet = helmet
+
 			helmets = append(helmets, helmet)
 		}
 	}

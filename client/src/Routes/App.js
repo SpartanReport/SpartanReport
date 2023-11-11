@@ -42,7 +42,7 @@ function App() {
   }, []);
 
   const startAuth = () => {
-    const apiUrl = process.env.REACT_APP_API_URL || 'http://ahhh:8080'; // Fallback URL if the env variable is not set
+    const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8080'; // Fallback URL if the env variable is not set
 
     window.location.href = `${apiUrl}/startAuth`;
   };
@@ -57,7 +57,7 @@ function App() {
 
   return (
     <Router>
-    <div className="d-flex flex-row" style={{ width: '100%' } } id="wrapper">
+    <div className="d-flex flex-column" style={{ width: '100%' } }>
           {/* Sidebar */}
           <Navbar clearCookie={clearCookie} isAuthenticated={isAuthenticated} startAuth={startAuth} />
             {/* Header */}

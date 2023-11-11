@@ -137,6 +137,8 @@ func SendRanks(c *gin.Context) {
 }
 
 func GetRankImagesFromDB() ([]RankImage, error) {
+	initCache() // init if not already done
+
 	cacheMutex.RLock()
 	cached, exists := cache["rank_images"]
 	cacheMutex.RUnlock()

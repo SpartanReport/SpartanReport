@@ -8,10 +8,7 @@
 	transition: background-color 0.3s ease;
   }
 
-#page-content-wrapper {
-	flex-grow: 1;
-	overflow: auto;  /* in case the content gets too long */
-  }
+
 
 html {
   background-color: #1A282E;
@@ -20,14 +17,21 @@ html {
 }
 
   .main-grid-container {
-	display: grid;
-	grid-template-columns: repeat(3, 1fr);
-	grid-template-rows: repeat(2, 1fr);
-	height: 100vh;
-	gap: 10px;
-	padding: 50px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    height: 100vh;
+    gap: 10px;
+    padding: 50px;
   }
 
+  @media screen and (max-width: 590px) {
+    .main-grid-container{
+      padding: 30px;
+
+    }
+
+  }
 
   .card-header{
 	text-align: center;
@@ -145,40 +149,16 @@ nav ul li a:hover {
 	font-weight: bold;
 
   }
-  
-  /* Style for kills */
-  .kills-td {
-	color: green;
-  }
-  
-  /* Style for deaths */
-  .deaths-td {
-	color: red;
-  }
-  
-  /* Style for assists */
-  .assists-td {
-	color: blue;
-  }
-  
+
   /* Style for KDA */
   .kda-td {
 	font-style: italic;
   }
 
 
-.relative-container {
-	
-	position: relative;
-  }
   .d-flex{
-	
     background-color: #1A282E;
 	
   }
 
-  .main-card-spartan{
-    position: absolute;
-    bottom: 0;
-}
 

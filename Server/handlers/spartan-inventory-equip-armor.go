@@ -9,8 +9,8 @@ import (
 )
 
 type ArmorCoreEquip struct {
-	GamerInfo requests.GamerInfo
-	Core      string
+	GamerInfo         requests.GamerInfo
+	CurrentlyEquipped CurrentlyEquipped
 }
 
 type Items struct {
@@ -35,10 +35,21 @@ func HandleEquipArmor(c *gin.Context) {
 	}
 
 	gamerInfo := ArmorCoreData.GamerInfo
-	core := ArmorCoreData.Core
+	fmt.Println("Helmet Path: ", ArmorCoreData.CurrentlyEquipped.Helmet.CoreId)
+	// Send Core inventory data
+	if ArmorCoreData.CurrentlyEquipped.Core.GetInv {
+		fmt.Println("Empty Helmet Path")
+		customization := GetCurrentArmor(gamerInfo, ArmorCoreData, true)
+		ChangeCurrentArmor(gamerInfo, customization)
 
-	customization := GetCurrentArmor(gamerInfo, core)
+		c.JSON(http.StatusOK, customization)
+		return
+
+	}
+	// Print the formatted JSON
+	customization := GetCurrentArmor(gamerInfo, ArmorCoreData, false)
 	ChangeCurrentArmor(gamerInfo, customization)
 	fmt.Println("Armor Changed!")
+
 	c.JSON(http.StatusOK, gin.H{"message": "Done"})
 }

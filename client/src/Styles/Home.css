@@ -10,14 +10,16 @@
 }
 
 .main-grid-container {
-  flex-wrap: nowrap;
-  gap: 5px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); /* Allows for a fluid number of columns */  gap: 5px;
+  align-items: start;
   margin-bottom: 50px;
   border-radius: 10px;
   border: 5px solid #32525E;
   background: rgba(0, 0, 0, 0.3);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.31);
   backdrop-filter: blur(10px);
+  overflow: hidden;
 }
 
 
@@ -60,6 +62,7 @@
   border-right: 40px solid #1D435D;
 }
 
+
 .diamond-icon {
   position: absolute;
   height: 25px;
@@ -86,6 +89,10 @@
   font-style: italic;
 }
 
+.card-column {
+}
+
+
 .card-footer-spartan {
   font-family: 'Oswald', sans-serif;
   text-align: center;
@@ -105,9 +112,9 @@
   border-top: 5px solid #477289;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.269);
   transition: all 0.3s ease;
-  margin-top: 50px;
-  margin-left:40px;
-  height:91%;
+  margin-top: 80px;
+  height:87.33%;
+  box-sizing: border-box;
   
 }
 .welcome-cards-spartan {
@@ -170,8 +177,7 @@
   background: rgba(71, 114, 137, 0.3);
   z-index: 2;
 }
-.cards-container{
-}
+
 
 .lower-card {
   z-index: 0; /* Ensures that this card is below the stacked card */
@@ -248,4 +254,59 @@
   line-height: 25px;
   border-radius: 0; /* Square edges */
 
+}
+
+
+.card-column{
+  padding-top: 30px;
+}
+
+.welcome-cards, .welcome-cards-spartan, .welcome-cards-rank {
+  transition: transform 1s ease, width 1s ease, margin 1s ease;
+  /* ... other styles ... */
+}
+
+
+@media screen and (max-width: 500px) {
+  .title-container-home, .subheader-container-home {
+  }
+
+  .main-grid-container{}
+  .cards-container{
+    margin-top:10px;
+  }
+
+  .welcome-cards, .cards-container {
+    /* Cards take up the full available width */
+    min-width: calc(120% - 10px); /* Adjust this based on your layout */
+    margin-left: -10px !important;
+  }
+  .welcome-cards{
+    min-width: calc(110%); /* Adjust this based on your layout */
+    height:100%;
+
+    
+  }
+}
+
+
+@media screen and (max-width: 1040px) {
+  .main-grid-container{
+    grid-template-columns: 1fr; /* One column taking full width */
+        height: auto;
+  }
+  .card-column{
+    margin-top:50px;
+
+  }
+  .welcome-cards, .welcome-cards-spartan, .welcome-cards-rank {
+    /* Cards take full width minus the gap */
+    width: calc(100% - 10px); /* Assuming a 5px gap on either side */
+    margin: 0; /* Reset margins */
+    
+  }
+  .challenge-title, .challenge-description{
+    font-size:14px;
+  }
+  
 }

@@ -193,3 +193,38 @@
   margin-top: 5px;
   margin-bottom: 5px;
 }
+
+@media screen and (max-width: 590px) {
+  .App-nav {
+    flex-direction: column;
+    margin-bottom: -70px;
+    padding-right:50px;
+  }
+.title-container-home, .spartan-title{
+  width:80%;
+}
+.subheader-container-home{
+  width:80%;
+}
+.title-container{
+  width:80%;
+}
+  .nav-button, .nav-button-wrapper {
+    width: 100%; /* Make each button take the full width */
+    display: block; /* Stack elements vertically */
+  }
+  .dropdown-menu{
+    margin-top:0px;
+  }
+
+  .nav-button {
+    margin-bottom: 5px; /* Add some space between the buttons */
+  }
+  .navbar-container{
+    position: relative;
+  }
+  /* If you want to remove the gap between button and wrapper */
+  .nav-button-wrapper {
+    gap: 0;
+  }
+}

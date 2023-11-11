@@ -143,10 +143,10 @@ func ChangeCurrentArmor(gamerInfo requests.GamerInfo, customizationData Customiz
 	fmt.Println("Changed Armor")
 }
 
-func GetCurrentArmor(gamerInfo requests.GamerInfo, core string) Customization {
+func GetCurrentArmor(gamerInfo requests.GamerInfo, ArmorCoreData ArmorCoreEquip, GetCore bool) Customization {
 
 	// Construct the request URL and headers
-	url := "https://economy.svc.halowaypoint.com/hi/players/xuid(" + gamerInfo.XUID + ")/customization/armors/" + core + "?flight=" + gamerInfo.ClearanceCode
+	url := "https://economy.svc.halowaypoint.com/hi/players/xuid(" + gamerInfo.XUID + ")/customization/armors/" + ArmorCoreData.CurrentlyEquipped.Core.CoreId + "?flight=" + gamerInfo.ClearanceCode
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		panic(err)
@@ -176,19 +176,24 @@ func GetCurrentArmor(gamerInfo requests.GamerInfo, core string) Customization {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("Done with GET. Here's the data: ")
+	fmt.Println("You received customization struct: ")
 	fmt.Println(string(responseBody))
+
 	// If there are multiple themes equipped, then the user has an armor kit equipped
 	// Remove the non-armor kit from the array so it's just the armor kit that remains
 	if len(customizationData.Themes) != 1 {
-		customizationData.Themes[1].CoreId = core
+		customizationData.Themes[1].CoreId = ArmorCoreData.CurrentlyEquipped.Core.CoreId
 		customizationData.Themes[1].IsEquipped = true
 		customizationData.IsEquipped = true
 		customizationData.Themes = remove(customizationData.Themes, 0)
 		return customizationData
 
 	}
-	customizationData.Themes[0].CoreId = core
+	if ArmorCoreData.CurrentlyEquipped.Helmet.CorePath != "" && !GetCore {
+		fmt.Println("Helmet Path: ", ArmorCoreData.CurrentlyEquipped.Helmet.CorePath)
+		customizationData.Themes[0].HelmetPath = ArmorCoreData.CurrentlyEquipped.Helmet.CorePath
+	}
+	customizationData.Themes[0].CoreId = ArmorCoreData.CurrentlyEquipped.Core.CoreId
 	customizationData.Themes[0].IsEquipped = true
 	customizationData.IsEquipped = true
 	return customizationData
