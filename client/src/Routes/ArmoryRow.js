@@ -35,7 +35,7 @@ const HighlightedObjectCard = ({ object }) => {
   }
   return (
     <div className="highlightedObjectCard">
-      <p className='card-subheader'>{object.name}</p>
+      <p className='card-subheader'>Equipped | {object.name}</p>
       <img src={imageSrc} alt="Spartan Core" className="HighlightedImageCard" />
 
     </div>

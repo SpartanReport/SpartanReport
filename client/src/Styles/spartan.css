@@ -20,7 +20,7 @@
   .armory-container {
     display: flex;
     height: 95%;
-    margin-top: 50px;
+    margin-top: 0px;
   } 
   
   .spartan-card-container {
@@ -57,7 +57,7 @@
     backdrop-filter: blur(10px);
   }
   .armory-row{
-    margin-top:40px;
+    margin-top:56px;
     margin-left:25px;
     transform:scale(0.9);
   }

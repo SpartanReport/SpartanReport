@@ -425,12 +425,15 @@ func HandleProgression(c *gin.Context) {
 		RankImages:       rankImages,
 	}
 	data.RankImages = rankImages
-
+	// Remove sensitive information from storing
+	truncatedGamerInfo := gamerInfo
+	truncatedGamerInfo.XBLToken = ""
+	truncatedGamerInfo.SpartanKey = ""
 	dataToStore := struct {
 		GamerInfo    requests.GamerInfo
 		MatchDetails []TruncatedResultsToStore
 	}{
-		GamerInfo: gamerInfo,
+		GamerInfo: truncatedGamerInfo,
 	}
 
 	// Populate the MatchDetails slice

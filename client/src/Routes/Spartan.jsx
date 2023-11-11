@@ -118,7 +118,7 @@ const Spartan = ({ gamerInfo }) => {
           <path className="cls-1" d="M11.46,0L0,11.46l11.46,11.46,11.46-11.46L11.46,0ZM3.41,11.46L11.46,3.41l8.05,8.05-8.05,8.05L3.41,11.46Z"/>
           <rect className="cls-1" x="8.16" y="8.16" width="6.59" height="6.59" transform="translate(-4.75 11.46) rotate(-45)"/>
         </svg>
-        <h1 className="spartan-subheader-home">Current Armor Core</h1>
+        <h1 className="spartan-subheader-home">Armor Core</h1>
       </div>
       <div className="armory-row">
         <ArmoryRow objects={armoryRow.ArmoryRow}  resetHighlight={resetHighlight} fullObjects={armoryRow} gamerInfo={gamerInfo} onEquipItem={handleEquipItem}   currentlyEquipped={currentlyEquipped} setHighlightedCoreId={setHighlightedCoreId} setHighlightedHelmetId={setHighlightedHelmetId} highlightedId={highlightedCoreId}   />

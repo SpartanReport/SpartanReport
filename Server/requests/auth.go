@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/joho/godotenv"
 )
@@ -136,13 +137,17 @@ func ProcessAuthCode(code string, w http.ResponseWriter, r *http.Request) {
 		fmt.Println("Error with XSTS Token:", err)
 		return
 	}
+	// Parse the ISO8601Date to a time.Time object
+	expires, err := time.Parse(time.RFC3339, SpartanResp.ExpiresUtc.ISO8601Date)
 	http.SetCookie(w, &http.Cookie{
-		Name:  "SpartanToken",
-		Value: SpartanResp.SpartanToken,
+		Name:    "SpartanToken",
+		Value:   SpartanResp.SpartanToken,
+		Expires: expires,
 	})
 	http.SetCookie(w, &http.Cookie{
-		Name:  "XBLToken",
-		Value: SpartanResp.XBLToken,
+		Name:    "XBLToken",
+		Value:   SpartanResp.XBLToken,
+		Expires: expires,
 	})
 	host := os.Getenv("HOST")
 	// Redirect to authenticated page
