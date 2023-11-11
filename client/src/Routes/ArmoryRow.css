@@ -53,8 +53,8 @@
   .highlightedObjectCard {
     margin: 5px;
     background-color: lightblue;
-    height: 450px;
-    width: 400px;
+    height: 410px;
+    width: 410px;
     box-sizing: border-box;
     color: white;
     background: rgba(7, 7, 7, 0.2);
@@ -67,8 +67,8 @@
   
   .objectsDisplay {
     display: grid;
-    grid-auto-rows: 250px;
-    grid-column-gap: 55px;
+    grid-auto-rows: 210px;
+    grid-column-gap: 60px;
     overflow-x: auto;
     padding: 10px;
     

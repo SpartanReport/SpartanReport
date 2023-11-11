@@ -44,7 +44,6 @@
   .spartan-card-row {
     display: flex;
     flex-wrap: nowrap; /* Prevent wrapping to next line */
-    gap: 10px;
     overflow-x: auto; /* Enables horizontal scrolling within the row */
     max-width: calc(4 * (200px + 10px)); /* Adjust for 4 cards and 10px gap */
   }
@@ -59,6 +58,6 @@
   }
   .armory-row{
     margin-top:40px;
-    margin-left:50px;
+    margin-left:25px;
     transform:scale(0.9);
   }
