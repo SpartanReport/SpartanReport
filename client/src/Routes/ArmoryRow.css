@@ -28,6 +28,9 @@
   }
   .HighlightedImageCard{
     max-height:100%; max-width:100%;
+    height:90%;
+    width:90%;
+
     margin: auto;
     display: block;
 
@@ -50,8 +53,8 @@
   .highlightedObjectCard {
     margin: 5px;
     background-color: lightblue;
-    height: 375px;
-    width: 375px;
+    height: 450px;
+    width: 400px;
     box-sizing: border-box;
     color: white;
     background: rgba(7, 7, 7, 0.2);
@@ -82,7 +85,7 @@
   .highlightedCardContainer {
     flex: none;
     padding: 5px;
-    padding-top: 70px;
+    padding-top: 30px;
     overflow: visible;
   }
   

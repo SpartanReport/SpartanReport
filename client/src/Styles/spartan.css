@@ -58,6 +58,7 @@
     backdrop-filter: blur(10px);
   }
   .armory-row{
-    margin-top:100px;
+    margin-top:40px;
     margin-left:50px;
+    transform:scale(0.9);
   }
