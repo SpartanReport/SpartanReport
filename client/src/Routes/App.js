@@ -14,6 +14,7 @@ import Navbar from './Navbar'
 import Operations from './Operations';
 import Store from './store';
 import ItemDetailsPage from './itemdetails';
+import CommandCenter from './CommandCenter';
 
 function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -69,7 +70,9 @@ function App() {
           <div className="container-fluid">
             <Routes>
               <Route path="/spartan" element={<Spartan gamerInfo={gamerInfo} spartanInventory={spartanInventory} setSpartanInventory={setSpartanInventory} />} />
-              <Route path="/" element={isAuthenticated ? <Home gamerInfo={gamerInfo} spartanInventory={spartanInventory}/> : <UnauthenticatedContent startAuth={startAuth} />} />
+              <Route path="/CommandCenter" element={isAuthenticated ? <CommandCenter gamerInfo={gamerInfo} spartanInventory={spartanInventory}/> : <UnauthenticatedContent startAuth={startAuth} />} />
+
+              <Route path="/" element={ <Home/>} />
               <Route path="/match/:matchId" element={<MatchStats gamerInfo={gamerInfo} HaloStats={HaloStats} selectedMatch={selectedMatch} />} />
               <Route path="/stats" element={<Stats gamerInfo={gamerInfo} HaloStats={HaloStats} setHaloStats={setHaloStats} setSelectedMatch={setSelectedMatch} />} />
               <Route path="/operations" element={<Operations gamerInfo={gamerInfo} />} />

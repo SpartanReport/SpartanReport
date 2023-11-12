@@ -6,10 +6,18 @@ import "../Styles/spartan.css";
 
 
 const Spartan = ({ gamerInfo }) => {
-  const [highlightedCoreId, setHighlightedCoreId] = useState(null);
-  const [highlightedHelmetId, setHighlightedHelmetId] = useState(null);
-
-  const { spartanInventory, armoryRow,setArmoryRow, isLoading, fetchSpartanInventory, currentlyEquipped, setCurrentlyEquipped} = useFetchSpartanInventory(gamerInfo, true,setHighlightedCoreId,setHighlightedHelmetId,highlightedCoreId, highlightedHelmetId);
+  const [visibleRows, setVisibleRows] = useState({
+    core: true,
+    helmet: true,
+    visors: true,
+    gloves: true
+  });
+  const [highlightedItems, setHighlightedItems] = useState({
+    armorcoreId: null,
+    armorhelmetId: null,
+    // Add other item types if necessary
+  });
+  const { spartanInventory, armoryRow,setArmoryRow, isLoading, fetchSpartanInventory, currentlyEquipped, setCurrentlyEquipped} = useFetchSpartanInventory(gamerInfo, true,setHighlightedItems);
   // Refs for both scrollable rows
   const topRowRef = useRef(null);
   const bottomRowRef = useRef(null);
@@ -63,6 +71,10 @@ const Spartan = ({ gamerInfo }) => {
   }
   const resetHighlight = (newHighlightedId, itemType) => {
     console.log("RESSSETING ", newHighlightedId,itemType)
+    setHighlightedItems(prev => ({
+      ...prev,
+      [`${itemType.toLowerCase()}Id`]: newHighlightedId // Dynamically set the property based on itemType
+    }));
     if (itemType === "ArmorCore") {
       const updatedArmoryRow = armoryRow.ArmoryRow.map(obj => ({
         ...obj,
@@ -107,32 +119,58 @@ const Spartan = ({ gamerInfo }) => {
     }
     return placeholders;
   };
+  const toggleVisibility = (row) => {
+    setVisibleRows(prev => ({ ...prev, [row]: !prev[row] }));
+  };
+
 
   return (
     <div className="main-grid-container-spartan">
       <div className="title-container-home">
         <h1 className="spartan-title-home">ARMORY</h1>
       </div>
-      <div className="subheader-container-home">
-        <svg className="diamond-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22.92 22.92">
+      <div className="subheader-container-spartan" onClick={() => toggleVisibility('core')}>
+          <svg className="diamond-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22.92 22.92">
           <path className="cls-1" d="M11.46,0L0,11.46l11.46,11.46,11.46-11.46L11.46,0ZM3.41,11.46L11.46,3.41l8.05,8.05-8.05,8.05L3.41,11.46Z"/>
           <rect className="cls-1" x="8.16" y="8.16" width="6.59" height="6.59" transform="translate(-4.75 11.46) rotate(-45)"/>
         </svg>
-        <h1 className="spartan-subheader-home">Armor Core</h1>
+        <h1 className="spartan-subheader-home">Armor Core {visibleRows.core ? 
+        (<svg className="arrow-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+          {/* SVG path for down arrow */}
+          <path d="M7.41 8.29L12 12.88 16.59 8.29 18 9.71l-6 6-6-6z"/>
+        </svg>) : 
+        (<svg className="arrow-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+          {/* SVG path for right arrow (">") */}
+          <path d="M8.29 7.41L12.88 12 8.29 16.59 9.71 18l6-6-6-6z"/>
+        </svg>)
+      }</h1>
+
       </div>
+      {visibleRows.core? (
       <div className="armory-row">
-        <ArmoryRow objects={armoryRow.ArmoryRow}  resetHighlight={resetHighlight} fullObjects={armoryRow} gamerInfo={gamerInfo} onEquipItem={handleEquipItem}   currentlyEquipped={currentlyEquipped} setHighlightedCoreId={setHighlightedCoreId} setHighlightedHelmetId={setHighlightedHelmetId} highlightedId={highlightedCoreId}   />
+        <ArmoryRow objects={armoryRow.ArmoryRow}  resetHighlight={resetHighlight} fullObjects={armoryRow} gamerInfo={gamerInfo} onEquipItem={handleEquipItem}   currentlyEquipped={currentlyEquipped} highlightedItems={highlightedItems} setHighlightedItems={setHighlightedItems}  />
       </div>
-      <div className="subheader-container-home">
-        <svg className="diamond-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22.92 22.92">
+      )  : <div style={{height:50}}></div>}
+      <div className="subheader-container-spartan" onClick={() => toggleVisibility('helmet')}>
+          <svg className="diamond-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22.92 22.92">
           <path className="cls-1" d="M11.46,0L0,11.46l11.46,11.46,11.46-11.46L11.46,0ZM3.41,11.46L11.46,3.41l8.05,8.05-8.05,8.05L3.41,11.46Z"/>
           <rect className="cls-1" x="8.16" y="8.16" width="6.59" height="6.59" transform="translate(-4.75 11.46) rotate(-45)"/>
         </svg>
-        <h1 className="spartan-subheader-home">Helmet</h1>
+        <h1 className="spartan-subheader-home">Helmets {visibleRows.helmet ? 
+        (<svg className="arrow-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+          <path d="M7.41 8.29L12 12.88 16.59 8.29 18 9.71l-6 6-6-6z"/>
+        </svg>) : 
+        (<svg className="arrow-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+          <path d="M8.29 7.41L12.88 12 8.29 16.59 9.71 18l6-6-6-6z"/>
+        </svg>)
+      }</h1>
+
       </div>
+      {visibleRows.helmet? (
       <div className="armory-row">
-        <ArmoryRow objects={armoryRow.ArmoryRowHelmets} resetHighlight={resetHighlight}   fullObjects={armoryRow} gamerInfo={gamerInfo} onEquipItem={handleEquipItem}   currentlyEquipped={currentlyEquipped} setHighlightedHelmetId={setHighlightedHelmetId} highlightedId={highlightedHelmetId} />
+        <ArmoryRow objects={armoryRow.ArmoryRowHelmets} resetHighlight={resetHighlight}   fullObjects={armoryRow} gamerInfo={gamerInfo} onEquipItem={handleEquipItem}   currentlyEquipped={currentlyEquipped} setHighlightedItems={setHighlightedItems} highlightedItems={highlightedItems} />
       </div>
+      )  : <div style={{height:100}}></div>}
     </div>
   );
 };

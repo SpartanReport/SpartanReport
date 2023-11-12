@@ -32,7 +32,23 @@
     flex-direction: column;
     overflow-x: auto; /* Enables horizontal scrolling */
     }
-
+    .subheader-container-spartan {
+      margin-top: 50px;
+      margin-left: 50px;
+      text-align: left;
+      width: 95%;
+      position: absolute;
+      background-color: #4389BA;
+    }
+    .subheader-container-spartan:hover {
+      margin-top: 50px;
+      margin-left: 50px;
+      text-align: left;
+      width: 95%;
+      position: absolute;
+      background-color: #3c7caa;
+      cursor: pointer;
+    }
   .spartan-card-subheader-home-mini {
     font-family: 'Oswald', sans-serif;
     text-align: center;

@@ -177,16 +177,26 @@ type ArmoryRowHelmets struct {
 	Type          string `json:"Type"`
 	CorePath      string `json:"CorePath"`
 }
+type ArmoryRowItems struct {
+	ArmoryRowHelmets []ArmoryRowHelmets `json:"Helmets"`
+	ArmoryRowGloves  []ArmoryRowHelmets `json:"Gloves"`
+	ArmoryRowVisors  []ArmoryRowHelmets `json:"Visors"`
+}
 
 type CurrentlyEquipped struct {
 	Helmet ArmoryRowHelmets `json:"CurrentlyEquippedHelmet"`
 	Core   ArmoryRowData    `json:"CurrentlyEquippedCore"`
+	Visor  ArmoryRowHelmets `json:"CurrentlyEquippedVisor"`
+	Gloves ArmoryRowHelmets `json:"CurrentlyEquippedGlove"`
 }
 
 type DataToReturn struct {
-	PlayerInventory   []SpartanInventory
-	ArmoryRow         []ArmoryRowData
-	ArmoryRowHelmets  []ArmoryRowHelmets
+	PlayerInventory  []SpartanInventory
+	ArmoryRow        []ArmoryRowData
+	ArmoryRowHelmets []ArmoryRowHelmets
+	ArmoryRowVisors  []ArmoryRowHelmets
+	ArmoryRowGloves  []ArmoryRowHelmets
+
 	CurrentlyEquipped CurrentlyEquipped
 	Items             Items
 }
@@ -266,6 +276,9 @@ func HandleInventory(c *gin.Context) {
 	fmt.Println("Equipped Helmet: ", playerInventory[0].ArmorCores.ArmorCores[0].Themes[0].HelmetPath)
 	// Aggregate Armory Row For Helmets
 	helmets := []ArmoryRowHelmets{}
+	gloves := []ArmoryRowHelmets{}
+	visors := []ArmoryRowHelmets{}
+
 	for i, item := range data.Items.InventoryItems {
 		if item.ItemType == "ArmorHelmet" {
 			helmet := ArmoryRowHelmets{}
@@ -283,8 +296,46 @@ func HandleInventory(c *gin.Context) {
 
 			helmets = append(helmets, helmet)
 		}
+		if item.ItemType == "ArmorVisor" {
+			visor := ArmoryRowHelmets{}
+			visor.ID = i
+			visor.CorePath = item.ItemPath
+			visor.Image = item.ItemImageData
+			// If there is no image data, don't display the visor as it's empty
+			if visor.Image == "" {
+				continue
+			}
+			if item.ItemPath == playerInventory[0].ArmorCores.ArmorCores[0].Themes[0].VisorPath {
+				visor.IsHighlighted = true
+			}
+			visor.CoreId = item.ItemMetaData.Core
+			visor.Name = item.ItemMetaData.Title.Value
+			visor.IsCrossCore = item.ItemMetaData.IsCrossCompatible
+			visor.Type = "ArmorVisor"
+			data.CurrentlyEquipped.Visor = visor
+
+			visors = append(visors, visor)
+		}
+		if item.ItemType == "ArmorGlove" {
+			glove := ArmoryRowHelmets{}
+			glove.ID = i
+			glove.CorePath = item.ItemPath
+			glove.Image = item.ItemImageData
+			if item.ItemPath == playerInventory[0].ArmorCores.ArmorCores[0].Themes[0].GlovePath {
+				glove.IsHighlighted = true
+			}
+			glove.CoreId = item.ItemMetaData.Core
+			glove.Name = item.ItemMetaData.Title.Value
+			glove.IsCrossCore = item.ItemMetaData.IsCrossCompatible
+			glove.Type = "ArmorGlove"
+			data.CurrentlyEquipped.Gloves = glove
+
+			gloves = append(gloves, glove)
+		}
 	}
 	data.ArmoryRowHelmets = helmets
+	data.ArmoryRowGloves = gloves
+	data.ArmoryRowVisors = visors
 
 	c.JSON(http.StatusOK, data)
 }

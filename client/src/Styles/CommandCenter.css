@@ -1,0 +1,312 @@
+.welcome-title {
+  color: rgb(213, 213, 213);
+  padding-top: 60px;
+  padding-left: 50px;
+  padding-bottom: 10px;
+  text-align: center;
+  font-style: italic;
+  font-size: large;
+
+}
+
+.main-grid-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); /* Allows for a fluid number of columns */  gap: 5px;
+  align-items: start;
+  margin-bottom: 50px;
+  border-radius: 10px;
+  border: 5px solid #32525E;
+  background: rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.31);
+  backdrop-filter: blur(10px);
+  overflow: hidden;
+}
+
+
+.spartan-title-home {
+  font-family: 'Oswald', sans-serif;
+  font-size: 24px;
+  padding-left: 15px;
+  color: white;
+  margin-bottom: 0px;
+}
+
+.spartan-subheader-home {
+  font-family: 'Oswald', sans-serif;
+  font-size: 18px;
+  padding-left: 40px;
+  margin-top: 5px;
+  padding-bottom: 5px;
+  color: white;
+  margin-bottom: 0px;
+}
+
+.spartan-card-subheader-home {
+  font-family: 'Oswald', sans-serif;
+  text-align: center;
+  font-style: normal;
+  font-size: 18px;
+  padding-left: 10px;
+  color: white;
+  background-color: #4389BA;
+}
+
+.title-container-home {
+  margin-top: 10px;
+  margin-left: 50px;
+  text-align: center;
+  width: 95%;
+  position: absolute;
+  background-color: #273b44;
+  border-left: 5px solid #80cde9;
+  border-right: 40px solid #1D435D;
+}
+
+
+.diamond-icon {
+  position: absolute;
+  height: 25px;
+  width: 25px;
+  margin-top: 4px;
+  padding-left: 5px;
+  fill: white;
+}
+
+.subheader-container-home {
+  margin-top: 50px;
+  margin-left: 50px;
+  text-align: left;
+  width: 95%;
+  position: absolute;
+  background-color: #4389BA;
+}
+
+.card-header-spartan {
+  text-align: center;
+  color: white;
+  background: rgba(7, 7, 7, 0.2);
+  backdrop-filter: blur(10px);
+  font-style: italic;
+}
+
+.card-column {
+}
+
+
+.card-footer-spartan {
+  font-family: 'Oswald', sans-serif;
+  text-align: center;
+  font-style: normal;
+  font-size: 18px;
+  padding-left: 10px;
+  color: white;
+  background-color: #4389BA;
+  transform: translateY(5%);
+}
+
+.welcome-cards {
+  color: white;
+  display: block;
+  background: rgba(7, 7, 7, 0.2);
+  border: 5px solid #32525E;
+  border-top: 5px solid #477289;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.269);
+  transition: all 0.3s ease;
+  margin-top: 80px;
+  height:87.33%;
+  box-sizing: border-box;
+  
+}
+.welcome-cards-spartan {
+  color: white;
+  height: 30%;
+  background: rgba(7, 7, 7, 0.2);
+  border: 5px solid #32525E;
+  border-top: 5px solid #477289;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.269);
+  transition: all 0.3s ease;
+  margin-top: 50px;
+
+}
+
+.welcome-cards-spartan.active {
+  transform: scale(1.2);
+}
+.nav-button .back{
+  padding-left: 10px;
+}
+.welcome-cards-spartan:hover {
+  transform: scale(1.02);
+  cursor: pointer;
+  border: 5px solid #81CDE9;
+  background: rgba(71, 114, 137, 0.3);
+  z-index: 2;
+}
+
+
+
+.spartan-img {
+  transform: translateY(1%);
+  position: relative;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  height: 76.5%;
+  width: 55%;
+}
+
+.welcome-cards-rank {
+  color: white;
+  background: rgba(7, 7, 7, 0.2);
+  border: 5px solid #32525E;
+  border-top: 5px solid #477289;
+  height: 30%;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.269);
+  transition: all 0.3s ease;
+  margin-top: 5px;
+}
+
+.welcome-cards-rank.active {
+  transform: scale(1.2);
+}
+
+.welcome-cards-rank:hover {
+  transform: scale(1.02);
+  cursor: pointer;
+  border: 5px solid #81CDE9;
+  background: rgba(71, 114, 137, 0.3);
+  z-index: 2;
+}
+
+
+.lower-card {
+  z-index: 0; /* Ensures that this card is below the stacked card */
+}
+
+.rank-img {
+  position: relative;
+  height: 50%;
+  width: 30%;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.card-footer-rank {
+  font-family: 'Oswald', sans-serif;
+  text-align: center;
+  font-style: normal;
+  font-size: 18px;
+  padding-left: 10px;
+  color: white;
+  background-color: #4389BA;
+}
+.challenge-row{
+  position: relative;  /* Adding relative positioning here */
+  height:89px;
+  background-color: #4389BA;
+  margin: 5px;
+}
+.challenge-title{
+  font-family: 'Oswald', sans-serif;
+  text-align: left;
+  font-style: normal;
+  font-size: 18px;
+  padding-left: 10px;
+  margin-bottom: 0;
+  color: white;
+  background-color: var(--primary-color);
+  overflow-y: auto;
+}
+
+.challenge-progress{
+  font-family: 'Oswald', sans-serif;
+  color: white;
+  margin-left:10px;
+  font-size: 12px;
+}
+.challenge-description{
+  margin-left:10px;
+  font-family: 'Oswald';
+  overflow-y: auto;
+  max-height: 50%;       /* You can adjust this value based on your design */
+}
+.progression-card-size {
+  width: 200px;
+  height: 300px;
+}
+
+
+/* Container styles */
+.progressBar {
+  position: absolute;  /* This will position the progressBar relative to challenge-row */
+  width: 100%; 
+  height: 10px; 
+  border-radius: 0; /* Square edges */
+  bottom: 0;
+}
+
+/* Progress fill styles */
+.progressBarFill {
+  height: 100%;
+  background-color: var(--secondary-color);
+  text-align: center;
+  line-height: 25px;
+  border-radius: 0; /* Square edges */
+
+}
+
+
+.card-column{
+  padding-top: 30px;
+}
+
+.welcome-cards, .welcome-cards-spartan, .welcome-cards-rank {
+  transition: transform 1s ease, width 1s ease, margin 1s ease;
+  /* ... other styles ... */
+}
+
+
+@media screen and (max-width: 500px) {
+  .title-container-home, .subheader-container-home {
+  }
+
+  .main-grid-container{}
+  .cards-container{
+    margin-top:10px;
+  }
+
+  .welcome-cards, .cards-container {
+    /* Cards take up the full available width */
+    min-width: calc(120% - 10px); /* Adjust this based on your layout */
+    margin-left: -10px !important;
+  }
+  .welcome-cards{
+    min-width: calc(110%); /* Adjust this based on your layout */
+    height:100%;
+
+    
+  }
+}
+
+
+@media screen and (max-width: 1040px) {
+  .main-grid-container{
+    grid-template-columns: 1fr; /* One column taking full width */
+        height: auto;
+  }
+  .card-column{
+    margin-top:50px;
+
+  }
+  .welcome-cards, .welcome-cards-spartan, .welcome-cards-rank {
+    /* Cards take full width minus the gap */
+    width: calc(100% - 10px); /* Assuming a 5px gap on either side */
+    margin: 0; /* Reset margins */
+    
+  }
+  .challenge-title, .challenge-description{
+    font-size:14px;
+  }
+  
+}

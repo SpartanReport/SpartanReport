@@ -8,7 +8,8 @@ const Navbar = ({ clearCookie, isAuthenticated, startAuth }) => {
   const navigate = useNavigate();
   const timerRef = useRef(null);
   const routes = [
-    { name: 'COMMAND CENTER', path: '/' },
+    { name: 'HOME', path: '/' },
+    ...(isAuthenticated ? [{ name: 'COMMAND CENTER', path: '/commandcenter' }] : []),
     { name: 'PROGRESSION', path: '/progression' },
     { name: 'BATTLE LOG', path: '/stats' },
     { name: 'OPERATIONS', path: '/operations' },

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import axios from 'axios';
 
-const useFetchSpartanInventory = (gamerInfo, includeArmory = false, setHighlightedCoreId= null ,setHighlightedHelmetId = null) => {
+const useFetchSpartanInventory = (gamerInfo, includeArmory = false, setHighlightedItems = null) => {
     const [isLoading, setIsLoading] = useState(true);
   const [spartanInventory, setSpartanInventory] = useState(null);
   const [isFetched, setIsFetched] = useState(false);
@@ -31,11 +31,11 @@ const useFetchSpartanInventory = (gamerInfo, includeArmory = false, setHighlight
         const initialCoreHighlight = response.data.ArmoryRow.find(obj => obj.isHighlighted);
         const initialHelmetHighlight = response.data.ArmoryRowHelmets.find(obj => obj.isHighlighted);
         if (initialCoreHighlight) {
-          setHighlightedCoreId(initialCoreHighlight.id);
+          setHighlightedItems(items => ({ ...items, armorcoreId: initialCoreHighlight.id }));
           
         }
         if (initialHelmetHighlight) {
-          setHighlightedHelmetId(initialHelmetHighlight.id);
+          setHighlightedItems(items => ({ ...items, armorhelmetId: initialHelmetHighlight.id }));
         }
       }
   
