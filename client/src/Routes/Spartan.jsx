@@ -153,15 +153,13 @@ const Spartan = ({ gamerInfo }) => {
           <rect className="cls-1" x="8.16" y="8.16" width="6.59" height="6.59" transform="translate(-4.75 11.46) rotate(-45)"/>
         </svg>
         <h1 className="spartan-subheader-home">Armor Core {visibleRows.core ? 
-        (<svg className="arrow-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-          {/* SVG path for down arrow */}
-          <path d="M7.41 8.29L12 12.88 16.59 8.29 18 9.71l-6 6-6-6z"/>
-        </svg>) : 
-        (<svg className="arrow-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-          {/* SVG path for right arrow (">") */}
-          <path d="M8.29 7.41L12.88 12 8.29 16.59 9.71 18l6-6-6-6z"/>
-        </svg>)
-      }</h1>
+                    (<div className='dropdown-arrow-container'><svg className="arrow-icon-open" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <svg id="dropdown" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12.44 12.44"><g id="Layer_3"><g id="Login_Button"><polygon class="cls-1" points="12.44 0 12.44 12.44 0 12.44 12.44 0"/></g></g></svg>
+              </svg></div>) : 
+              (<div className='dropdown-arrow-container'><svg className="arrow-icon-collapsed" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                  <svg id="dropdown" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12.44 12.44"><g id="Layer_3"><g id="Profile"><polygon class="cls-1" points="12.44 12.44 12.44 0 0 0 12.44 12.44"/></g></g></svg>
+              </svg></div>)
+        }</h1>
 
       </div>
       {visibleRows.core? (
@@ -176,12 +174,12 @@ const Spartan = ({ gamerInfo }) => {
                       <rect className="cls-1" x="8.16" y="8.16" width="6.59" height="6.59" transform="translate(-4.75 11.46) rotate(-45)"/>
                     </svg>
                     <h1 className="spartan-subheader-home">Coatings {visibleRows.coatings ? 
-                    (<svg className="arrow-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                      <path d="M7.41 8.29L12 12.88 16.59 8.29 18 9.71l-6 6-6-6z"/>
-                    </svg>) : 
-                    (<svg className="arrow-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                      <path d="M8.29 7.41L12.88 12 8.29 16.59 9.71 18l6-6-6-6z"/>
-                    </svg>)
+                    (<div className='dropdown-arrow-container'><svg className="arrow-icon-open" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                          <svg id="dropdown" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12.44 12.44"><g id="Layer_3"><g id="Login_Button"><polygon class="cls-1" points="12.44 0 12.44 12.44 0 12.44 12.44 0"/></g></g></svg>
+                    </svg></div>) : 
+                    (<div className='dropdown-arrow-container'><svg className="arrow-icon-collapsed" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <svg id="dropdown" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12.44 12.44"><g id="Layer_3"><g id="Profile"><polygon class="cls-1" points="12.44 12.44 12.44 0 0 0 12.44 12.44"/></g></g></svg>
+                    </svg></div>)
                   }</h1>
 
                   </div>
@@ -198,13 +196,13 @@ const Spartan = ({ gamerInfo }) => {
           <rect className="cls-1" x="8.16" y="8.16" width="6.59" height="6.59" transform="translate(-4.75 11.46) rotate(-45)"/>
         </svg>
         <h1 className="spartan-subheader-home">Helmets {visibleRows.helmet ? 
-        (<svg className="arrow-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-          <path d="M7.41 8.29L12 12.88 16.59 8.29 18 9.71l-6 6-6-6z"/>
-        </svg>) : 
-        (<svg className="arrow-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-          <path d="M8.29 7.41L12.88 12 8.29 16.59 9.71 18l6-6-6-6z"/>
-        </svg>)
-      }</h1>
+                    (<div className='dropdown-arrow-container'><svg className="arrow-icon-open" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <svg id="dropdown" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12.44 12.44"><g id="Layer_3"><g id="Login_Button"><polygon class="cls-1" points="12.44 0 12.44 12.44 0 12.44 12.44 0"/></g></g></svg>
+              </svg></div>) : 
+              (<div className='dropdown-arrow-container'><svg className="arrow-icon-collapsed" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                  <svg id="dropdown" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12.44 12.44"><g id="Layer_3"><g id="Profile"><polygon class="cls-1" points="12.44 12.44 12.44 0 0 0 12.44 12.44"/></g></g></svg>
+              </svg></div>)
+}</h1>
 
       </div>
       {visibleRows.helmet? (
@@ -219,13 +217,13 @@ const Spartan = ({ gamerInfo }) => {
           <rect className="cls-1" x="8.16" y="8.16" width="6.59" height="6.59" transform="translate(-4.75 11.46) rotate(-45)"/>
         </svg>
         <h1 className="spartan-subheader-home">Visors {visibleRows.visors ? 
-        (<svg className="arrow-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-          <path d="M7.41 8.29L12 12.88 16.59 8.29 18 9.71l-6 6-6-6z"/>
-        </svg>) : 
-        (<svg className="arrow-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-          <path d="M8.29 7.41L12.88 12 8.29 16.59 9.71 18l6-6-6-6z"/>
-        </svg>)
-      }</h1>
+              (<div className='dropdown-arrow-container'><svg className="arrow-icon-open" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+              <svg id="dropdown" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12.44 12.44"><g id="Layer_3"><g id="Login_Button"><polygon class="cls-1" points="12.44 0 12.44 12.44 0 12.44 12.44 0"/></g></g></svg>
+        </svg></div>) : 
+        (<div className='dropdown-arrow-container'><svg className="arrow-icon-collapsed" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <svg id="dropdown" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12.44 12.44"><g id="Layer_3"><g id="Profile"><polygon class="cls-1" points="12.44 12.44 12.44 0 0 0 12.44 12.44"/></g></g></svg>
+        </svg></div>)
+        }</h1>
 
       </div>
       {visibleRows.visors? (
@@ -240,13 +238,13 @@ const Spartan = ({ gamerInfo }) => {
           <rect className="cls-1" x="8.16" y="8.16" width="6.59" height="6.59" transform="translate(-4.75 11.46) rotate(-45)"/>
         </svg>
         <h1 className="spartan-subheader-home">Gloves {visibleRows.gloves ? 
-        (<svg className="arrow-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-          <path d="M7.41 8.29L12 12.88 16.59 8.29 18 9.71l-6 6-6-6z"/>
-        </svg>) : 
-        (<svg className="arrow-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-          <path d="M8.29 7.41L12.88 12 8.29 16.59 9.71 18l6-6-6-6z"/>
-        </svg>)
-      }</h1>
+                    (<div className='dropdown-arrow-container'><svg className="arrow-icon-open" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <svg id="dropdown" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12.44 12.44"><g id="Layer_3"><g id="Login_Button"><polygon class="cls-1" points="12.44 0 12.44 12.44 0 12.44 12.44 0"/></g></g></svg>
+              </svg></div>) : 
+              (<div className='dropdown-arrow-container'><svg className="arrow-icon-collapsed" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                  <svg id="dropdown" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12.44 12.44"><g id="Layer_3"><g id="Profile"><polygon class="cls-1" points="12.44 12.44 12.44 0 0 0 12.44 12.44"/></g></g></svg>
+              </svg></div>)
+}</h1>
 
       </div>
       {visibleRows.gloves? (

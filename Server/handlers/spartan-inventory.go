@@ -166,6 +166,7 @@ type ArmoryRowCore struct {
 	Type          string `json:"Type"`
 	GetInv        bool   `json:"GetInv"`
 	CoreTitle     string `json:"CoreTitle"`
+	Rarity        string `json:"Rarity"`
 }
 
 type ArmoryRowElements struct {
@@ -175,6 +176,7 @@ type ArmoryRowElements struct {
 	Image         string `json:"Image,omitempty"`
 	CoreId        string `json:"CoreId"`
 	BelongsToCore string `json:"BelongsToCore"`
+	Rarity        string `json:"Rarity"`
 
 	IsCrossCore bool   `json:"IsCrossCore"`
 	Type        string `json:"Type"`
@@ -261,6 +263,7 @@ func HandleInventory(c *gin.Context) {
 			coreData.ID = i + 1
 			coreData.Name = reward.ItemMetaData.Title.Value
 			coreData.IsHighlighted = false
+			coreData.Rarity = reward.ItemMetaData.Quality
 			coreData.Image = reward.ItemImageData
 			coreData.Description = reward.ItemMetaData.Description.Value
 			coreData.CoreId = reward.ItemMetaData.Core
@@ -298,6 +301,7 @@ func HandleInventory(c *gin.Context) {
 			helmet.CorePath = item.ItemPath
 			helmet.Image = item.ItemImageData
 			helmet.BelongsToCore = getCoreIDFromInventoryItemPath(item.ItemPath)
+			helmet.Rarity = item.ItemMetaData.Quality
 
 			helmet.CoreId = item.ItemMetaData.Core
 			helmet.Name = item.ItemMetaData.Title.Value
@@ -315,6 +319,8 @@ func HandleInventory(c *gin.Context) {
 			visor := ArmoryRowElements{}
 			visor.ID = i
 			visor.CorePath = item.ItemPath
+			visor.Rarity = item.ItemMetaData.Quality
+
 			visor.Image = item.ItemImageData
 			visor.BelongsToCore = getCoreIDFromInventoryItemPath(item.ItemPath)
 			visor.CoreId = item.ItemMetaData.Core
@@ -331,6 +337,8 @@ func HandleInventory(c *gin.Context) {
 		if item.ItemType == "ArmorGlove" {
 			glove := ArmoryRowElements{}
 			glove.ID = i
+			glove.Rarity = item.ItemMetaData.Quality
+
 			glove.CorePath = item.ItemPath
 			glove.Image = item.ItemImageData
 			glove.BelongsToCore = getCoreIDFromInventoryItemPath(item.ItemPath)
@@ -352,6 +360,7 @@ func HandleInventory(c *gin.Context) {
 			coating.CorePath = item.ItemPath
 			coating.Image = item.ItemImageData
 			coating.BelongsToCore = getCoreIDFromInventoryItemPath(item.ItemPath)
+			coating.Rarity = item.ItemMetaData.Quality
 
 			coating.CoreId = item.ItemMetaData.Core
 			coating.Name = item.ItemMetaData.Title.Value

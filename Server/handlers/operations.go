@@ -9,6 +9,7 @@ import (
 	"spartanreport/db"
 	requests "spartanreport/requests"
 	"strings"
+	"sync"
 	"time"
 
 	"cloud.google.com/go/storage"
@@ -196,6 +197,37 @@ type UserSeasonProgression struct {
 	ScheduledOperationRewardTrackPath string                  `json:"ScheduledOperationRewardTrackPath"`
 }
 
+var (
+	seasonCache *SeasonCache
+	once        sync.Once
+)
+
+func InitSeasonCache() {
+	once.Do(func() {
+		seasonCache = &SeasonCache{
+			data: make(map[string]SeasonMetadata),
+		}
+	})
+}
+
+type SeasonCache struct {
+	data  map[string]SeasonMetadata
+	mutex sync.RWMutex
+}
+
+func (sc *SeasonCache) Get(seasonID string) (SeasonMetadata, bool) {
+	sc.mutex.RLock()
+	defer sc.mutex.RUnlock()
+	data, exists := sc.data[seasonID]
+	return data, exists
+}
+
+func (sc *SeasonCache) Set(seasonID string, data SeasonMetadata) {
+	sc.mutex.Lock()
+	defer sc.mutex.Unlock()
+	sc.data[seasonID] = data
+}
+
 func appendMatchingSeasonProgression(seasons []Season, userSeasonProgression UserSeasonProgression) []Season {
 	for i := range seasons {
 		for _, operationRewardTrack := range userSeasonProgression.OperationRewardTracks {
@@ -252,6 +284,8 @@ func getCoreIDFromInventoryItemPath(inventoryItemPath string) string {
 	return "Unknown Core"
 }
 func HandleOperations(c *gin.Context) {
+	// Ensuring that the cache is initialized
+	InitSeasonCache()
 	var gamerInfo requests.GamerInfo
 	if err := c.ShouldBindJSON(&gamerInfo); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -291,7 +325,14 @@ func HandleOperations(c *gin.Context) {
 
 		// Get Season Metadata details
 		season := &seasons.Seasons[i]
-		season.SeasonMetadataDetails = GetSeasonMetadata(gamerInfo, *season)
+		// Check cache first
+		if cachedData, exists := seasonCache.Get(season.OperationTrackPath); exists {
+			seasons.Seasons[i].SeasonMetadataDetails = cachedData
+		} else {
+			// Data not in cache, fetch and store it
+			season.SeasonMetadataDetails = GetSeasonMetadata(gamerInfo, *season)
+			seasonCache.Set(season.OperationTrackPath, season.SeasonMetadataDetails)
+		}
 
 	}
 	userProgress := UserSeasonProgression{}
@@ -331,15 +372,7 @@ func LoadArmorCores(gamerInfo requests.GamerInfo, armorcore string) {
 	rawImageData, err := makeAPIRequestImage(gamerInfo.SpartanKey, url, nil)
 	path := "cores/armorcores/" + armorcore + ".json"
 	t := RewardResult{Path: path, ImageData: rawImageData, Item: currentItemResponse.CommonData}
-	/*
-		type InventoryReward struct {
-			InventoryItemPath string `json:"InventoryItemPath"`
-			Amount            int    `json:"Amount"`
-			Type              string `json:"Type"`
-			ItemImageData     string `json:"ItemImageData"`
-			ItemMetaData      Item   `json:"Item"`
-		}
-	*/
+
 	reward := InventoryReward{}
 	reward.InventoryItemPath = t.Path
 	reward.Amount = 1
