@@ -193,6 +193,20 @@ func GetCurrentArmor(gamerInfo requests.GamerInfo, ArmorCoreData ArmorCoreEquip,
 		fmt.Println("Helmet Path: ", ArmorCoreData.CurrentlyEquipped.Helmet.CorePath)
 		customizationData.Themes[0].HelmetPath = ArmorCoreData.CurrentlyEquipped.Helmet.CorePath
 	}
+	if ArmorCoreData.CurrentlyEquipped.Visor.CorePath != "" && !GetCore {
+		fmt.Println("Visor Path: ", ArmorCoreData.CurrentlyEquipped.Visor.CorePath)
+		customizationData.Themes[0].VisorPath = ArmorCoreData.CurrentlyEquipped.Visor.CorePath
+	}
+	if ArmorCoreData.CurrentlyEquipped.Gloves.CorePath != "" && !GetCore {
+		fmt.Println("Glove Path: ", ArmorCoreData.CurrentlyEquipped.Gloves.CorePath)
+		customizationData.Themes[0].GlovePath = ArmorCoreData.CurrentlyEquipped.Gloves.CorePath
+	}
+	if ArmorCoreData.CurrentlyEquipped.Coatings.CorePath != "" && !GetCore {
+		fmt.Println("Coating Name: ", ArmorCoreData.CurrentlyEquipped.Coatings.Name)
+		fmt.Println("Coating Path: ", ArmorCoreData.CurrentlyEquipped.Coatings.CorePath)
+		customizationData.Themes[0].CoatingPath = ArmorCoreData.CurrentlyEquipped.Coatings.CorePath
+	}
+
 	customizationData.Themes[0].CoreId = ArmorCoreData.CurrentlyEquipped.Core.CoreId
 	customizationData.Themes[0].IsEquipped = true
 	customizationData.IsEquipped = true

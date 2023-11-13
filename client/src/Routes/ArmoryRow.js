@@ -12,7 +12,9 @@ const ObjectCard = ({ object, isHighlighted, onClick }) => {
     imageSrc = `data:image/png;base64,${base64ImageData}`;
 
   }
-
+  if (imageSrc == "undefined"){
+    return
+  }
   return (
     <div className={cardClassName} onClick={() => onClick(object)}>
       <p className='card-subheader'>{object.name}</p>
@@ -42,14 +44,26 @@ const HighlightedObjectCard = ({ object }) => {
   );
 };
 
-const ObjectsDisplay = ({ objects, highlightedId, onObjectClick }) => {
+const ObjectsDisplay = ({ currentlyEquipped, objects, highlightedId, onObjectClick }) => {
+
+
+  // Filter the objects based on the given conditions
+  const filteredArmoryRow = objects.filter(object =>
+    object.IsCrossCore ||object.Image === "undefined" || object.BelongsToCore === currentlyEquipped.CurrentlyEquippedCore.CoreId || object.Type === "ArmorCore"
+  );
+
+    console.log(objects)
   // Calculate the number of columns needed for two rows, making sure we round up.
-  const columns = Math.ceil(objects.length / 2);
+  // Use the length of the filtered array instead of the original objects array
+  const columns = Math.ceil(filteredArmoryRow.length / 2);
+
+  // Get Objects type from the first object in the filtered array, if it exists
+  const objType = filteredArmoryRow.length > 0 ? filteredArmoryRow[0].Type : '';
+
+
   return (
-    <div className="objectsDisplay" style={{
-      gridTemplateColumns: `repeat(${columns}, 150px)`,
-    }}>
-      {objects.map((object) => (
+    <div className="objectsDisplay" style={{ gridTemplateColumns: `repeat(${columns}, 150px)` }}>
+      {filteredArmoryRow.map((object) => (
         <ObjectCard
           key={object.id}
           object={object}
@@ -60,7 +74,6 @@ const ObjectsDisplay = ({ objects, highlightedId, onObjectClick }) => {
     </div>
   );
 };
-
 const ArmoryRow = ({ objects, fullObjects, resetHighlight, gamerInfo, onEquipItem, currentlyEquipped, highlightedItems, setHighlightedItems }) => {
 
   const sendEquip = async (gamerInfo, currentlyEquipped) => {
@@ -99,43 +112,86 @@ const ArmoryRow = ({ objects, fullObjects, resetHighlight, gamerInfo, onEquipIte
         let dataToSend = { ...currentlyEquipped };
         if (object.Type === "ArmorHelmet") {
           dataToSend.CurrentlyEquippedCore.GetInv = false;
-
             dataToSend.CurrentlyEquippedHelmet = object;
             await sendEquip(gamerInfo, dataToSend);
               resetHighlight(object.id, object.Type);
               setHighlightedItems(items => ({ ...items, armorhelmetId: object.id }));
             } else if (object.Type === "ArmorCore") {
-            console.log("Fetching Core Inventory!!!!!")
-            dataToSend.CurrentlyEquippedCore = object;
-            dataToSend.CurrentlyEquippedCore.GetInv = true;
-            
-            setHighlightedItems(items => ({ ...items, armorcoreId: object.id }));
-            // Backend request
-            const response = await sendEquip(gamerInfo, dataToSend);
-            console.log("Received!!! ", response)
+              console.log("Fetching Core Inventory!!!!!")
+              dataToSend.CurrentlyEquippedCore = object;
+              dataToSend.CurrentlyEquippedCore.GetInv = true;
+              
+              setHighlightedItems(items => ({ ...items, armorcoreId: object.id }));
+              // Backend request
+              const response = await sendEquip(gamerInfo, dataToSend);
+              console.log("Received!!! ", response)
 
-            if (response && response.Themes[0].HelmetPath) {
-              // Find the new highlighted helmet
-              const newHighlightedHelmet = fullObjects.ArmoryRowHelmets.find(helmet => helmet.CorePath === response.Themes[0].HelmetPath);
-              if (newHighlightedHelmet) {
-                setHighlightedItems(items => ({ ...items, armorhelmetId: object.id }));
-                resetHighlight(newHighlightedHelmet.id, "ArmorHelmet");
+              if (response && response.Themes[0].HelmetPath) {
+                // Find the new highlighted helmet
+
+                const newHighlightedHelmet = fullObjects.ArmoryRowHelmets.find(helmet => helmet.CorePath === response.Themes[0].HelmetPath);
+                const newHighlightedVisor = fullObjects.ArmoryRowVisors.find(visor => visor.CorePath === response.Themes[0].VisorPath);
+                const newHighlightedGlove = fullObjects.ArmoryRowGloves.find(glove => glove.CorePath === response.Themes[0].GlovePath);
+                const newHighlightedCoating = fullObjects.ArmoryRowCoatings.find(coating => coating.CorePath === response.Themes[0].CoatingPath);
+
+                if (newHighlightedHelmet) {
+                  setHighlightedItems(items => ({ ...items, armorhelmetId: object.id }));
+                  resetHighlight(newHighlightedHelmet.id, "ArmorHelmet");
+                  onEquipItem(newHighlightedHelmet); // Call the handler when an item is clicked
+
+                }
+                if (newHighlightedVisor) {
+                  console.log("New Visor received : ",object.id )
+                  setHighlightedItems(items => ({ ...items, armorvisorId: object.id }));
+                  resetHighlight(newHighlightedVisor.id, "ArmorVisor");
+                  onEquipItem(newHighlightedVisor);
+
+                }
+                if (newHighlightedGlove) {
+                  setHighlightedItems(items => ({ ...items, armorgloveId: object.id }));
+                  resetHighlight(newHighlightedGlove.id, "ArmorGlove");
+                  onEquipItem(newHighlightedGlove);
+                }
+                if (newHighlightedCoating) {
+                  setHighlightedItems(items => ({ ...items, armorcoatingId: object.id }));
+                  resetHighlight(newHighlightedCoating.id, "ArmorCoating");
+                  onEquipItem(newHighlightedCoating);
+
+                }
               }
-            }
+            
+            }else if (object.Type === "ArmorVisor") {
+                dataToSend.CurrentlyEquippedCore.GetInv = false;
+                dataToSend.CurrentlyEquippedVisor = object;
+                await sendEquip(gamerInfo, dataToSend);
+                  resetHighlight(object.id, object.Type);
+                  setHighlightedItems(items => ({ ...items, armorvisorId: object.id }));
+            }else if (object.Type === "ArmorGlove") {
+              dataToSend.CurrentlyEquippedCore.GetInv = false;
+              dataToSend.CurrentlyEquippedGlove = object;
+              await sendEquip(gamerInfo, dataToSend);
+                resetHighlight(object.id, object.Type);
+                setHighlightedItems(items => ({ ...items, armorgloveId: object.id }));
+          }else if (object.Type === "ArmorCoating") {
+            dataToSend.CurrentlyEquippedCore.GetInv = false;
+            dataToSend.currentlyEquippedCoating = object;
+            await sendEquip(gamerInfo, dataToSend);
+              resetHighlight(object.id, object.Type);
+              setHighlightedItems(items => ({ ...items, armorcoatingId: object.id }));
         }
     }
 };
 
 
 const highlightedObject = objects.find(obj => obj.id === highlightedItems[`${obj.Type.toLowerCase()}Id`]);
-  
+  console.log("Error with: ", objects);
   return (
     <div className="container">
       <div className="highlightedCardContainer">
         {highlightedObject && <HighlightedObjectCard object={highlightedObject} />}
       </div>
       <div className="cardContainer">
-        <ObjectsDisplay objects={objects}         highlightedId={highlightedItems[`${objects[0].Type.toLowerCase()}Id`]}  onObjectClick={handleObjectClick} />
+        <ObjectsDisplay currentlyEquipped={currentlyEquipped} objects={objects} highlightedId={highlightedItems[`${objects[0].Type.toLowerCase()}Id`]}  onObjectClick={handleObjectClick} />
       </div>
     </div>
   );

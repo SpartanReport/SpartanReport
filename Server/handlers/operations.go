@@ -128,15 +128,15 @@ type Title struct {
 	Value string `json:"value"`
 }
 type Item struct {
-	Title             Title  `json:"Title"`
-	IsCrossCompatible bool   `json:"IsCrossCompatible"`
-	SeasonNumber      int    `json:"SeasonNumber"`
-	Quality           string `json:"Quality"`
-	ManufacturerId    int    `json:"ManufacturerId"`
-
-	Media       DisplayPath `json:"DisplayPath"`
-	Description Field       `json:"Description"`
-	Core        string      `json:"Core"`
+	Title             Title       `json:"Title"`
+	IsCrossCompatible bool        `json:"IsCrossCompatible"`
+	SeasonNumber      int         `json:"SeasonNumber"`
+	Quality           string      `json:"Quality"`
+	ManufacturerId    int         `json:"ManufacturerId"`
+	CoreTitle         string      `json:"CoreTitle"`
+	Media             DisplayPath `json:"DisplayPath"`
+	Description       Field       `json:"Description"`
+	Core              string      `json:"Core"`
 }
 type DisplayPath struct {
 	Width  int       `json:"Width"`
@@ -210,7 +210,7 @@ func appendMatchingSeasonProgression(seasons []Season, userSeasonProgression Use
 
 func getCoreFromInventoryItemPath(inventoryItemPath string) string {
 	if strings.Contains(inventoryItemPath, "olympus") {
-		return "Mark VII Armor Core"
+		return "Mark VII Core"
 	} else if strings.Contains(inventoryItemPath, "reach") {
 		return "Mark V [B] Core"
 	} else if strings.Contains(inventoryItemPath, "wlv") {
@@ -225,6 +225,28 @@ func getCoreFromInventoryItemPath(inventoryItemPath string) string {
 		return "Chimera Core"
 	} else if strings.Contains(inventoryItemPath, "haz") {
 		return "Hazmat Core"
+	}
+	// If none of the keywords match, return "Unknown Core"
+	return "Unknown Core"
+}
+
+func getCoreIDFromInventoryItemPath(inventoryItemPath string) string {
+	if strings.Contains(inventoryItemPath, "olympus") {
+		return "017-001-olympus-c13d0b38"
+	} else if strings.Contains(inventoryItemPath, "reach") {
+		return "017-001-reach-2564121f"
+	} else if strings.Contains(inventoryItemPath, "wlv") {
+		return "017-001-wlv-c13d0b38"
+	} else if strings.Contains(inventoryItemPath, "spi") {
+		return "017-001-spi-c13d0b38"
+	} else if strings.Contains(inventoryItemPath, "samurai") {
+		return "017-001-samurai-55badb14"
+	} else if strings.Contains(inventoryItemPath, "eag") {
+		return "017-001-eag-c13d0b38"
+	} else if strings.Contains(inventoryItemPath, "fwl") {
+		return "017-001-fwl-c13d0b38"
+	} else if strings.Contains(inventoryItemPath, "haz") {
+		return "017-001-haz-c13d0b38"
 	}
 	// If none of the keywords match, return "Unknown Core"
 	return "Unknown Core"
@@ -419,7 +441,7 @@ func GetTrackImages(gamerInfo requests.GamerInfo, Ranks []Rank) []Rank {
 			fmt.Println("Error getting item image: ", err)
 			results <- RewardResult{} // Send an empty result to ensure channel doesn't block
 		} else {
-			currentItemResponse.CommonData.Core = core // Assign Core
+			currentItemResponse.CommonData.CoreTitle = core // Assign Core
 			results <- RewardResult{Path: path, ImageData: rawImageData, Item: currentItemResponse.CommonData}
 		}
 	}

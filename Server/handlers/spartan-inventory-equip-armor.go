@@ -36,12 +36,12 @@ func HandleEquipArmor(c *gin.Context) {
 
 	gamerInfo := ArmorCoreData.GamerInfo
 	fmt.Println("Helmet Path: ", ArmorCoreData.CurrentlyEquipped.Helmet.CoreId)
+	fmt.Println("Visor Path: ", ArmorCoreData.CurrentlyEquipped.Visor.CoreId)
+
 	// Send Core inventory data
 	if ArmorCoreData.CurrentlyEquipped.Core.GetInv {
-		fmt.Println("Empty Helmet Path")
 		customization := GetCurrentArmor(gamerInfo, ArmorCoreData, true)
 		ChangeCurrentArmor(gamerInfo, customization)
-
 		c.JSON(http.StatusOK, customization)
 		return
 
