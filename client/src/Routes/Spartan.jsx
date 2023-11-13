@@ -165,7 +165,7 @@ const Spartan = ({ gamerInfo }) => {
 
       </div>
       {visibleRows.core? (
-      <div className="armory-row">
+      <div className="armory-row-cores">
         <ArmoryRow objects={armoryRow.ArmoryRow} setCurrentlyEquipped={setCurrentlyEquipped} resetHighlight={resetHighlight} fullObjects={armoryRow} gamerInfo={gamerInfo} onEquipItem={handleEquipItem}   currentlyEquipped={currentlyEquipped} highlightedItems={highlightedItems} setHighlightedItems={setHighlightedItems}  />
       </div>
       )  : <div style={{height:50}}></div>}
