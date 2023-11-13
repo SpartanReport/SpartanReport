@@ -15,6 +15,7 @@ import Operations from './Operations';
 import Store from './store';
 import ItemDetailsPage from './itemdetails';
 import CommandCenter from './CommandCenter';
+import Policy from './policy';
 
 function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -71,6 +72,7 @@ function App() {
             <Routes>
               <Route path="/spartan" element={<Spartan gamerInfo={gamerInfo} spartanInventory={spartanInventory} setSpartanInventory={setSpartanInventory} />} />
               <Route path="/CommandCenter" element={isAuthenticated ? <CommandCenter gamerInfo={gamerInfo} spartanInventory={spartanInventory}/> : <UnauthenticatedContent startAuth={startAuth} />} />
+              <Route path="/policy" element={ <Policy/>} />
 
               <Route path="/" element={ <Home/>} />
               <Route path="/match/:matchId" element={<MatchStats gamerInfo={gamerInfo} HaloStats={HaloStats} selectedMatch={selectedMatch} />} />
