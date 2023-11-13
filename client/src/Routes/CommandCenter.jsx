@@ -1,10 +1,10 @@
-import useFetchSpartanInventory from "../useFetchSpartanInventory";
-import useFetchSpartanRank from "../FetchSpartanRank";
-import useFetchChallengeDeck from "../FetchSpartanChallenges"
+import useFetchSpartanInventory from "../Components/useFetchSpartanInventory";
+import useFetchSpartanRank from "../Components/FetchSpartanRank";
+import useFetchChallengeDeck from "../Components/FetchSpartanChallenges"
 import { useState } from "react";
 import "../Styles/CommandCenter.css"
 import { useNavigate } from 'react-router-dom';
-
+import GoogleAd from "../Components/GoogleAds";
 function SpartanCard({ card , navigation}) {
   return (
     <div className="welcome-cards-spartan" onClick={() => navigation("/spartan")}>
@@ -190,7 +190,7 @@ function CommandCenter({ gamerInfo }) {
             card.type === "Spartan" || card.type === "Progression" ? null :
             <GetCard card={card} navigation={navigate} key={index} />
           ))}
-
+                      <GoogleAd slot="7820477824" googleAdId="ca-pub-9090570730897630"/>
       </div>
   );
 }

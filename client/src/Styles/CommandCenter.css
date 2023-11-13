@@ -13,7 +13,7 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); /* Allows for a fluid number of columns */  gap: 5px;
   align-items: start;
-  margin-bottom: 50px;
+  margin-bottom: 200px;
   border-radius: 10px;
   border: 5px solid #32525E;
   background: rgba(0, 0, 0, 0.3);

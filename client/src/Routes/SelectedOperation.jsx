@@ -4,7 +4,7 @@ import axios from 'axios';
 import "../Styles/selectedoperation.css";
 import xpboostImage from '../xpboost.png';
 import currencyImage from '../credit.png';
-import ItemDetailsPage from './itemdetails';
+import ItemDetailsPage from '../Components/itemdetails';
 import challengeSwap from '../challengeswap.png';
 import checkmark from "../checkmark.svg"
 

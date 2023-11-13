@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import '../Styles/operations.css';
 import SelectedOperation from './SelectedOperation';
-
+import GoogleAd from '../Components/GoogleAds';
 const Operations = ({ gamerInfo }) => {
     const [isLoading, setIsLoading] = useState(true);
     const [operationsData, setOperations] = useState([]);
@@ -97,6 +97,8 @@ const Operations = ({ gamerInfo }) => {
                     SeasonImage={SeasonImage}
                 />
             )}
+            
+            <GoogleAd slot="7820477824" googleAdId="ca-pub-9090570730897630"/>
         </div>
     );
 };

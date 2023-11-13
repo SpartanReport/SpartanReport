@@ -1,4 +1,5 @@
 import "../Styles/Home.css"
+import GoogleAd from "../Components/GoogleAds";
 
 function Home() {
   return (
@@ -10,6 +11,8 @@ function Home() {
         <p className="spartan-description-home">
         <span style={{ fontStyle: 'italic', fontSize: 'larger', padding:0}}><p style={{color:"#fffff"}}>Welcome to Spartan Report</p></span> Your premier destination for tracking progression, viewing upcoming operations, and managing your in-game spartan armors with presets in Halo Infinite</p>
       </div>
+      <GoogleAd slot="7820477824" googleAdId="ca-pub-9090570730897630"/>
+
       </div>
   );
 }

@@ -13,7 +13,7 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Navbar from './Navbar'
 import Operations from './Operations';
 import Store from './store';
-import ItemDetailsPage from './itemdetails';
+import ItemDetailsPage from '../Components/itemdetails';
 import CommandCenter from './CommandCenter';
 import Policy from './policy';
 

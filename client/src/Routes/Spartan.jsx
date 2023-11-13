@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import useFetchSpartanInventory from '../useFetchSpartanInventory';
+import useFetchSpartanInventory from '../Components/useFetchSpartanInventory';
 import ArmoryRow from "./ArmoryRow"
 import "../Styles/styles.css";
 import "../Styles/spartan.css";
