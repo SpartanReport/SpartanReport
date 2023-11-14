@@ -6,18 +6,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"image"
-	"image/color"
-	"image/draw"
-	"image/jpeg"
 	"image/png"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"spartanreport/db"
 	requests "spartanreport/requests"
-	"strconv"
 	"strings"
 
+	"github.com/disintegration/imaging"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -177,10 +174,10 @@ type ArmoryRowElements struct {
 	CoreId        string `json:"CoreId"`
 	BelongsToCore string `json:"BelongsToCore"`
 	Rarity        string `json:"Rarity"`
-
-	IsCrossCore bool   `json:"IsCrossCore"`
-	Type        string `json:"Type"`
-	CorePath    string `json:"CorePath"`
+	ImagePath     string `json:"ImagePath,omitempty"`
+	IsCrossCore   bool   `json:"IsCrossCore"`
+	Type          string `json:"Type"`
+	CorePath      string `json:"CorePath"`
 }
 type ArmoryRowItems struct {
 	ArmoryRowElements []ArmoryRowElements `json:"Helmets"`
@@ -346,6 +343,7 @@ func createArmoryRowElement(id int, item ItemsInInventory, itemType, equippedPat
 		ID:            id,
 		CorePath:      item.ItemPath,
 		Image:         item.ItemImageData,
+		ImagePath:     item.ItemMetaData.Media.Media.MediaUrl.Path,
 		BelongsToCore: getCoreIDFromInventoryItemPath(item.ItemPath),
 		Rarity:        item.ItemMetaData.Quality,
 		CoreId:        item.ItemMetaData.Core,
@@ -379,7 +377,7 @@ func GetInventoryItemImages(gamerInfo requests.GamerInfo, Items Items) Items {
 		if err != nil {
 			fmt.Println("Error getting image data: ", err)
 		}
-		rawImageData, err = convertBase64PNGToJPEGString(rawImageData, "#0F181B")
+		rawImageData, err = compressPNGWithImaging(rawImageData, true, 150, 150)
 		if err != nil {
 			// fmt.Println("Error getting item image: ", err)
 			results <- RewardResult{} // Send an empty result to ensure channel doesn't block
@@ -429,98 +427,33 @@ func GetInventoryItemImages(gamerInfo requests.GamerInfo, Items Items) Items {
 	return Items
 }
 
-// convertBase64PNGToJPEGString converts a base64 encoded PNG string to a base64 encoded JPEG string.
-// It sets transparent regions of the PNG to a specified background color.
-func convertBase64PNGToJPEGString(pngBase64String string, backgroundColor string) (string, error) {
+func compressPNGWithImaging(base64PNG string, resize bool, width, height int) (string, error) {
 	// Decode the base64 string to get the raw PNG data
-	pngData, err := base64.StdEncoding.DecodeString(pngBase64String)
+	pngData, err := base64.StdEncoding.DecodeString(base64PNG)
 	if err != nil {
 		return "", err
 	}
 
 	// Decode PNG data
-	img, err := png.Decode(bytes.NewReader(pngData))
+	img, _, err := image.Decode(bytes.NewReader(pngData))
 	if err != nil {
 		return "", err
 	}
 
-	// Parse the background color
-	bgColor, err := parseHexColor(backgroundColor)
-	if err != nil {
+	// Resize if needed
+	if resize {
+		img = imaging.Resize(img, width, height, imaging.Lanczos)
+	}
+
+	// Compress the image by re-encoding it
+	var buf bytes.Buffer
+	if err := png.Encode(&buf, img); err != nil {
 		return "", err
 	}
 
-	// Replace transparent color
-	replacedImg := replaceTransparency(img, bgColor)
-
-	// Create a buffer to store JPEG data
-	buf := new(bytes.Buffer)
-
-	// Encode the image to JPEG with quality 75
-	options := &jpeg.Options{Quality: 75}
-	if err := jpeg.Encode(buf, replacedImg, options); err != nil {
-		return "", err
-	}
-
-	// Encode the JPEG data to a base64 string
-	jpegString := base64.StdEncoding.EncodeToString(buf.Bytes())
-
-	return jpegString, nil
-}
-
-// parseHexColor parses a hex color string.
-func parseHexColor(s string) (color.RGBA, error) {
-	var c color.RGBA
-	if len(s) != 7 || s[0] != '#' {
-		return c, fmt.Errorf("invalid color format")
-	}
-
-	r, err := strconv.ParseUint(s[1:3], 16, 8)
-	if err != nil {
-		return c, err
-	}
-	g, err := strconv.ParseUint(s[3:5], 16, 8)
-	if err != nil {
-		return c, err
-	}
-	b, err := strconv.ParseUint(s[5:7], 16, 8)
-	if err != nil {
-		return c, err
-	}
-
-	c.R = uint8(r)
-	c.G = uint8(g)
-	c.B = uint8(b)
-	c.A = 255 // Assuming full opacity for the target color
-
-	return c, nil
-}
-
-// replaceTransparency replaces the transparent areas of the image with the given background color.
-func replaceTransparency(img image.Image, bgColor color.RGBA) image.Image {
-	bounds := img.Bounds()
-	newImg := image.NewRGBA(bounds)
-	draw.Draw(newImg, bounds, &image.Uniform{bgColor}, bounds.Min, draw.Src)
-
-	for y := bounds.Min.Y; y < bounds.Max.Y; y++ {
-		for x := bounds.Min.X; x < bounds.Max.X; x++ {
-			_, _, _, a := img.At(x, y).RGBA()
-			if a == 0 {
-				newImg.Set(x, y, bgColor)
-			} else {
-				newImg.Set(x, y, img.At(x, y))
-			}
-		}
-	}
-
-	return newImg
-}
-
-// matchColor checks if the colors are equal.
-func matchColor(r, g, b uint32, c color.RGBA) bool {
-	// Normalize the RGB values to 0-255 range
-	r, g, b = r>>8, g>>8, b>>8
-	return uint8(r) == c.R && uint8(g) == c.G && uint8(b) == c.B
+	// Convert back to base64
+	compressedBase64 := base64.StdEncoding.EncodeToString(buf.Bytes())
+	return compressedBase64, nil
 }
 
 func isExcludedItemType(itemType string) bool {

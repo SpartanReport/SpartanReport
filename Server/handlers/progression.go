@@ -497,7 +497,6 @@ func GetAllRankImages(careerLadder CareerLadderResponse, gamerInfo requests.Game
 		go func(rankIndex int) {
 			defer wg.Done()
 			imageData, err := getRankImageData(rankIndex, careerLadder, gamerInfo)
-			imageData, err = convertBase64PNGToJPEGString(imageData, "#313A40")
 
 			if err != nil {
 				log.Println(err)

@@ -1,68 +1,101 @@
 import React, { useState, useEffect,useRef } from 'react';
 import './ArmoryRow.css'; // Make sure to import your CSS file here
 import SvgBorderWrapper from '../Styles/Border';
+async function fetchImage(path, spartankey) {
+  try {
+    // Base URL of your proxy server
+    const proxyBaseUrl = process.env.PROXY_BASE_URL || 'http://localhost:3001/api'; // Fallback to a default
+    // Complete URL with the proxy base URL
+    const url = `${proxyBaseUrl}/${path}`;
+    console.log("Fetching image: ", url)
+    // Setting up the headers
+    const headers = new Headers();
+    headers.append('X-343-Authorization-Spartan', spartankey);
 
-const ObjectCard = ({ object, isHighlighted, onClick }) => {
-  const [isImageVisible, setImageVisible] = useState(false);
-  const imageRef = useRef(null);
+    // Preparing the request options
+    const requestOptions = {
+      method: 'GET',
+      headers: headers
+    };
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting) {
-        setImageVisible(true);
-        observer.disconnect();
-      }
-    });
+    // Making the request through the proxy server
+    const response = await fetch(url, requestOptions);
 
-    if (imageRef.current) {
-      observer.observe(imageRef.current);
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
     }
 
-    return () => observer.disconnect();
-  }, []);
+    // Since the response is a raw image file, we get it as a blob
+    const imageBlob = await response.blob();
+
+    // Converting blob to a local URL
+    return URL.createObjectURL(imageBlob);
+  } catch (error) {
+    console.error('Fetching image failed:', error);
+    return null; // or a default image URL or some error handling mechanism
+  }
+}
+const ObjectCard = ({gamerInfo, object, isHighlighted, onClick }) => {
+  let [imageSrc, setImageSrc] = useState('');
+
+  useEffect(() => {
+    async function loadImage() {
+      if (object.ImagePath && gamerInfo.spartankey && object.isHighlighted && object.Type !== "ArmorCore") {
+        let url = "hi/images/file/"+object.ImagePath;
+        console.log("Sending request to ", url)
+
+        const imgSrc = await fetchImage(url, gamerInfo.spartankey);
+        setImageSrc(imgSrc);
+      }
+      else {
+        setImageSrc(`data:image/png;base64,${object.Image}`);
+      }
+    }
+
+    loadImage();
+  }, [object.ImagePath, gamerInfo.spartankey]);
 
   const cardClassName = isHighlighted ? 'highlightedObjectCardRow' : 'objectCard';
-  const base64ImageData = object.Image;
-  let imageSrc = `data:image/jpeg;base64,${base64ImageData}`;
-
-  if (!isImageVisible) {
-    imageSrc = ''; // Placeholder or a loading image
-  }
-
-  if (imageSrc === "undefined") {
-    return null;
-  }
 
   return (
     <div className={cardClassName} onClick={() => onClick(object)}>
       <p className='card-subheader-mini'>{object.name}</p>
-      <img ref={imageRef} src={imageSrc} alt="Spartan Core" className="ImageCard"/>
+      <img src={imageSrc} alt="Spartan Image Highlighted" className="ImageCard"/>
     </div>
   );
 };
 
-const HighlightedObjectCard = ({ object }) => {
-  const base64ImageData = object.Image;
-  let imageSrc;
+const HighlightedObjectCard = ({ gamerInfo, object, isDisplay }) => {
+  let [imageSrc, setImageSrc] = useState('');
 
-  if (object.Type !== "ArmorCore"){
-    imageSrc = `data:image/jpeg;base64,${base64ImageData}`;
+  useEffect(() => {
+    async function loadImage() {
+      if (object.ImagePath && gamerInfo.spartankey && isDisplay && object.Type !== "ArmorCore") {
+        console.log("GettingURL: ")
+        let url = "hi/images/file/"+object.ImagePath;
 
-  }else{
-    imageSrc = `data:image/png;base64,${base64ImageData}`;
+        const imgSrc = await fetchImage(url, gamerInfo.spartankey); // complete the fetchImage function
+        setImageSrc(imgSrc);
+      }
+      else {
+        setImageSrc(`data:image/png;base64,${object.Image}`);
+      }
+    }
 
-  }
+    loadImage();
+  }, [object.id, object.ImagePath, object.Image, gamerInfo.spartankey, isDisplay]); // Updated dependencies
   return (
     <SvgBorderWrapper height={410} width={410} rarity="Highlight">
-    <div className="highlightedObjectCard">
-      <p className='card-subheader'>Equipped | {object.name} | {object.Rarity}</p>
-      <img src={imageSrc} alt="Spartan Core" className="HighlightedImageCard" />
-    </div>
+      <div className="highlightedObjectCard">
+        <p className='card-subheader'>Equipped | {object.name} | {object.Rarity}</p>
+        <img src={imageSrc} alt="Spartan Core" className="HighlightedImageCard"/>
+      </div>
     </SvgBorderWrapper>
   );
 };
 
-const ObjectsDisplay = ({ currentlyEquipped, objects, highlightedId, onObjectClick }) => {
+
+const ObjectsDisplay = ({gamerInfo, currentlyEquipped, objects, highlightedId, onObjectClick }) => {
 
   // Define a mapping for rarity to sort them in a specific order
   const rarityOrder = { Common: 1, Rare: 2, Epic: 3, Legendary: 4 };
@@ -103,6 +136,7 @@ const ObjectsDisplay = ({ currentlyEquipped, objects, highlightedId, onObjectCli
             object={object}
             isHighlighted={object.id === highlightedId}
             onClick={onObjectClick}
+            gamerInfo={gamerInfo}
           />
         </SvgBorderWrapper>
       ))}
@@ -119,7 +153,9 @@ const ArmoryRow = ({ objects, fullObjects, resetHighlight, gamerInfo, onEquipIte
 
     console.log("Sending ", payload)
     try {
-      const response = await fetch('http://localhost:8080/armorcore', {
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8080';
+
+      const response = await fetch(`${apiUrl}/armorcore`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -223,10 +259,10 @@ const highlightedObject = objects.find(obj => obj.id === highlightedItems[`${obj
   return (
     <div className="container">
       <div className="highlightedCardContainer">
-        {highlightedObject && <HighlightedObjectCard object={highlightedObject} />}
+        {highlightedObject && <HighlightedObjectCard gamerInfo={gamerInfo} object={highlightedObject} isDisplay={true} />}
       </div>
       <div className="cardContainer">
-        <ObjectsDisplay currentlyEquipped={currentlyEquipped} objects={objects} highlightedId={highlightedItems[`${objects[0].Type.toLowerCase()}Id`]}  onObjectClick={handleObjectClick} />
+        <ObjectsDisplay gamerInfo={gamerInfo} currentlyEquipped={currentlyEquipped} objects={objects} highlightedId={highlightedItems[`${objects[0].Type.toLowerCase()}Id`]}  onObjectClick={handleObjectClick} />
       </div>
     </div>
   );

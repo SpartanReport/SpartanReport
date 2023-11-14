@@ -13,7 +13,6 @@ const SvgBorderWrapper = ({ children , height,width,rarity}) => {
     
 
     const containerRef = useRef();
-    console.log(rarity);
     useEffect(() => {
         setScaleX(newScaleX);
         setScaleY(newScaleY);

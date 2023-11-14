@@ -134,7 +134,6 @@ const Spartan = ({ gamerInfo }) => {
     }
     console.log("Set New Items! ")
   };
-  console.log("Armory Row: ", armoryRow)
 
   const toggleVisibility = (row) => {
     setVisibleRows(prev => ({ ...prev, [row]: !prev[row] }));
