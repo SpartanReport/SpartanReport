@@ -1,25 +1,42 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect,useRef } from 'react';
 import './ArmoryRow.css'; // Make sure to import your CSS file here
+import SvgBorderWrapper from '../Styles/Border';
 
 const ObjectCard = ({ object, isHighlighted, onClick }) => {
+  const [isImageVisible, setImageVisible] = useState(false);
+  const imageRef = useRef(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting) {
+        setImageVisible(true);
+        observer.disconnect();
+      }
+    });
+
+    if (imageRef.current) {
+      observer.observe(imageRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
   const cardClassName = isHighlighted ? 'highlightedObjectCardRow' : 'objectCard';
   const base64ImageData = object.Image;
-  let imageSrc;
+  let imageSrc = `data:image/jpeg;base64,${base64ImageData}`;
 
-  if (object.Type !== "ArmorCore"){
-    imageSrc = `data:image/jpeg;base64,${base64ImageData}`;
-  }else{
-    imageSrc = `data:image/png;base64,${base64ImageData}`;
+  if (!isImageVisible) {
+    imageSrc = ''; // Placeholder or a loading image
+  }
 
+  if (imageSrc === "undefined") {
+    return null;
   }
-  if (imageSrc == "undefined"){
-    return
-  }
+
   return (
     <div className={cardClassName} onClick={() => onClick(object)}>
-      <p className='card-subheader'>{object.name}</p>
-      <img src={imageSrc} alt="Spartan Core" className="ImageCard"/>
-
+      <p className='card-subheader-mini'>{object.name}</p>
+      <img ref={imageRef} src={imageSrc} alt="Spartan Core" className="ImageCard"/>
     </div>
   );
 };
@@ -36,40 +53,58 @@ const HighlightedObjectCard = ({ object }) => {
 
   }
   return (
+    <SvgBorderWrapper height={410} width={410} rarity="Highlight">
     <div className="highlightedObjectCard">
-      <p className='card-subheader'>Equipped | {object.name}</p>
+      <p className='card-subheader'>Equipped | {object.name} | {object.Rarity}</p>
       <img src={imageSrc} alt="Spartan Core" className="HighlightedImageCard" />
-
     </div>
+    </SvgBorderWrapper>
   );
 };
 
 const ObjectsDisplay = ({ currentlyEquipped, objects, highlightedId, onObjectClick }) => {
 
+  // Define a mapping for rarity to sort them in a specific order
+  const rarityOrder = { Common: 1, Rare: 2, Epic: 3, Legendary: 4 };
 
-  // Filter the objects based on the given conditions
-  const filteredArmoryRow = objects.filter(object =>
-    object.IsCrossCore ||object.Image === "undefined" || object.BelongsToCore === currentlyEquipped.CurrentlyEquippedCore.CoreId || object.Type === "ArmorCore"
-  );
+  // Filter and then sort the objects
+  const sortedFilteredArmoryRow = objects.filter(object => {
+    if (object.Type === "ArmorCoating") {
+      return object.Image === "undefined" || 
+             object.BelongsToCore === currentlyEquipped.CurrentlyEquippedCore.CoreId || 
+             object.Type === "ArmorCore";
+    } else {
+      return object.IsCrossCore || 
+             object.Image === "undefined" || 
+             object.BelongsToCore === currentlyEquipped.CurrentlyEquippedCore.CoreId || 
+             object.Type === "ArmorCore";
+    }
+  }).sort((a, b) => {
+    // First sort by name alphabetically
+    const rarityCompare = rarityOrder[a.Rarity] - rarityOrder[b.Rarity];
+    if (rarityCompare !== 0) {
+      return rarityCompare;
+    }
 
-    console.log(objects)
-  // Calculate the number of columns needed for two rows, making sure we round up.
-  // Use the length of the filtered array instead of the original objects array
-  const columns = Math.ceil(filteredArmoryRow.length / 2);
+    // Then sort by name alphabetically
+    return a.name.localeCompare(b.name);  });
 
-  // Get Objects type from the first object in the filtered array, if it exists
-  const objType = filteredArmoryRow.length > 0 ? filteredArmoryRow[0].Type : '';
+  console.log(objects);
 
+  // Calculate the number of columns needed for two rows
+  const columns = Math.ceil(sortedFilteredArmoryRow.length / 2);
 
   return (
     <div className="objectsDisplay" style={{ gridTemplateColumns: `repeat(${columns}, 150px)` }}>
-      {filteredArmoryRow.map((object) => (
-        <ObjectCard
-          key={object.id}
-          object={object}
-          isHighlighted={object.id === highlightedId}
-          onClick={onObjectClick}
-        />
+      {sortedFilteredArmoryRow.map((object) => (
+        <SvgBorderWrapper height={200} width={200} rarity={object.Rarity}>
+          <ObjectCard
+            key={object.id}
+            object={object}
+            isHighlighted={object.id === highlightedId}
+            onClick={onObjectClick}
+          />
+        </SvgBorderWrapper>
       ))}
     </div>
   );

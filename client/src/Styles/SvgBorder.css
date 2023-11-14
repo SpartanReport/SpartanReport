@@ -1,0 +1,52 @@
+/* SvgBorder.css */
+
+.svgStyle {
+  transform-origin: top left;
+}
+
+.innerDiv {
+  position: absolute;
+  top: 0;
+  left: 2px;
+  width: 100%;
+  height: 100%;
+}
+
+/* Common Rarity Styles */
+.Common .cls-1 {
+  fill: #f6f6f6; /* Example fill color for common rarity */
+}
+.Common .cls-2 {
+  fill: #dadada; /* Example border color for common rarity */
+}
+
+/* Rare Rarity Styles */
+.Rare .cls-1 {
+  fill: #a6e1fa; /* Fill color for rare rarity */
+}
+.Rare .cls-2 {
+  fill: #73aac8; /* Border color for rare rarity */
+}
+
+/* Epic Rarity Styles */
+.Epic .cls-1 {
+  fill: #c084fc; /* Fill color for epic rarity */
+}
+.Epic .cls-2 {
+  fill: #8d63cd; /* Border color for epic rarity */
+}
+
+/* Legendary Rarity Styles */
+.Legendary .cls-1 {
+  fill: #D5A746; /* Fill color for legendary rarity */
+}
+.Legendary .cls-2 {
+  fill: #b48d3a; /* Fill color for legendary rarity */
+}
+.Highlight .cls-1{
+  fill: #7ABE6C; /* Fill color for legendary rarity */
+}
+
+.Highlight .cls-2{
+  fill: #669f5b; /* Fill color for legendary rarity */
+}

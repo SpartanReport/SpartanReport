@@ -158,6 +158,12 @@ type OperationsData struct {
 	GamerInfo       requests.GamerInfo
 	UserProgression UserSeasonProgression
 }
+
+func (od OperationsData) IsEmpty() bool {
+	// Adjust the condition based on what signifies an empty OperationsData
+	return len(od.Seasons.Seasons) == 0
+}
+
 type SpecificOpsData struct {
 	GamerInfo requests.GamerInfo `json:"gamerInfo"`
 	Season    Season             `json:"seasonData"`
@@ -283,19 +289,24 @@ func getCoreIDFromInventoryItemPath(inventoryItemPath string) string {
 	// If none of the keywords match, return "Unknown Core"
 	return "Unknown Core"
 }
+
+var cachedSeasons OperationsData // Global cache variable
 func HandleOperations(c *gin.Context) {
 	// Ensuring that the cache is initialized
 	InitSeasonCache()
 	var gamerInfo requests.GamerInfo
 	if err := c.ShouldBindJSON(&gamerInfo); err != nil {
+		if !cachedSeasons.IsEmpty() {
+			c.JSON(http.StatusOK, cachedSeasons)
+			return
+		}
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
+		fmt.Println("Couldn't bind")
 	}
 	seasons := Seasons{}
 	err := makeAPIRequest(gamerInfo.SpartanKey, "https://gamecms-hacs.svc.halowaypoint.com/hi/progression/file/calendars/seasons/seasoncalendar.json", nil, &seasons)
 	if err != nil {
 		fmt.Println("Error Obtaining Season Info")
-		return
 	}
 
 	// Populate IsActive flag
@@ -337,6 +348,10 @@ func HandleOperations(c *gin.Context) {
 	}
 	userProgress := UserSeasonProgression{}
 
+	// Cache the seasons data
+	cachedSeasons = OperationsData{
+		Seasons: seasons,
+	}
 	// Get Season Progress
 	if gamerInfo.XUID != "" {
 		url := "https://economy.svc.halowaypoint.com/hi/players/xuid(" + gamerInfo.XUID + ")/rewardtracks/operations?view=all"
@@ -349,7 +364,6 @@ func HandleOperations(c *gin.Context) {
 		}
 		seasons.Seasons = appendMatchingSeasonProgression(seasons.Seasons, userProgress)
 	}
-
 	data := OperationsData{
 		Seasons:   seasons,
 		GamerInfo: gamerInfo,

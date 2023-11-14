@@ -53,7 +53,7 @@ const Progression = ({ gamerInfo ,HaloStats, setHaloStats, setSelectedMatch}) =>
       if (location.pathname === '/progression') {
         setHaloStats(null);
       }
-    }, [location, setHaloStats]);
+    }, []);
 
     if (isLoading) {
       return <div>Loading...</div>;
@@ -101,6 +101,7 @@ const Progression = ({ gamerInfo ,HaloStats, setHaloStats, setSelectedMatch}) =>
                 <img
                     className={isSpotlight ? 'rank-spotlight-image' : 'rank-regular-image'}
                     src={`data:image/jpeg;base64,${rankIconData}`}
+                    
                     alt={`Rank Icon - ${rankTitle} Grade ${rankGrade}`}
                 />
                 <p>{rankTitle} Grade {rankGrade}</p>

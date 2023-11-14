@@ -1,30 +1,27 @@
 .objectCard {
-  border: 1px solid black;
-  margin: 5px;
   cursor: pointer;
   min-width: 200px;
   height: 200px;
   box-sizing: border-box;
   color: white;
   background: rgba(7, 7, 7, 0.2);
-  border: 5px solid #32525E;
-  border-top: 5px solid #477289;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.269);
   transition: all 0.3s ease;
+  transform: scale(0.95);
 
 }
 .highlightedObjectCardRow{
-  border: 1px solid white;
-  margin: 5px;
   cursor: pointer;
   min-width: 200px;
   height: 200px;
   box-sizing: border-box;
   color: white;
   background: rgba(7, 7, 7, 0.2);
-  border: 5px solid #81CDE9;
+  border: 5px solid #7ABE6C;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.269);
   transition: all 0.3s ease;
+  transform: scale(0.95);
+
 }
 .HighlightedImageCard{
   max-height:100%; max-width:100%;
@@ -49,18 +46,32 @@
   color: white;
   background-color: #4389BA;
 }
+.card-subheader-mini {
+    font-family: 'Oswald', sans-serif;
+    text-align: center;
+    font-style: normal;
+    font-size: 18px;
+    color: white;
+    background-color: #4389BA;
+    margin-right:1%;
+    margin-left:1%;
+    margin-top:1.5%;
+    margin-bottom:5%;
+  
+  
+}
 
 .highlightedObjectCard {
   margin: 5px;
   background-color: lightblue;
-  height: 410px;
-  width: 410px;
+  height: 400px;
+  width: 400px;
   box-sizing: border-box;
   color: white;
   background: rgba(7, 7, 7, 0.2);
-  border: 5px solid #7bbd6d;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.269);
   transition: all 0.3s ease;
+  transform: scale(.97);
 
 }
 
@@ -70,7 +81,7 @@
   grid-column-gap: 60px;
   overflow-x: auto;
   padding: 10px;
-  
+  overflow-y:hidden;
   align-content: start;
 }
 
@@ -92,6 +103,6 @@
   flex-grow: 1;
   overflow: hidden;
   padding: 5px;
-  
+
   padding-top:20px;
 }
