@@ -4,7 +4,7 @@ import SvgBorderWrapper from '../Styles/Border';
 async function fetchImage(path, spartankey) {
   try {
     // Base URL of your proxy server
-    const proxyBaseUrl = process.env.PROXY_BASE_URL || 'http://localhost:3001/api'; // Fallback to a default
+    const proxyBaseUrl = process.env.PROXY_BASE_URL || 'http://localhost:3001/apiproxy/'; // Fallback to a default
     // Complete URL with the proxy base URL
     const url = `${proxyBaseUrl}/${path}`;
     console.log("Fetching image: ", url)

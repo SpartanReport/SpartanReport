@@ -13,7 +13,7 @@ services:
     ports:
       - "3001:3001" 
     environment:
-      - PROXY_BASE_URL=http://localhost:3001/api
+      - PROXY_BASE_URL=http://localhost:3001/apiproxy
 
   server:
     build: 
