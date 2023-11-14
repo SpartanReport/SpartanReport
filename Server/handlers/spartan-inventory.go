@@ -180,26 +180,44 @@ type ArmoryRowElements struct {
 	CorePath      string `json:"CorePath"`
 }
 type ArmoryRowItems struct {
-	ArmoryRowElements []ArmoryRowElements `json:"Helmets"`
-	ArmoryRowGloves   []ArmoryRowElements `json:"Gloves"`
-	ArmoryRowVisors   []ArmoryRowElements `json:"Visors"`
+	ArmoryRowElements          []ArmoryRowElements `json:"Helmets"`
+	ArmoryRowGloves            []ArmoryRowElements `json:"Gloves"`
+	ArmoryRowVisors            []ArmoryRowElements `json:"Visors"`
+	ArmoryRowLeftShoulderPads  []ArmoryRowElements `json:"LeftShoulderPads"`
+	ArmoryRowRightShoulderPads []ArmoryRowElements `json:"RightShoulderPads"`
+	ArmoryRowWristAttachments  []ArmoryRowElements `json:"WristAttachments"`
+	ArmoryRowHipAttachments    []ArmoryRowElements `json:"HipAttachments"`
+	ArmoryRowKneePads          []ArmoryRowElements `json:"KneePads"`
+	ArmoryRowChestAttachments  []ArmoryRowElements `json:"ChestAttachments"`
 }
 
 type CurrentlyEquipped struct {
-	Helmet   ArmoryRowElements `json:"CurrentlyEquippedHelmet"`
-	Core     ArmoryRowCore     `json:"CurrentlyEquippedCore"`
-	Visor    ArmoryRowElements `json:"CurrentlyEquippedVisor"`
-	Gloves   ArmoryRowElements `json:"CurrentlyEquippedGlove"`
-	Coatings ArmoryRowElements `json:"CurrentlyEquippedCoating"`
+	Helmet            ArmoryRowElements `json:"CurrentlyEquippedHelmet"`
+	Core              ArmoryRowCore     `json:"CurrentlyEquippedCore"`
+	Visor             ArmoryRowElements `json:"CurrentlyEquippedVisor"`
+	Gloves            ArmoryRowElements `json:"CurrentlyEquippedGlove"`
+	Coatings          ArmoryRowElements `json:"CurrentlyEquippedCoating"`
+	LeftShoulderPads  ArmoryRowElements `json:"CurrentlyEquippedLeftShoulderPad"`
+	RightShoulderPads ArmoryRowElements `json:"CurrentlyEquippedRightShoulderPad"`
+	WristAttachments  ArmoryRowElements `json:"CurrentlyEquippedWristAttachment"`
+	HipAttachments    ArmoryRowElements `json:"CurrentlyEquippedHipAttachment"`
+	KneePads          ArmoryRowElements `json:"CurrentlyEquippedKneePad"`
+	ChestAttachments  ArmoryRowElements `json:"CurrentlyEquippedChestAttachment"`
 }
 
 type DataToReturn struct {
-	PlayerInventory   []SpartanInventory
-	ArmoryRow         []ArmoryRowCore
-	ArmoryRowHelmets  []ArmoryRowElements
-	ArmoryRowVisors   []ArmoryRowElements
-	ArmoryRowGloves   []ArmoryRowElements
-	ArmoryRowCoatings []ArmoryRowElements
+	PlayerInventory            []SpartanInventory
+	ArmoryRow                  []ArmoryRowCore
+	ArmoryRowHelmets           []ArmoryRowElements
+	ArmoryRowVisors            []ArmoryRowElements
+	ArmoryRowGloves            []ArmoryRowElements
+	ArmoryRowCoatings          []ArmoryRowElements
+	ArmoryRowLeftShoulderPads  []ArmoryRowElements
+	ArmoryRowRightShoulderPads []ArmoryRowElements
+	ArmoryRowWristAttachments  []ArmoryRowElements
+	ArmoryRowHipAttachments    []ArmoryRowElements
+	ArmoryRowKneePads          []ArmoryRowElements
+	ArmoryRowChestAttachments  []ArmoryRowElements
 
 	CurrentlyEquipped CurrentlyEquipped
 	Items             Items
@@ -290,6 +308,12 @@ func loadArmoryRow(data DataToReturn, playerInventory []SpartanInventory) DataTo
 	gloves := []ArmoryRowElements{}
 	visors := []ArmoryRowElements{}
 	coatings := []ArmoryRowElements{}
+	leftshoulderpads := []ArmoryRowElements{}
+	rightshoulderpads := []ArmoryRowElements{}
+	wristattachments := []ArmoryRowElements{}
+	hipattachments := []ArmoryRowElements{}
+	kneepads := []ArmoryRowElements{}
+	chestattachments := []ArmoryRowElements{}
 
 	for i, item := range data.Items.InventoryItems {
 		fmt.Println(item.ItemType)
@@ -311,6 +335,42 @@ func loadArmoryRow(data DataToReturn, playerInventory []SpartanInventory) DataTo
 			visors = append(visors, visor)
 			if visor.IsHighlighted {
 				data.CurrentlyEquipped.Visor = visor
+			}
+		case "ArmorLeftShoulderPad":
+			leftshoulderpad := createArmoryRowElement(i, item, "ArmorLeftShoulderPad", playerInventory[0].ArmorCores.ArmorCores[0].Themes[0].LeftShoulderPadPath)
+			leftshoulderpads = append(leftshoulderpads, leftshoulderpad)
+			if leftshoulderpad.IsHighlighted {
+				data.CurrentlyEquipped.LeftShoulderPads = leftshoulderpad
+			}
+		case "ArmorRightShoulderPad":
+			rightshoulderpad := createArmoryRowElement(i, item, "ArmorRightShoulderPad", playerInventory[0].ArmorCores.ArmorCores[0].Themes[0].RightShoulderPadPath)
+			rightshoulderpads = append(rightshoulderpads, rightshoulderpad)
+			if rightshoulderpad.IsHighlighted {
+				data.CurrentlyEquipped.RightShoulderPads = rightshoulderpad
+			}
+		case "ArmorWristAttachment":
+			wristattachment := createArmoryRowElement(i, item, "ArmorWristAttachment", playerInventory[0].ArmorCores.ArmorCores[0].Themes[0].WristAttachmentPath)
+			wristattachments = append(wristattachments, wristattachment)
+			if wristattachment.IsHighlighted {
+				data.CurrentlyEquipped.WristAttachments = wristattachment
+			}
+		case "ArmorHipAttachment":
+			hipattachment := createArmoryRowElement(i, item, "ArmorHipAttachment", playerInventory[0].ArmorCores.ArmorCores[0].Themes[0].HipAttachmentPath)
+			hipattachments = append(hipattachments, hipattachment)
+			if hipattachment.IsHighlighted {
+				data.CurrentlyEquipped.HipAttachments = hipattachment
+			}
+		case "ArmorKneePad":
+			kneepad := createArmoryRowElement(i, item, "ArmorKneePad", playerInventory[0].ArmorCores.ArmorCores[0].Themes[0].KneePadPath)
+			kneepads = append(kneepads, kneepad)
+			if kneepad.IsHighlighted {
+				data.CurrentlyEquipped.KneePads = kneepad
+			}
+		case "ArmorChestAttachment":
+			chestattachment := createArmoryRowElement(i, item, "ArmorChestAttachment", playerInventory[0].ArmorCores.ArmorCores[0].Themes[0].ChestAttachmentPath)
+			chestattachments = append(chestattachments, chestattachment)
+			if chestattachment.IsHighlighted {
+				data.CurrentlyEquipped.ChestAttachments = chestattachment
 			}
 
 		case "ArmorGlove":
@@ -334,6 +394,13 @@ func loadArmoryRow(data DataToReturn, playerInventory []SpartanInventory) DataTo
 	data.ArmoryRowGloves = gloves
 	data.ArmoryRowVisors = visors
 	data.ArmoryRowCoatings = coatings
+	data.ArmoryRowLeftShoulderPads = leftshoulderpads
+	data.ArmoryRowRightShoulderPads = rightshoulderpads
+	data.ArmoryRowWristAttachments = wristattachments
+	data.ArmoryRowHipAttachments = hipattachments
+	data.ArmoryRowKneePads = kneepads
+	data.ArmoryRowChestAttachments = chestattachments
+
 	return data
 
 }

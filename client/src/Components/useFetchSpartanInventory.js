@@ -12,6 +12,11 @@ const useFetchSpartanInventory = (gamerInfo, includeArmory = false, setHighlight
     CurrentlyEquippedVisor: null,
     CurrentlyEquippedGlove: null,
     CurrentlyEquippedCoating: null,
+    CurrentlyEquippedLeftShoulderPad: null,
+    CurrentlyEquippedRightShoulderPad: null,
+    CurrentlyEquippedWristAttachment: null,
+    CurrentlyEquippedHipAttachment: null,
+    CurrentlyEquippedChestAttachment : null,
   }); // Added state for CurrentlyEquipped
   const fetchSpartanInventory = async (force = false) => {
     if (isFetched && !force) return;
@@ -25,12 +30,19 @@ const useFetchSpartanInventory = (gamerInfo, includeArmory = false, setHighlight
       if (includeArmory) {
         setArmoryRow(response.data);
         const equippedData = response.data.CurrentlyEquipped;
+        console.log("Setting current equip")
         setCurrentlyEquipped({
           CurrentlyEquippedCore: equippedData.CurrentlyEquippedCore,
           CurrentlyEquippedHelmet: equippedData.CurrentlyEquippedHelmet,
           CurrentlyEquippedGlove: equippedData.CurrentlyEquippedGlove,
           CurrentlyEquippedVisor: equippedData.CurrentlyEquippedVisor,
           CurrentlyEquippedCoating: equippedData.CurrentlyEquippedCoating,
+          CurrentlyEquippedLeftShoulderPad: equippedData.CurrentlyEquippedLeftShoulderPad,
+          CurrentlyEquippedRightShoulderPad: equippedData.CurrentlyEquippedRightShoulderPad,
+          CurrentlyEquippedWristAttachment: equippedData.CurrentlyEquippedWristAttachment,
+          CurrentlyEquippedHipAttachment: equippedData.CurrentlyEquippedHipAttachment,
+          CurrentlyEquippedChestAttachment: equippedData.CurrentlyEquippedChestAttachment,
+          CurrentlyEquippedKneePad: equippedData.CurrentlyEquippedKneePad,
 
         });
   
@@ -40,6 +52,13 @@ const useFetchSpartanInventory = (gamerInfo, includeArmory = false, setHighlight
         const initialVisorHighlight = response.data.ArmoryRowVisors.find(obj => obj.isHighlighted);
         const initialGloveHighlight = response.data.ArmoryRowGloves.find(obj => obj.isHighlighted);
         const initialCoatingHighlight = response.data.ArmoryRowCoatings.find(obj => obj.isHighlighted);
+        const initialLeftShoulderPadHighlight = response.data.ArmoryRowLeftShoulderPads.find(obj => obj.isHighlighted);
+        const initialRightShoulderPadHighlight = response.data.ArmoryRowRightShoulderPads.find(obj => obj.isHighlighted);
+        const initialWristAttachmentHighlight = response.data.ArmoryRowWristAttachments.find(obj => obj.isHighlighted);
+        const initialHipAttachmentHighlight = response.data.ArmoryRowHipAttachments.find(obj => obj.isHighlighted);
+        const initialChestAttachmentHighlight = response.data.ArmoryRowChestAttachments.find(obj => obj.isHighlighted);
+        const initialKneePadHighlight = response.data.ArmoryRowKneePads.find(obj => obj.isHighlighted);
+
 
         if (initialCoreHighlight) {
           setHighlightedItems(items => ({ ...items, armorcoreId: initialCoreHighlight.id }));
@@ -56,6 +75,30 @@ const useFetchSpartanInventory = (gamerInfo, includeArmory = false, setHighlight
         if (initialCoatingHighlight) {
           setHighlightedItems(items => ({ ...items, armorcoatingId: initialCoatingHighlight.id }));
         }
+        if (initialLeftShoulderPadHighlight){
+          setHighlightedItems(items => ({ ...items, armorleftshoulderpadId: initialLeftShoulderPadHighlight.id }));
+
+        }
+        if (initialRightShoulderPadHighlight){
+          setHighlightedItems(items => ({ ...items, armorrightshoulderpadId: initialRightShoulderPadHighlight.id }));
+
+        }
+        if (initialWristAttachmentHighlight){
+          setHighlightedItems(items => ({ ...items, armorwristattachmentId: initialWristAttachmentHighlight.id }));
+
+        }
+        if (initialHipAttachmentHighlight){
+          setHighlightedItems(items => ({ ...items, armorhipattachmentId: initialHipAttachmentHighlight.id }));
+
+        }
+        if (initialChestAttachmentHighlight){
+          setHighlightedItems(items => ({ ...items, armorchestattachmentId: initialChestAttachmentHighlight.id }));
+
+        }
+        if (initialKneePadHighlight){
+          setHighlightedItems(items => ({ ...items, armorkneepadId: initialKneePadHighlight.id }));
+
+        }
       }
   
       setIsLoading(false);
@@ -66,7 +109,7 @@ const useFetchSpartanInventory = (gamerInfo, includeArmory = false, setHighlight
     }
   };
   
-
+  console.log("Returning Armory Row: ", armoryRow)
   return { spartanInventory, armoryRow, setArmoryRow, isLoading, fetchSpartanInventory, currentlyEquipped, setCurrentlyEquipped };
 };
 

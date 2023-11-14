@@ -7,7 +7,6 @@ async function fetchImage(path, spartankey) {
     const proxyBaseUrl = process.env.PROXY_BASE_URL || 'http://localhost:3001/apiproxy/'; // Fallback to a default
     // Complete URL with the proxy base URL
     const url = `${proxyBaseUrl}/${path}`;
-    console.log("Fetching image: ", url)
     // Setting up the headers
     const headers = new Headers();
     headers.append('X-343-Authorization-Spartan', spartankey);
@@ -42,7 +41,6 @@ const ObjectCard = ({gamerInfo, object, isHighlighted, onClick }) => {
     async function loadImage() {
       if (object.ImagePath && gamerInfo.spartankey && object.isHighlighted && object.Type !== "ArmorCore") {
         let url = "hi/images/file/"+object.ImagePath;
-        console.log("Sending request to ", url)
 
         const imgSrc = await fetchImage(url, gamerInfo.spartankey);
         setImageSrc(imgSrc);
@@ -71,7 +69,6 @@ const HighlightedObjectCard = ({ gamerInfo, object, isDisplay }) => {
   useEffect(() => {
     async function loadImage() {
       if (object.ImagePath && gamerInfo.spartankey && isDisplay && object.Type !== "ArmorCore") {
-        console.log("GettingURL: ")
         let url = "hi/images/file/"+object.ImagePath;
 
         const imgSrc = await fetchImage(url, gamerInfo.spartankey); // complete the fetchImage function
@@ -122,7 +119,6 @@ const ObjectsDisplay = ({gamerInfo, currentlyEquipped, objects, highlightedId, o
     // Then sort by name alphabetically
     return a.name.localeCompare(b.name);  });
 
-  console.log(objects);
 
   // Calculate the number of columns needed for two rows
   const columns = Math.ceil(sortedFilteredArmoryRow.length / 2);
@@ -143,7 +139,7 @@ const ObjectsDisplay = ({gamerInfo, currentlyEquipped, objects, highlightedId, o
     </div>
   );
 };
-const ArmoryRow = ({ objects, fullObjects, resetHighlight, gamerInfo, onEquipItem, currentlyEquipped, highlightedItems, setHighlightedItems }) => {
+const ArmoryRow = ({ objects, fullObjects, resetHighlight, gamerInfo, onEquipItem,setCurrentlyEquipped ,currentlyEquipped, highlightedItems, setHighlightedItems }) => {
 
   const sendEquip = async (gamerInfo, currentlyEquipped) => {
     const payload = {
@@ -191,7 +187,7 @@ const ArmoryRow = ({ objects, fullObjects, resetHighlight, gamerInfo, onEquipIte
               console.log("Fetching Core Inventory!!!!!")
               dataToSend.CurrentlyEquippedCore = object;
               dataToSend.CurrentlyEquippedCore.GetInv = true;
-              
+
               setHighlightedItems(items => ({ ...items, armorcoreId: object.id }));
               // Backend request
               const response = await sendEquip(gamerInfo, dataToSend);
@@ -199,12 +195,24 @@ const ArmoryRow = ({ objects, fullObjects, resetHighlight, gamerInfo, onEquipIte
 
               if (response && response.Themes[0].HelmetPath) {
                 // Find the new highlighted helmet
+                const newHighlightedCore = fullObjects.ArmoryRow.find(core => core.CorePath === response.Themes[0].CoreId);
 
                 const newHighlightedHelmet = fullObjects.ArmoryRowHelmets.find(helmet => helmet.CorePath === response.Themes[0].HelmetPath);
                 const newHighlightedVisor = fullObjects.ArmoryRowVisors.find(visor => visor.CorePath === response.Themes[0].VisorPath);
                 const newHighlightedGlove = fullObjects.ArmoryRowGloves.find(glove => glove.CorePath === response.Themes[0].GlovePath);
                 const newHighlightedCoating = fullObjects.ArmoryRowCoatings.find(coating => coating.CorePath === response.Themes[0].CoatingPath);
+                const newHighlightedLeftShoulderPad = fullObjects.ArmoryRowLeftShoulderPads.find(leftshoulderpad => leftshoulderpad.CorePath === response.Themes[0].LeftShoulderPadPath);
+                const newHighlightedRightShoulderPad = fullObjects.ArmoryRowRightShoulderPads.find(rightshoulderpad => rightshoulderpad.CorePath === response.Themes[0].RightShoulderPadPath);
+                const newHighlightedWristAttachment = fullObjects.ArmoryRowWristAttachments.find(wristattachment => wristattachment.CorePath === response.Themes[0].WristAttachmentPath);
+                const newHighlightedHipAttachment = fullObjects.ArmoryRowHipAttachments.find(hipattachment => hipattachment.CorePath === response.Themes[0].HipAttachmentPath);
+                const newHighlightedChestAttachment = fullObjects.ArmoryRowChestAttachments.find(chestattachment => chestattachment.CorePath === response.Themes[0].ChestAttachmentPath);
+                const newHighlightedKneePad = fullObjects.ArmoryRowKneePads.find(kneepad => kneepad.CorePath === response.Themes[0].KneePadPath);
+                if (newHighlightedCore) {
+                  setHighlightedItems(items => ({ ...items, armorcoreId: object.id }));
+                  resetHighlight(newHighlightedCore.id, "ArmorHelmet");
+                  onEquipItem(newHighlightedCore); // Call the handler when an item is clicked
 
+                }
                 if (newHighlightedHelmet) {
                   setHighlightedItems(items => ({ ...items, armorhelmetId: object.id }));
                   resetHighlight(newHighlightedHelmet.id, "ArmorHelmet");
@@ -212,7 +220,6 @@ const ArmoryRow = ({ objects, fullObjects, resetHighlight, gamerInfo, onEquipIte
 
                 }
                 if (newHighlightedVisor) {
-                  console.log("New Visor received : ",object.id )
                   setHighlightedItems(items => ({ ...items, armorvisorId: object.id }));
                   resetHighlight(newHighlightedVisor.id, "ArmorVisor");
                   onEquipItem(newHighlightedVisor);
@@ -227,7 +234,36 @@ const ArmoryRow = ({ objects, fullObjects, resetHighlight, gamerInfo, onEquipIte
                   setHighlightedItems(items => ({ ...items, armorcoatingId: object.id }));
                   resetHighlight(newHighlightedCoating.id, "ArmorCoating");
                   onEquipItem(newHighlightedCoating);
-
+                }
+                if (newHighlightedLeftShoulderPad) {
+                  setHighlightedItems(items => ({ ...items, armorleftshoulderpadId: object.id }));
+                  resetHighlight(newHighlightedLeftShoulderPad.id, "ArmorLeftShoulderPad");
+                  onEquipItem(newHighlightedLeftShoulderPad);
+                }
+                if (newHighlightedRightShoulderPad) {
+                  setHighlightedItems(items => ({ ...items, armorrightshoulderpadId: object.id }));
+                  resetHighlight(newHighlightedRightShoulderPad.id, "ArmorRightShoulderPad");
+                  onEquipItem(newHighlightedRightShoulderPad);
+                }
+                if (newHighlightedWristAttachment) {
+                  setHighlightedItems(items => ({ ...items, armorwristattachmentId: object.id }));
+                  resetHighlight(newHighlightedWristAttachment.id, "ArmorWristAttachment");
+                  onEquipItem(newHighlightedWristAttachment);
+                }
+                if (newHighlightedHipAttachment) {
+                  setHighlightedItems(items => ({ ...items, armorhipattachmentId: object.id }));
+                  resetHighlight(newHighlightedHipAttachment.id, "ArmorHipAttachment");
+                  onEquipItem(newHighlightedHipAttachment);
+                }
+                if (newHighlightedChestAttachment) {
+                  setHighlightedItems(items => ({ ...items, armorchestattachmentId: object.id }));
+                  resetHighlight(newHighlightedChestAttachment.id, "ArmorChestAttachment");
+                  onEquipItem(newHighlightedChestAttachment);
+                }
+                if (newHighlightedKneePad) {
+                  setHighlightedItems(items => ({ ...items, armorkneepadId: object.id }));
+                  resetHighlight(newHighlightedKneePad.id, "ArmorKneePad");
+                  onEquipItem(newHighlightedKneePad);
                 }
               }
             
@@ -249,13 +285,53 @@ const ArmoryRow = ({ objects, fullObjects, resetHighlight, gamerInfo, onEquipIte
             await sendEquip(gamerInfo, dataToSend);
               resetHighlight(object.id, object.Type);
               setHighlightedItems(items => ({ ...items, armorcoatingId: object.id }));
-        }
+        }else if (object.Type === "ArmorLeftShoulderPad") {
+          dataToSend.CurrentlyEquippedCore.GetInv = false;
+          dataToSend.CurrentlyEquippedLeftShoulderPad = object;
+          await sendEquip(gamerInfo, dataToSend);
+            resetHighlight(object.id, object.Type);
+            setHighlightedItems(items => ({ ...items, armorleftshoulderpadId: object.id }));
+      }else if (object.Type === "ArmorRightShoulderPad") {
+        dataToSend.CurrentlyEquippedCore.GetInv = false;
+        dataToSend.CurrentlyEquippedRightShoulderPad = object;
+        await sendEquip(gamerInfo, dataToSend);
+          resetHighlight(object.id, object.Type);
+          setHighlightedItems(items => ({ ...items, armorrightshoulderpadId: object.id }));
     }
+    else if (object.Type === "ArmorWristAttachment") {
+      dataToSend.CurrentlyEquippedCore.GetInv = false;
+      dataToSend.CurrentlyEquippedWristAttachment = object;
+      await sendEquip(gamerInfo, dataToSend);
+        resetHighlight(object.id, object.Type);
+        setHighlightedItems(items => ({ ...items, armorwristattachmentId: object.id }));
+    }
+    else if (object.Type === "ArmorHipAttachment") {
+      dataToSend.CurrentlyEquippedCore.GetInv = false;
+      dataToSend.CurrentlyEquippedHipAttachment = object;
+      await sendEquip(gamerInfo, dataToSend);
+        resetHighlight(object.id, object.Type);
+        setHighlightedItems(items => ({ ...items, armorhipattachmentId: object.id }));
+    }
+    else if (object.Type === "ArmorChestAttachment") {
+      dataToSend.CurrentlyEquippedCore.GetInv = false;
+      dataToSend.CurrentlyEquippedChestAttachment = object;
+      await sendEquip(gamerInfo, dataToSend);
+        resetHighlight(object.id, object.Type);
+        setHighlightedItems(items => ({ ...items, armorchestattachmentId: object.id }));
+    }
+    else if (object.Type === "ArmorKneePad") {
+      dataToSend.CurrentlyEquippedCore.GetInv = false;
+      dataToSend.CurrentlyEquippedKneePad = object;
+      await sendEquip(gamerInfo, dataToSend);
+        resetHighlight(object.id, object.Type);
+        setHighlightedItems(items => ({ ...items, armorkneepadId: object.id }));
+    }
+    else {
+      console.log("Error: No object type found");
+    }
+  }
 };
-
-
 const highlightedObject = objects.find(obj => obj.id === highlightedItems[`${obj.Type.toLowerCase()}Id`]);
-  console.log("Error with: ", objects);
   return (
     <div className="container">
       <div className="highlightedCardContainer">

@@ -4,7 +4,29 @@ import ArmoryRow from "./ArmoryRow"
 import "../Styles/styles.css";
 import "../Styles/spartan.css";
 
+const RenderArmoryRow = ({toggleVisibility,visId,isLast, rowType, isVisible, objects, fullObjects, gamerInfo, onEquipItem, currentlyEquipped, setHighlightedItems, highlightedItems, resetHighlight }) => {
+  return (
+    <>
+      <div className="subheader-container-spartan" onClick={() => toggleVisibility(visId)}>
+        <svg className="diamond-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22.92 22.92">
+          <path className="cls-1" d="M11.46,0L0,11.46l11.46,11.46,11.46-11.46L11.46,0ZM3.41,11.46L11.46,3.41l8.05,8.05-8.05,8.05L3.41,11.46Z"/>
+          <rect className="cls-1" x="8.16" y="8.16" width="6.59" height="6.59" transform="translate(-4.75 11.46) rotate(-45)"/>
+        </svg>
 
+        <h1 className="spartan-subheader-home">{rowType} {isVisible ? (<div className='dropdown-arrow-container'><svg className="arrow-icon-open" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+              <svg id="dropdown" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12.44 12.44"><g id="Layer_3"><g id="Login_Button"><polygon class="cls-1" points="12.44 0 12.44 12.44 0 12.44 12.44 0"/></g></g></svg>
+        </svg></div>): (<div className='dropdown-arrow-container'><svg className="arrow-icon-collapsed" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                  <svg id="dropdown" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12.44 12.44"><g id="Layer_3"><g id="Profile"><polygon class="cls-1" points="12.44 12.44 12.44 0 0 0 12.44 12.44"/></g></g></svg>
+              </svg></div>)}</h1>
+      </div>
+      {isVisible ? (
+        <div className="armory-row">
+          <ArmoryRow objects={objects} resetHighlight={resetHighlight} fullObjects={fullObjects} gamerInfo={gamerInfo} onEquipItem={onEquipItem} currentlyEquipped={currentlyEquipped} setHighlightedItems={setHighlightedItems} highlightedItems={highlightedItems} />
+        </div>
+      ) : <div style={{height:isLast ? 100:50}}></div>}
+    </>
+  );
+};
 const Spartan = ({ gamerInfo }) => {
   const [visibleRows, setVisibleRows] = useState({
     core: true,
@@ -12,6 +34,12 @@ const Spartan = ({ gamerInfo }) => {
     visors: true,
     gloves: true,
     coatings: true,
+    shoulderleft: true,
+    shoulderright: true,
+    wristattachement: true,
+    kneepad: true,
+    hipattachement: true,
+    chestattachement: true,
   });
   const [highlightedItems, setHighlightedItems] = useState({
     armorcoreId: null,
@@ -19,6 +47,13 @@ const Spartan = ({ gamerInfo }) => {
     armorvisorId: null,
     armorgloveId: null,
     armorcoatingId: null,
+    armorleftshoulderpadId: null,
+    armorrightshoulderpadId: null,
+    armorwristattachmentId: null,
+    armorkneepadId: null,
+    armorhipattachmentId: null,
+    armorchestattachmentId: null,
+
 
   });
   const { spartanInventory, armoryRow,setArmoryRow, isLoading, fetchSpartanInventory, currentlyEquipped, setCurrentlyEquipped} = useFetchSpartanInventory(gamerInfo, true,setHighlightedItems);
@@ -74,66 +109,76 @@ const Spartan = ({ gamerInfo }) => {
     return <div>No Spartan Inventory Data</div>;
   }
   const resetHighlight = (newHighlightedId, itemType) => {
+    // Update the highlightedItems state
     setHighlightedItems(prev => ({
       ...prev,
-      [`${itemType.toLowerCase()}Id`]: newHighlightedId // Dynamically set the property based on itemType
+      [`${itemType.toLowerCase()}Id`]: newHighlightedId
     }));
-    if (itemType === "ArmorCore") {
-      const updatedArmoryRow = armoryRow.ArmoryRow.map(obj => ({
+  
+    // Function to update ArmoryRow based on itemType
+    const updateArmoryRow = (armoryType, armoryRowKey) => {
+      const updatedArmoryRow = armoryRow[armoryRowKey].map(obj => ({
         ...obj,
         isHighlighted: obj.Type === itemType && obj.id === newHighlightedId
       }));
-      setArmoryRow({ ...armoryRow, ArmoryRow: updatedArmoryRow });
-    }
-    if (itemType === "ArmorHelmet") {
-      const updatedArmoryRowHelmets = armoryRow.ArmoryRowHelmets.map(obj => ({
-        ...obj,
-        isHighlighted: obj.Type === itemType && obj.id === newHighlightedId
-      }));
-      setArmoryRow({ ...armoryRow, ArmoryRowHelmets: updatedArmoryRowHelmets });
-    } 
-    if (itemType === "ArmorVisor") {
-      const updatedArmoryRowVisors = armoryRow.ArmoryRowVisors.map(obj => ({
-        ...obj,
-        isHighlighted: obj.Type === itemType && obj.id === newHighlightedId
-      }));
-      setArmoryRow({ ...armoryRow, ArmoryRowVisors: updatedArmoryRowVisors });
-    }
-    if (itemType === "ArmorGlove") {
-      const updatedArmoryRowGloves = armoryRow.ArmoryRowGloves.map(obj => ({
-        ...obj,
-        isHighlighted: obj.Type === itemType && obj.id === newHighlightedId
-      }));
-      setArmoryRow({ ...armoryRow, ArmoryRowGloves: updatedArmoryRowGloves });
-    }
-    if (itemType === "ArmorCoating") {
-      const updatedArmoryRowCoating = armoryRow.ArmoryRowCoatings.map(obj => ({
-        ...obj,
-        isHighlighted: obj.Type === itemType && obj.id === newHighlightedId
-      }));
-      setArmoryRow({ ...armoryRow, ArmoryRowCoatings: updatedArmoryRowCoating });
+      setArmoryRow({ ...armoryRow, [armoryRowKey]: updatedArmoryRow });
+    };
+  
+    // Mapping of item types to armory row keys
+    const armoryRowKeys = {
+      "ArmorCore": "ArmoryRow",
+      "ArmorHelmet": "ArmoryRowHelmets",
+      "ArmorVisor": "ArmoryRowVisors",
+      "ArmorGlove": "ArmoryRowGloves",
+      "ArmorCoating": "ArmoryRowCoatings",
+      "ArmorLeftShoulderPad": "ArmoryRowLeftShoulderPads",
+      "ArmorRightShoulderPad": "ArmoryRowRightShoulderPads",
+      "ArmorWristAttachment": "ArmoryRowWristAttachments",
+      "ArmorKneePad": "ArmoryRowKneePads",
+      "ArmorHipAttachment": "ArmoryRowHipAttachments",
+      "ArmorChestAttachment": "ArmoryRowChestAttachments",
+    };
+  
+    // Update the appropriate armory row if the itemType matches
+    if (armoryRowKeys[itemType]) {
+      updateArmoryRow(itemType, armoryRowKeys[itemType]);
     }
   };
+  
   
   
   const handleEquipItem = (item) => {
-    console.log("handle Equip: ", item.Type)
+    console.log("handle Equip: ", item.Type);
+  
+    // Function to update the currently equipped item based on its type
+    const updateCurrentlyEquipped = (itemType, item) => {
+      setCurrentlyEquipped(prev => ({ ...prev, [itemType]: item }));
+    };
+  
+    // If the item is an Armor Core, reset all other equipped items
     if (item.Type === "ArmorCore") {
-      setCurrentlyEquipped(prev => ({ ...prev, CurrentlyEquippedCore: item }));
-    } else if (item.Type === "ArmorHelmet") {
-      console.log("Setting Armor Helmet")
-      setCurrentlyEquipped(prev => ({ ...prev, CurrentlyEquippedHelmet: item }));
-    }else if (item.Type === "ArmorVisor") {
-      console.log("Setting Armor Visor")
-      setCurrentlyEquipped(prev => ({ ...prev, CurrentlyEquippedVisor: item }));
-    }else if (item.Type === "ArmorGlove") {
-      console.log("Setting Glove")
-      setCurrentlyEquipped(prev => ({ ...prev, CurrentlyEquippedGlove: item }));
-    }else if (item.Type === "ArmorCoating") {
-      setCurrentlyEquipped(prev => ({ ...prev, CurrentlyEquippedCoating: item }));
+      setCurrentlyEquipped({
+        CurrentlyEquippedCore: item,
+        CurrentlyEquippedHelmet: null,
+        CurrentlyEquippedGlove: null,
+        CurrentlyEquippedVisor: null,
+        CurrentlyEquippedCoating: null,
+        CurrentlyEquippedLeftShoulderPad: null,
+        CurrentlyEquippedRightShoulderPad: null,
+        CurrentlyEquippedWristAttachment: null,
+        CurrentlyEquippedKneePad: null,
+        CurrentlyEquippedHipAttachment: null,
+        CurrentlyEquippedChestAttachment: null,
+      });
+      console.log("Armor Core equipped, other items reset.");
+    } else {
+      // For other item types, update the currently equipped item
+      const currentlyEquippedKey = `CurrentlyEquipped${item.Type.replace('Armor', '')}`;
+      updateCurrentlyEquipped(currentlyEquippedKey, item);
+      console.log(`Setting ${item.Type}`);
     }
-    console.log("Set New Items! ")
   };
+  
 
   const toggleVisibility = (row) => {
     setVisibleRows(prev => ({ ...prev, [row]: !prev[row] }));
@@ -146,114 +191,174 @@ const Spartan = ({ gamerInfo }) => {
         <h1 className="spartan-title-home">ARMORY</h1>
       </div>
 
-      <div className="subheader-container-spartan" onClick={() => toggleVisibility('core')}>
-          <svg className="diamond-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22.92 22.92">
-          <path className="cls-1" d="M11.46,0L0,11.46l11.46,11.46,11.46-11.46L11.46,0ZM3.41,11.46L11.46,3.41l8.05,8.05-8.05,8.05L3.41,11.46Z"/>
-          <rect className="cls-1" x="8.16" y="8.16" width="6.59" height="6.59" transform="translate(-4.75 11.46) rotate(-45)"/>
-        </svg>
-        <h1 className="spartan-subheader-home">Armor Core {visibleRows.core ? 
-                    (<div className='dropdown-arrow-container'><svg className="arrow-icon-open" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                    <svg id="dropdown" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12.44 12.44"><g id="Layer_3"><g id="Login_Button"><polygon class="cls-1" points="12.44 0 12.44 12.44 0 12.44 12.44 0"/></g></g></svg>
-              </svg></div>) : 
-              (<div className='dropdown-arrow-container'><svg className="arrow-icon-collapsed" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                  <svg id="dropdown" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12.44 12.44"><g id="Layer_3"><g id="Profile"><polygon class="cls-1" points="12.44 12.44 12.44 0 0 0 12.44 12.44"/></g></g></svg>
-              </svg></div>)
-        }</h1>
-
-      </div>
-      {visibleRows.core? (
-      <div className="armory-row-cores">
-        <ArmoryRow objects={armoryRow.ArmoryRow} setCurrentlyEquipped={setCurrentlyEquipped} resetHighlight={resetHighlight} fullObjects={armoryRow} gamerInfo={gamerInfo} onEquipItem={handleEquipItem}   currentlyEquipped={currentlyEquipped} highlightedItems={highlightedItems} setHighlightedItems={setHighlightedItems}  />
-      </div>
-      )  : <div style={{height:50}}></div>}
-
-      <div className="subheader-container-spartan" onClick={() => toggleVisibility('coatings')}>
-                      <svg className="diamond-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22.92 22.92">
-                      <path className="cls-1" d="M11.46,0L0,11.46l11.46,11.46,11.46-11.46L11.46,0ZM3.41,11.46L11.46,3.41l8.05,8.05-8.05,8.05L3.41,11.46Z"/>
-                      <rect className="cls-1" x="8.16" y="8.16" width="6.59" height="6.59" transform="translate(-4.75 11.46) rotate(-45)"/>
-                    </svg>
-                    <h1 className="spartan-subheader-home">Coatings {visibleRows.coatings ? 
-                    (<div className='dropdown-arrow-container'><svg className="arrow-icon-open" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                          <svg id="dropdown" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12.44 12.44"><g id="Layer_3"><g id="Login_Button"><polygon class="cls-1" points="12.44 0 12.44 12.44 0 12.44 12.44 0"/></g></g></svg>
-                    </svg></div>) : 
-                    (<div className='dropdown-arrow-container'><svg className="arrow-icon-collapsed" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                        <svg id="dropdown" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12.44 12.44"><g id="Layer_3"><g id="Profile"><polygon class="cls-1" points="12.44 12.44 12.44 0 0 0 12.44 12.44"/></g></g></svg>
-                    </svg></div>)
-                  }</h1>
-
-                  </div>
-                  {visibleRows.coatings? (
-                  <div className="armory-row">
-                    <ArmoryRow objects={armoryRow.ArmoryRowCoatings} resetHighlight={resetHighlight} fullObjects={armoryRow} gamerInfo={gamerInfo} onEquipItem={handleEquipItem}   currentlyEquipped={currentlyEquipped} setHighlightedItems={setHighlightedItems} highlightedItems={highlightedItems} />
-                  </div>
-                  )  : <div style={{height:50}}></div>}
+      <RenderArmoryRow 
+        rowType="Armor Core" 
+        visId = "core"
+        isVisible={visibleRows.core} 
+        objects={armoryRow.ArmoryRow} 
+        fullObjects={armoryRow}
+        gamerInfo={gamerInfo}
+        onEquipItem={handleEquipItem}
+        currentlyEquipped={currentlyEquipped}
+        setHighlightedItems={setHighlightedItems}
+        highlightedItems={highlightedItems}
+        resetHighlight={resetHighlight}
+        toggleVisibility={toggleVisibility}
+      />
 
 
-      <div className="subheader-container-spartan" onClick={() => toggleVisibility('helmet')}>
-          <svg className="diamond-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22.92 22.92">
-          <path className="cls-1" d="M11.46,0L0,11.46l11.46,11.46,11.46-11.46L11.46,0ZM3.41,11.46L11.46,3.41l8.05,8.05-8.05,8.05L3.41,11.46Z"/>
-          <rect className="cls-1" x="8.16" y="8.16" width="6.59" height="6.59" transform="translate(-4.75 11.46) rotate(-45)"/>
-        </svg>
-        <h1 className="spartan-subheader-home">Helmets {visibleRows.helmet ? 
-                    (<div className='dropdown-arrow-container'><svg className="arrow-icon-open" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                    <svg id="dropdown" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12.44 12.44"><g id="Layer_3"><g id="Login_Button"><polygon class="cls-1" points="12.44 0 12.44 12.44 0 12.44 12.44 0"/></g></g></svg>
-              </svg></div>) : 
-              (<div className='dropdown-arrow-container'><svg className="arrow-icon-collapsed" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                  <svg id="dropdown" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12.44 12.44"><g id="Layer_3"><g id="Profile"><polygon class="cls-1" points="12.44 12.44 12.44 0 0 0 12.44 12.44"/></g></g></svg>
-              </svg></div>)
-}</h1>
+      <RenderArmoryRow 
+        rowType="Coatings" 
+        visId = "coatings"
 
-      </div>
-      {visibleRows.helmet? (
-      <div className="armory-row">
-        <ArmoryRow objects={armoryRow.ArmoryRowHelmets} resetHighlight={resetHighlight} fullObjects={armoryRow} gamerInfo={gamerInfo} onEquipItem={handleEquipItem}   currentlyEquipped={currentlyEquipped} setHighlightedItems={setHighlightedItems} highlightedItems={highlightedItems} />
-      </div>
-      )  : <div style={{height:50}}></div>}
-    
-    <div className="subheader-container-spartan" onClick={() => toggleVisibility('visors')}>
-          <svg className="diamond-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22.92 22.92">
-          <path className="cls-1" d="M11.46,0L0,11.46l11.46,11.46,11.46-11.46L11.46,0ZM3.41,11.46L11.46,3.41l8.05,8.05-8.05,8.05L3.41,11.46Z"/>
-          <rect className="cls-1" x="8.16" y="8.16" width="6.59" height="6.59" transform="translate(-4.75 11.46) rotate(-45)"/>
-        </svg>
-        <h1 className="spartan-subheader-home">Visors {visibleRows.visors ? 
-              (<div className='dropdown-arrow-container'><svg className="arrow-icon-open" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-              <svg id="dropdown" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12.44 12.44"><g id="Layer_3"><g id="Login_Button"><polygon class="cls-1" points="12.44 0 12.44 12.44 0 12.44 12.44 0"/></g></g></svg>
-        </svg></div>) : 
-        (<div className='dropdown-arrow-container'><svg className="arrow-icon-collapsed" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-            <svg id="dropdown" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12.44 12.44"><g id="Layer_3"><g id="Profile"><polygon class="cls-1" points="12.44 12.44 12.44 0 0 0 12.44 12.44"/></g></g></svg>
-        </svg></div>)
-        }</h1>
+        isVisible={visibleRows.coatings} 
+        objects={armoryRow.ArmoryRowCoatings} 
+        fullObjects={armoryRow}
+        gamerInfo={gamerInfo}
+        onEquipItem={handleEquipItem}
+        currentlyEquipped={currentlyEquipped}
+        setHighlightedItems={setHighlightedItems}
+        highlightedItems={highlightedItems}
+        resetHighlight={resetHighlight}
+        toggleVisibility={toggleVisibility}
+      />
 
-      </div>
-      {visibleRows.visors? (
-      <div className="armory-row">
-        <ArmoryRow objects={armoryRow.ArmoryRowVisors} resetHighlight={resetHighlight}   fullObjects={armoryRow} gamerInfo={gamerInfo} onEquipItem={handleEquipItem}   currentlyEquipped={currentlyEquipped} setHighlightedItems={setHighlightedItems} highlightedItems={highlightedItems} />
-      </div>
-      )  : <div style={{height:50}}></div>}
-    
-    <div className="subheader-container-spartan" onClick={() => toggleVisibility('gloves')}>
-          <svg className="diamond-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22.92 22.92">
-          <path className="cls-1" d="M11.46,0L0,11.46l11.46,11.46,11.46-11.46L11.46,0ZM3.41,11.46L11.46,3.41l8.05,8.05-8.05,8.05L3.41,11.46Z"/>
-          <rect className="cls-1" x="8.16" y="8.16" width="6.59" height="6.59" transform="translate(-4.75 11.46) rotate(-45)"/>
-        </svg>
-        <h1 className="spartan-subheader-home">Gloves {visibleRows.gloves ? 
-                    (<div className='dropdown-arrow-container'><svg className="arrow-icon-open" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                    <svg id="dropdown" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12.44 12.44"><g id="Layer_3"><g id="Login_Button"><polygon class="cls-1" points="12.44 0 12.44 12.44 0 12.44 12.44 0"/></g></g></svg>
-              </svg></div>) : 
-              (<div className='dropdown-arrow-container'><svg className="arrow-icon-collapsed" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                  <svg id="dropdown" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12.44 12.44"><g id="Layer_3"><g id="Profile"><polygon class="cls-1" points="12.44 12.44 12.44 0 0 0 12.44 12.44"/></g></g></svg>
-              </svg></div>)
-}</h1>
+      <RenderArmoryRow 
+        rowType="Helmets"
+        visId = "helmet"
+ 
+        isVisible={visibleRows.helmet} 
+        objects={armoryRow.ArmoryRowHelmets} 
+        fullObjects={armoryRow}
+        gamerInfo={gamerInfo}
+        onEquipItem={handleEquipItem}
+        currentlyEquipped={currentlyEquipped}
+        setHighlightedItems={setHighlightedItems}
+        highlightedItems={highlightedItems}
+        resetHighlight={resetHighlight}
+        toggleVisibility={toggleVisibility}
+      />
 
-      </div>
-      {visibleRows.gloves? (
-      <div className="armory-row">
-        <ArmoryRow objects={armoryRow.ArmoryRowGloves} resetHighlight={resetHighlight} fullObjects={armoryRow} gamerInfo={gamerInfo} onEquipItem={handleEquipItem}   currentlyEquipped={currentlyEquipped} setHighlightedItems={setHighlightedItems} highlightedItems={highlightedItems} />
-      </div>
-      )  : <div style={{height:100}}></div>}
+      <RenderArmoryRow 
+        rowType="Visors" 
+        visId = "visors"
 
+        isVisible={visibleRows.visors} 
+        objects={armoryRow.ArmoryRowVisors} 
+        fullObjects={armoryRow}
+        gamerInfo={gamerInfo}
+        onEquipItem={handleEquipItem}
+        currentlyEquipped={currentlyEquipped}
+        setHighlightedItems={setHighlightedItems}
+        highlightedItems={highlightedItems}
+        resetHighlight={resetHighlight}
+        toggleVisibility={toggleVisibility}
+      />
+            <RenderArmoryRow 
+        rowType="Chest Attachments"
+        visId = "chestattachement"
+        isVisible={visibleRows.chestattachement} 
+        objects={armoryRow.ArmoryRowChestAttachments} 
+        fullObjects={armoryRow}
+        gamerInfo={gamerInfo}
+        onEquipItem={handleEquipItem}
+        currentlyEquipped={currentlyEquipped}
+        setHighlightedItems={setHighlightedItems}
+        highlightedItems={highlightedItems}
+        resetHighlight={resetHighlight}
+        toggleVisibility={toggleVisibility}
+        />
+          <RenderArmoryRow 
+            rowType="Left Shoulder Pads" 
+            visId = "shoulderleft"
+            isVisible={visibleRows.shoulderleft} 
+            objects={armoryRow.ArmoryRowLeftShoulderPads} 
+            fullObjects={armoryRow}
+            gamerInfo={gamerInfo}
+            onEquipItem={handleEquipItem}
+            currentlyEquipped={currentlyEquipped}
+            setHighlightedItems={setHighlightedItems}
+            highlightedItems={highlightedItems}
+            resetHighlight={resetHighlight}
+            toggleVisibility={toggleVisibility}
+          />
 
-    </div>
+        <RenderArmoryRow 
+                    rowType="Right Shoulder Pads" 
+                    visId = "shoulderright"
+                    isVisible={visibleRows.shoulderright} 
+                    objects={armoryRow.ArmoryRowRightShoulderPads} 
+                    fullObjects={armoryRow}
+                    gamerInfo={gamerInfo}
+                    onEquipItem={handleEquipItem}
+                    currentlyEquipped={currentlyEquipped}
+                    setHighlightedItems={setHighlightedItems}
+                    highlightedItems={highlightedItems}
+                    resetHighlight={resetHighlight}
+                    toggleVisibility={toggleVisibility}
+                  />
+
+      <RenderArmoryRow 
+        rowType="Gloves" 
+        visId = "gloves"
+        isLast={true}
+
+        isVisible={visibleRows.gloves} 
+        objects={armoryRow.ArmoryRowGloves} 
+        fullObjects={armoryRow}
+        gamerInfo={gamerInfo}
+        onEquipItem={handleEquipItem}
+        currentlyEquipped={currentlyEquipped}
+        setHighlightedItems={setHighlightedItems}
+        highlightedItems={highlightedItems}
+        resetHighlight={resetHighlight}
+        toggleVisibility={toggleVisibility}
+      />
+      <RenderArmoryRow 
+        rowType="Wrist Attachments" 
+        visId = "wristattachement"
+        isVisible={visibleRows.wristattachement} 
+        objects={armoryRow.ArmoryRowWristAttachments} 
+        fullObjects={armoryRow}
+        gamerInfo={gamerInfo}
+        onEquipItem={handleEquipItem}
+        currentlyEquipped={currentlyEquipped}
+        setHighlightedItems={setHighlightedItems}
+        highlightedItems={highlightedItems}
+        resetHighlight={resetHighlight}
+        toggleVisibility={toggleVisibility}
+        />
+              <RenderArmoryRow 
+        rowType="Hip Attachments"
+        visId = "hipattachement"
+        isVisible={visibleRows.hipattachement} 
+        objects={armoryRow.ArmoryRowHipAttachments}
+        fullObjects={armoryRow}
+        gamerInfo={gamerInfo}
+        onEquipItem={handleEquipItem}
+        currentlyEquipped={currentlyEquipped}
+        setHighlightedItems={setHighlightedItems}
+        highlightedItems={highlightedItems}
+        resetHighlight={resetHighlight}
+        toggleVisibility={toggleVisibility}
+        />
+
+      <RenderArmoryRow 
+        rowType="Knee Pads"
+        visId = "kneepad"
+        isVisible={visibleRows.kneepad} 
+        objects={armoryRow.ArmoryRowKneePads}
+        fullObjects={armoryRow}
+        gamerInfo={gamerInfo}
+        onEquipItem={handleEquipItem}
+        currentlyEquipped={currentlyEquipped}
+        setHighlightedItems={setHighlightedItems}
+        highlightedItems={highlightedItems}
+        resetHighlight={resetHighlight}
+        toggleVisibility={toggleVisibility}
+        />
+
+  </div>
 
     
   );

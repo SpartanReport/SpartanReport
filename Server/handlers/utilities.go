@@ -190,21 +190,34 @@ func GetCurrentArmor(gamerInfo requests.GamerInfo, ArmorCoreData ArmorCoreEquip,
 
 	}
 	if ArmorCoreData.CurrentlyEquipped.Helmet.CorePath != "" && !GetCore {
-		fmt.Println("Helmet Path: ", ArmorCoreData.CurrentlyEquipped.Helmet.CorePath)
 		customizationData.Themes[0].HelmetPath = ArmorCoreData.CurrentlyEquipped.Helmet.CorePath
 	}
 	if ArmorCoreData.CurrentlyEquipped.Visor.CorePath != "" && !GetCore {
-		fmt.Println("Visor Path: ", ArmorCoreData.CurrentlyEquipped.Visor.CorePath)
 		customizationData.Themes[0].VisorPath = ArmorCoreData.CurrentlyEquipped.Visor.CorePath
 	}
 	if ArmorCoreData.CurrentlyEquipped.Gloves.CorePath != "" && !GetCore {
-		fmt.Println("Glove Path: ", ArmorCoreData.CurrentlyEquipped.Gloves.CorePath)
 		customizationData.Themes[0].GlovePath = ArmorCoreData.CurrentlyEquipped.Gloves.CorePath
 	}
 	if ArmorCoreData.CurrentlyEquipped.Coatings.CorePath != "" && !GetCore {
-		fmt.Println("Coating Name: ", ArmorCoreData.CurrentlyEquipped.Coatings.Name)
-		fmt.Println("Coating Path: ", ArmorCoreData.CurrentlyEquipped.Coatings.CorePath)
 		customizationData.Themes[0].CoatingPath = ArmorCoreData.CurrentlyEquipped.Coatings.CorePath
+	}
+	if ArmorCoreData.CurrentlyEquipped.LeftShoulderPads.CorePath != "" && !GetCore {
+		customizationData.Themes[0].LeftShoulderPadPath = ArmorCoreData.CurrentlyEquipped.LeftShoulderPads.CorePath
+	}
+	if ArmorCoreData.CurrentlyEquipped.RightShoulderPads.CorePath != "" && !GetCore {
+		customizationData.Themes[0].RightShoulderPadPath = ArmorCoreData.CurrentlyEquipped.RightShoulderPads.CorePath
+	}
+	if ArmorCoreData.CurrentlyEquipped.ChestAttachments.CorePath != "" && !GetCore {
+		customizationData.Themes[0].ChestAttachmentPath = ArmorCoreData.CurrentlyEquipped.ChestAttachments.CorePath
+	}
+	if ArmorCoreData.CurrentlyEquipped.KneePads.CorePath != "" && !GetCore {
+		customizationData.Themes[0].KneePadPath = ArmorCoreData.CurrentlyEquipped.KneePads.CorePath
+	}
+	if ArmorCoreData.CurrentlyEquipped.WristAttachments.CorePath != "" && !GetCore {
+		customizationData.Themes[0].WristAttachmentPath = ArmorCoreData.CurrentlyEquipped.WristAttachments.CorePath
+	}
+	if ArmorCoreData.CurrentlyEquipped.HipAttachments.CorePath != "" && !GetCore {
+		customizationData.Themes[0].HipAttachmentPath = ArmorCoreData.CurrentlyEquipped.HipAttachments.CorePath
 	}
 
 	customizationData.Themes[0].CoreId = ArmorCoreData.CurrentlyEquipped.Core.CoreId
