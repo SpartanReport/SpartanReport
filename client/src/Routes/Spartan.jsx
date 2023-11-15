@@ -301,7 +301,6 @@ const Spartan = ({ gamerInfo }) => {
       <RenderArmoryRow 
         rowType="Gloves" 
         visId = "gloves"
-        isLast={true}
 
         isVisible={visibleRows.gloves} 
         objects={armoryRow.ArmoryRowGloves} 
@@ -346,6 +345,8 @@ const Spartan = ({ gamerInfo }) => {
       <RenderArmoryRow 
         rowType="Knee Pads"
         visId = "kneepad"
+        isLast={true}
+
         isVisible={visibleRows.kneepad} 
         objects={armoryRow.ArmoryRowKneePads}
         fullObjects={armoryRow}

@@ -5,6 +5,8 @@
   box-sizing: border-box;
   color: white;
   background: rgba(7, 7, 7, 0.2);
+  border: 5px solid transparent;
+
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.269);
   transition: all 0.3s ease;
   transform: scale(0.95);
@@ -53,15 +55,13 @@
     font-family: 'Oswald', sans-serif;
     text-align: center;
     font-style: normal;
-    font-size: 18px;
+    font-size: 15px;
     color: white;
     background-color: #4389BA;
     margin-right:1%;
     margin-left:1%;
     margin-top:1.5%;
     margin-bottom:5%;
-  
-  
 }
 
 .highlightedObjectCard {
@@ -82,17 +82,22 @@
   display: grid;
   grid-auto-rows: 210px;
   grid-column-gap: 60px;
-  overflow-x: auto;
   padding: 10px;
+  margin-left:10px;
   overflow-y:hidden;
-  align-content: start;
+  align-content: left;
 }
 
 .container {
   display: flex;
-  overflow: hidden;
-  height: 100%;
-  width: 100%;
+  min-width: 100%;
+  
+}
+.container-cores {
+    display: flex;
+    overflow: hidden;
+    height: 100%;
+    width: 100%;
 }
 
 .highlightedCardContainer {
@@ -108,3 +113,71 @@
 
   padding-top:20px;
 }
+
+.cardWithGradient {
+  position: relative;
+  z-index: 1;
+}
+
+.cardWithGradient::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left:0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(to bottom, transparent,transparent 30px, var(--rarity-color));
+  z-index: -1;
+}
+
+
+
+  /* Rarity specific color variables */
+  .Common {
+    --rarity-color: #f6f6f6; /* Color for common rarity */
+  }
+  
+  .Rare {
+    --rarity-color: #a6e1fa; /* Color for rare rarity */
+  }
+  
+  .Epic {
+    --rarity-color: #c084fc; /* Color for epic rarity */
+  }
+  
+  .Legendary {
+    --rarity-color: #D5A746; /* Color for legendary rarity */
+  }
+  
+
+/* Big Highlighted Card Image Styles */
+.bigHighlightedImage {
+  height:89.3%;
+  width:90.3%;
+
+  margin: auto;
+  display: block;
+
+
+}
+
+/* Highlighted Card Image Styles */
+.highlightedImage {
+  height:80%;
+  width:80%;
+
+  margin: auto;
+  display: block;
+
+}
+
+/* Unhighlighted Card Image Styles */
+.unhighlightedImage {
+  height:80%;
+  width:80%;
+
+  margin: auto;
+  display: block;
+
+}
+

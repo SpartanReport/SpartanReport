@@ -4,11 +4,11 @@ const SvgBorderWrapper = ({ children , height,width,rarity}) => {
     const [scaleX, setScaleX] = useState(1);
     const [scaleY, setScaleY] = useState(1);
         // Original SVG dimensions
-        const originalWidth = 230.55;
-        const originalHeight = 260.86;
+        const originalWidth = 210;
+        const originalHeight = 235;
     
         // Calculate scale factors
-        const newScaleX = width / originalWidth;
+        const newScaleX = (width+2) / originalWidth;
         const newScaleY = height / originalHeight;
     
 

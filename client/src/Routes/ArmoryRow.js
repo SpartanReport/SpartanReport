@@ -4,7 +4,7 @@ import SvgBorderWrapper from '../Styles/Border';
 async function fetchImage(path, spartankey) {
   try {
     // Base URL of your proxy server
-    const proxyBaseUrl = process.env.PROXY_BASE_URL || 'http://localhost:3001/apiproxy/'; // Fallback to a default
+    const proxyBaseUrl = process.env.PROXY_BASE_URL || 'http://localhost:3001/api/'; // Fallback to a default
     // Complete URL with the proxy base URL
     const url = `${proxyBaseUrl}/${path}`;
     // Setting up the headers
@@ -52,13 +52,13 @@ const ObjectCard = ({gamerInfo, object, isHighlighted, onClick }) => {
 
     loadImage();
   }, [object.ImagePath, gamerInfo.spartankey]);
-
-  const cardClassName = isHighlighted ? 'highlightedObjectCardRow' : 'objectCard';
-
+  const rarityClass = object.Rarity; // e.g., "Common", "Rare", "Epic", "Legendary"
+  const cardClassName = `${isHighlighted ? 'highlightedObjectCardRow' : 'objectCard'} cardWithGradient ${rarityClass}`;
+  const imageClassName = isHighlighted ? 'highlightedImage' : 'unhighlightedImage';
   return (
     <div className={cardClassName} onClick={() => onClick(object)}>
       <p className='card-subheader-mini'>{object.name}</p>
-      <img src={imageSrc} alt="Spartan Image Highlighted" className="ImageCard"/>
+      <img src={imageSrc} alt="Spartan Image Highlighted" className={`${imageClassName} ImageCard`}/>
     </div>
   );
 };
@@ -81,12 +81,14 @@ const HighlightedObjectCard = ({ gamerInfo, object, isDisplay }) => {
 
     loadImage();
   }, [object.id, object.ImagePath, object.Image, gamerInfo.spartankey, isDisplay]); // Updated dependencies
+  const rarityClass = object.Rarity; // Assuming HighlightedObjectCard also has a Rarity
+  const cardClassName = `highlightedObjectCard cardWithGradient ${rarityClass}`;
   return (
     <SvgBorderWrapper height={410} width={410} rarity="Highlight">
-      <div className="highlightedObjectCard">
+      <div className={cardClassName}>
         <p className='card-subheader'>Equipped | {object.name} | {object.Rarity}</p>
-        <img src={imageSrc} alt="Spartan Core" className="HighlightedImageCard"/>
-      </div>
+        <img src={imageSrc} alt="Spartan Core" className="bigHighlightedImage HighlightedImageCard"/>
+        </div>
     </SvgBorderWrapper>
   );
 };
@@ -332,8 +334,9 @@ const ArmoryRow = ({ objects, fullObjects, resetHighlight, gamerInfo, onEquipIte
   }
 };
 const highlightedObject = objects.find(obj => obj.id === highlightedItems[`${obj.Type.toLowerCase()}Id`]);
-  return (
-    <div className="container">
+  
+return (
+    <div className="container-cores">
       <div className="highlightedCardContainer">
         {highlightedObject && <HighlightedObjectCard gamerInfo={gamerInfo} object={highlightedObject} isDisplay={true} />}
       </div>
