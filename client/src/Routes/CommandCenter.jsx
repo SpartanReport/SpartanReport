@@ -105,7 +105,6 @@ function CommandCenter({ gamerInfo }) {
 
   const getRankImageData = (rankIndex) => {
     const rankImage = rankImages?.[rankIndex]?.Image;
-    console.log("Rank Image: ", rankImage);
     return rankImage;
   };
 

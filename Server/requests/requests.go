@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -96,8 +97,7 @@ func RequestLink(clientID string, redirectURI string) string {
 	params.Add("client_id", clientID)
 	params.Add("response_type", "code")
 	params.Add("redirect_uri", redirectURI)
-	params.Add("scope", "Xboxlive.signin")
-
+	params.Add("scope", "XboxLive.signin offline_access")
 	// Generate the complete URL
 	authURL := fmt.Sprintf("%s?%s", baseURL, params.Encode())
 	return authURL
@@ -125,7 +125,37 @@ func RequestOAuth(clientID string, clientSecret string, redirectURI string, auth
 		return nil
 	}
 	defer resp.Body.Close()
-	body, _ := ioutil.ReadAll(resp.Body)
+	body, _ := io.ReadAll(resp.Body)
+	return body
+}
+
+// RequestOAuthWithRefreshToken requests a new access token using a refresh token
+func RequestOAuthWithRefreshToken(clientID string, clientSecret string, redirectURI string, refreshToken string) []byte {
+	oauthTokenURL := "https://login.live.com/oauth20_token.srf"
+
+	data := url.Values{}
+	data.Set("client_id", clientID)
+	data.Set("client_secret", clientSecret)
+	data.Set("redirect_uri", redirectURI)
+	data.Set("grant_type", "refresh_token")
+	data.Set("refresh_token", refreshToken)
+
+	req, err := http.NewRequest("POST", oauthTokenURL, bytes.NewBufferString(data.Encode()))
+	if err != nil {
+		fmt.Println("Error creating request:", err)
+		return nil
+	}
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		fmt.Println("Error executing request:", err)
+		return nil
+	}
+	defer resp.Body.Close()
+
+	body, _ := io.ReadAll(resp.Body)
 	return body
 }
 

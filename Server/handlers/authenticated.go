@@ -12,37 +12,38 @@ import (
 )
 
 func HandleAuthenticated(c *gin.Context) {
-
-	SpartanCookie, err := c.Cookie("SpartanToken")
-	XBLToken, err := c.Cookie("XBLToken")
-	if err != nil {
-		err := godotenv.Load("azure-keys.env")
-		if err != nil {
-			log.Fatal("Error loading .env file", err)
+	var gamerInfo requests.GamerInfo
+	if err := c.ShouldBindJSON(&gamerInfo); err != nil {
+		fmt.Println("Error binding JSON:", err)
+		c.JSON(http.StatusOK, gin.H{
+			"GamerInfo": nil,
+			"IsNew":     false,
+		})
+		return
+	}
+	// Check if gamertoken is expired
+	// If it is, refresh it
+	if gamerInfo.SpartanKey != "" {
+		newGamerInfo := requests.CheckAndUpdateGamerInfo(c, gamerInfo)
+		if newGamerInfo.SpartanKey == gamerInfo.SpartanKey {
+			c.JSON(http.StatusOK, gin.H{
+				"GamerInfo": gamerInfo,
+				"IsNew":     false,
+			})
+			return
 		}
+		c.JSON(http.StatusOK, gin.H{
+			"GamerInfo": newGamerInfo,
+			"IsNew":     true,
+		})
 
-		clientID := os.Getenv("CLIENT_ID")
-		redirectURI := os.Getenv("REDIRECT_URI")
-
-		c.Redirect(http.StatusSeeOther, requests.RequestLink(clientID, redirectURI))
-		return
 	}
 
-	spartanToken := SpartanCookie
-	gamerInfo, err := requests.RequestUserProfile(spartanToken)
-	gamerInfo.XBLToken = XBLToken
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error while getting user profile"})
-		fmt.Println("Error While Getting User Profile:", err)
-		return
-	}
+	return
 
-	// Render the base template, which should include authenticated.html
-	c.JSON(http.StatusOK, gin.H{
-		"gamerInfo": gamerInfo,
-	})
 }
 
+// Redirects to authentication page
 func HandleAuth(c *gin.Context) {
 	err := godotenv.Load("azure-keys.env")
 	if err != nil {
@@ -55,4 +56,20 @@ func HandleAuth(c *gin.Context) {
 	authURL := requests.RequestLink(clientID, redirectURI)
 	c.Redirect(http.StatusSeeOther, authURL)
 
+}
+
+func HandleLogout(c *gin.Context) {
+	var gamerInfo requests.GamerInfo
+	if err := c.ShouldBindJSON(&gamerInfo); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": err,
+		})
+		return
+	}
+
+	requests.DeleteTokenInfo(gamerInfo.SpartanKey)
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Logged out",
+	})
 }

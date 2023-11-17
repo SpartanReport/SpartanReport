@@ -346,7 +346,6 @@ const Spartan = ({ gamerInfo }) => {
         rowType="Knee Pads"
         visId = "kneepad"
         isLast={true}
-
         isVisible={visibleRows.kneepad} 
         objects={armoryRow.ArmoryRowKneePads}
         fullObjects={armoryRow}

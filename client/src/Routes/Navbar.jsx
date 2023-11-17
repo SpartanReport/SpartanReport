@@ -1,8 +1,9 @@
 import React, { useState, useRef } from 'react';
 import '../Styles/Navbar.css';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
-const Navbar = ({ clearCookie, isAuthenticated, startAuth }) => {
+const Navbar = ({ isAuthenticated, startAuth }) => {
   const [activeButton, setActiveButton] = useState('Command Center');
   const [showDropdown, setShowDropdown] = useState(false);
   const navigate = useNavigate();
@@ -16,7 +17,22 @@ const Navbar = ({ clearCookie, isAuthenticated, startAuth }) => {
     { name: 'ARMORY', path: '/spartan' },
     { name: 'STORE', path: '/store' }
   ];
+  const handleLogout = async () => {
+    try {
+      console.log("Signing out")
+      localStorage.clear();
+      const apiUrl = process.env.REACT_APP_REDIRECT_URL || 'http://localhost:3000'; // Fallback URL if the env variable is not set
+     await axios.get(`${apiUrl}/logout`, { withCredentials: true });
+     window.location.href = `${apiUrl}/`;
 
+    } catch (error) {
+      const apiUrl = process.env.REACT_APP_REDIRECT_URL || 'http://localhost:3000'; // Fallback URL if the env variable is not set
+
+        console.error('Logout failed:', error);
+        window.location.href = `${apiUrl}/`;
+
+    }
+};
   const handleNavigation = (routeName, routePath) => {
     setActiveButton(routeName);
     navigate(routePath);
@@ -76,8 +92,8 @@ const Navbar = ({ clearCookie, isAuthenticated, startAuth }) => {
                   {route.name}
                 </button>
               ))}
-              <button className="nav-button" onClick={clearCookie}>
-                SIGN OUT
+              <button className="nav-button" onClick={handleLogout}>
+                    SIGN OUT
               </button>
             </div>
           )}

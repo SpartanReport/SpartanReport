@@ -2,7 +2,7 @@ import { useState } from 'react';
 import axios from 'axios';
 
 const useFetchSpartanInventory = (gamerInfo, includeArmory = false, setHighlightedItems = null) => {
-    const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [spartanInventory, setSpartanInventory] = useState(null);
   const [isFetched, setIsFetched] = useState(false);
   const [armoryRow, setArmoryRow] = useState(null); // State for ArmoryRow data
@@ -24,8 +24,19 @@ const useFetchSpartanInventory = (gamerInfo, includeArmory = false, setHighlight
     try {
       const queryParams = includeArmory ? '?includeArmory=true' : '';
       const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8080';
-      const response = await axios.post(`${apiUrl}/spartan${queryParams}`, gamerInfo);
-      console.log(response)
+      const storedGamerInfo = localStorage.getItem('gamerInfo');
+      const parsedGamerInfo = JSON.parse(storedGamerInfo);
+
+      const response = await axios.post(`${apiUrl}/spartan${queryParams}`, storedGamerInfo);
+      if (response.data.GamerInfo){
+        if (storedGamerInfo) {
+          localStorage.setItem('isSignedIn', "true");
+          if (response.data.GamerInfo.spartankey !== parsedGamerInfo.spartankey){
+            console.log("New GamerInfo!")
+            localStorage.setItem('gamerInfo', JSON.stringify(response.data.GamerInfo));
+          }
+        }    
+      }
       setSpartanInventory(response.data.PlayerInventory[0]);
       if (includeArmory) {
         setArmoryRow(response.data);
@@ -109,7 +120,6 @@ const useFetchSpartanInventory = (gamerInfo, includeArmory = false, setHighlight
     }
   };
   
-  console.log("Returning Armory Row: ", armoryRow)
   return { spartanInventory, armoryRow, setArmoryRow, isLoading, fetchSpartanInventory, currentlyEquipped, setCurrentlyEquipped };
 };
 

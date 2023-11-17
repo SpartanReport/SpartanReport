@@ -34,6 +34,7 @@ services:
       args:
         REACT_APP_API_URL: http://localhost:8080
         REACT_APP_PROXY_URL: http://localhost:3001
+        REACT_APP_REDIRECT_URL: http://localhost:3000
     ports:
       - "3000:80"
 

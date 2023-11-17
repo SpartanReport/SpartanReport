@@ -46,7 +46,7 @@ const Progression = ({ gamerInfo ,HaloStats, setHaloStats, setSelectedMatch}) =>
       if (!HaloStats) {
         fetchSpartanInventory();
       }
-    }, [gamerInfo, setHaloStats, HaloStats]);
+    }, []);
 
     // Reset HaloStats state when navigating back to /stats
     useEffect(() => {

@@ -206,6 +206,7 @@ type CurrentlyEquipped struct {
 }
 
 type DataToReturn struct {
+	GamerInfo                  requests.GamerInfo `json:"GamerInfo"`
 	PlayerInventory            []SpartanInventory
 	ArmoryRow                  []ArmoryRowCore
 	ArmoryRowHelmets           []ArmoryRowElements
@@ -229,9 +230,14 @@ func HandleInventory(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	playerInventory := GetInventory(c, gamerInfo)
+	newGamerInfo := requests.CheckAndUpdateGamerInfo(c, gamerInfo)
+	if newGamerInfo.SpartanKey != gamerInfo.SpartanKey {
+		fmt.Println("New GamerInfo received!")
+	}
+	playerInventory := GetInventory(c, newGamerInfo)
 	includeArmory := c.Query("includeArmory") == "true"
 	data := DataToReturn{
+		GamerInfo:       newGamerInfo,
 		PlayerInventory: playerInventory,
 	}
 	if includeArmory {
@@ -300,6 +306,7 @@ func HandleInventory(c *gin.Context) {
 
 	// Aggregate Armory Row For Helmets
 	data = loadArmoryRow(data, playerInventory)
+	data.GamerInfo = newGamerInfo
 	c.JSON(http.StatusOK, data)
 }
 
@@ -400,7 +407,6 @@ func loadArmoryRow(data DataToReturn, playerInventory []SpartanInventory) DataTo
 	data.ArmoryRowHipAttachments = hipattachments
 	data.ArmoryRowKneePads = kneepads
 	data.ArmoryRowChestAttachments = chestattachments
-
 	return data
 
 }
@@ -559,7 +565,12 @@ func GetInventory(c *gin.Context, gamerInfo requests.GamerInfo) []SpartanInvento
 	var inventoryResponse InventoryResponse
 	url := "https://economy.svc.halowaypoint.com/hi/customization?players=xuid(" + gamerInfo.XUID + ")"
 	fmt.Println("querying ", url)
-	makeAPIRequest(gamerInfo.SpartanKey, url, hdrs, &inventoryResponse)
+	err := makeAPIRequest(gamerInfo.SpartanKey, url, hdrs, &inventoryResponse)
+	if err != nil {
+		fmt.Println("Error getting inventory: ", err)
+		// if err status code == 401, sign user out and re sign in
+		HandleLogout(c)
+	}
 
 	spartanInventories := make([]SpartanInventory, 0, len(inventoryResponse.PlayerCustomizations))
 	fmt.Println("Spartan Customization Length: ", len(inventoryResponse.PlayerCustomizations))
