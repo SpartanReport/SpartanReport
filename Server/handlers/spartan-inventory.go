@@ -234,6 +234,10 @@ func HandleInventory(c *gin.Context) {
 	if newGamerInfo.SpartanKey != gamerInfo.SpartanKey {
 		fmt.Println("New GamerInfo received!")
 	}
+	if newGamerInfo.SpartanKey == "" {
+		fmt.Println("Empty GamerInfo received!")
+		c.JSON(http.StatusForbidden, "Empty GamerInfo received")
+	}
 	playerInventory := GetInventory(c, newGamerInfo)
 	includeArmory := c.Query("includeArmory") == "true"
 	data := DataToReturn{
@@ -569,6 +573,7 @@ func GetInventory(c *gin.Context, gamerInfo requests.GamerInfo) []SpartanInvento
 	if err != nil {
 		fmt.Println("Error getting inventory: ", err)
 		// if err status code == 401, sign user out and re sign in
+
 		HandleLogout(c)
 	}
 

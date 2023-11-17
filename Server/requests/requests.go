@@ -130,7 +130,7 @@ func RequestOAuth(clientID string, clientSecret string, redirectURI string, auth
 }
 
 // RequestOAuthWithRefreshToken requests a new access token using a refresh token
-func RequestOAuthWithRefreshToken(clientID string, clientSecret string, redirectURI string, refreshToken string) []byte {
+func RequestOAuthWithRefreshToken(clientID string, clientSecret string, redirectURI string, refreshToken string) ([]byte, error) {
 	oauthTokenURL := "https://login.live.com/oauth20_token.srf"
 
 	data := url.Values{}
@@ -143,7 +143,8 @@ func RequestOAuthWithRefreshToken(clientID string, clientSecret string, redirect
 	req, err := http.NewRequest("POST", oauthTokenURL, bytes.NewBufferString(data.Encode()))
 	if err != nil {
 		fmt.Println("Error creating request:", err)
-		return nil
+
+		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
@@ -151,12 +152,12 @@ func RequestOAuthWithRefreshToken(clientID string, clientSecret string, redirect
 	resp, err := client.Do(req)
 	if err != nil {
 		fmt.Println("Error executing request:", err)
-		return nil
+		return nil, err
 	}
 	defer resp.Body.Close()
 
 	body, _ := io.ReadAll(resp.Body)
-	return body
+	return body, nil
 }
 
 func RequestXstsToken(userTokenResp UserTokenResponse) (error, SpartanTokenResponse) {

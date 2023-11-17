@@ -26,8 +26,8 @@ const useFetchSpartanInventory = (gamerInfo, includeArmory = false, setHighlight
       const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8080';
       const storedGamerInfo = localStorage.getItem('gamerInfo');
       const parsedGamerInfo = JSON.parse(storedGamerInfo);
-
       const response = await axios.post(`${apiUrl}/spartan${queryParams}`, storedGamerInfo);
+
       if (response.data.GamerInfo){
         if (storedGamerInfo) {
           localStorage.setItem('isSignedIn', "true");
@@ -115,6 +115,16 @@ const useFetchSpartanInventory = (gamerInfo, includeArmory = false, setHighlight
       setIsLoading(false);
       setIsFetched(true);
     } catch (error) {
+      if (error.response && error.response.status === 403) {
+        // Handle the 403 Forbidden status code
+        console.error("Forbidden: ", error.response.data);
+        const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8080';
+        const storedGamerInfo = localStorage.getItem('gamerInfo');
+        const parsedGamerInfo = JSON.parse(storedGamerInfo);
+        const response = await axios.post(`${apiUrl}/logout`, storedGamerInfo);
+        localStorage.clear();
+        window.location.href = `${apiUrl}/`;
+      }
       console.error("Error fetching Spartan inventory:", error);
       setIsLoading(false);
     }

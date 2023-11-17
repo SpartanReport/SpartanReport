@@ -203,7 +203,7 @@ func ProcessAuthCode(code string, w http.ResponseWriter, r *http.Request) {
 
 }
 
-func ProcessAuthCodeWithRefresh(code string, w http.ResponseWriter, r *http.Request) SpartanTokenResponse {
+func ProcessAuthCodeWithRefresh(code string, w http.ResponseWriter, r *http.Request) (SpartanTokenResponse, error) {
 	fmt.Println("Received authorization code:", code)
 	SpartanTokenResponse := SpartanTokenResponse{}
 	// Make the OAuth request
@@ -217,21 +217,24 @@ func ProcessAuthCodeWithRefresh(code string, w http.ResponseWriter, r *http.Requ
 	clientSecret := os.Getenv("CLIENT_SECRET")
 	redirectURI := os.Getenv("REDIRECT_URI")
 
-	body := RequestOAuthWithRefreshToken(clientID, clientSecret, redirectURI, code)
-
+	body, err := RequestOAuthWithRefreshToken(clientID, clientSecret, redirectURI, code)
+	if err != nil {
+		fmt.Println("Error with RefreshToken:", err)
+		return SpartanTokenResponse, err
+	}
 	// Parse the OAuth response
 	var oauthResp OAuthResponse
 	err = json.Unmarshal(body, &oauthResp)
 
 	if err != nil {
 		fmt.Println("Error parsing JSON:", err)
-		return SpartanTokenResponse
+		return SpartanTokenResponse, err
 	}
 	// Request the user token
 	userToken, err := RequestUserToken(oauthResp.AccessToken)
 	if err != nil {
 		fmt.Println("Error with AccessToken:", err)
-		return SpartanTokenResponse
+		return SpartanTokenResponse, err
 	}
 
 	// Request the XSTS token
@@ -239,7 +242,7 @@ func ProcessAuthCodeWithRefresh(code string, w http.ResponseWriter, r *http.Requ
 
 	if err != nil {
 		fmt.Println("Error with XSTS Token:", err)
-		return SpartanTokenResponse
+		return SpartanTokenResponse, err
 	}
 
 	now := time.Now()
@@ -252,7 +255,7 @@ func ProcessAuthCodeWithRefresh(code string, w http.ResponseWriter, r *http.Requ
 
 	// Set the new token info in the map
 	SetTokenInfo(SpartanResp.SpartanToken, tokenData)
-	return SpartanResp
+	return SpartanResp, nil
 }
 func CheckAndUpdateGamerInfo(c *gin.Context, gamerInfoPassedIn GamerInfo) GamerInfo {
 	spartanTokenPassedIn := gamerInfoPassedIn.SpartanKey
@@ -271,7 +274,13 @@ func CheckAndUpdateGamerInfo(c *gin.Context, gamerInfoPassedIn GamerInfo) GamerI
 			// Get the refresh token from the map
 			refreshtoken := tokenInfo.RefreshToken
 			// Make the OAuth request
-			spartanTokenResp := ProcessAuthCodeWithRefresh(refreshtoken, c.Writer, c.Request)
+			spartanTokenResp, err := ProcessAuthCodeWithRefresh(refreshtoken, c.Writer, c.Request)
+			if err != nil {
+				fmt.Println("Error when processing auth code with refresh token: ", err)
+				fmt.Println("Signing user out")
+				DeleteTokenInfo(spartanTokenPassedIn)
+				return GamerInfo{XBLToken: "", SpartanKey: "", Gamertag: "", XUID: ""}
+			}
 			newGamerInfo, err := RequestUserProfile(spartanTokenResp.SpartanToken)
 			if err != nil {
 				fmt.Println("Error when getting refreshed user profile: ", err)
