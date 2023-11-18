@@ -238,7 +238,15 @@ func HandleInventory(c *gin.Context) {
 		fmt.Println("Empty GamerInfo received!")
 		c.JSON(http.StatusForbidden, "Empty GamerInfo received")
 	}
-	playerInventory := GetInventory(c, newGamerInfo)
+	playerInventory, err := GetInventory(c, newGamerInfo)
+	if err != nil {
+		fmt.Println("Error getting inventory: ", err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Internal server error",
+		})
+		c.Redirect(http.StatusSeeOther, "/logout")
+		return
+	}
 	includeArmory := c.Query("includeArmory") == "true"
 	data := DataToReturn{
 		GamerInfo:       newGamerInfo,
@@ -560,7 +568,7 @@ func isExcludedItemType(itemType string) bool {
 	return found
 }
 
-func GetInventory(c *gin.Context, gamerInfo requests.GamerInfo) []SpartanInventory {
+func GetInventory(c *gin.Context, gamerInfo requests.GamerInfo) ([]SpartanInventory, error) {
 	fmt.Println("Getting Inventory!")
 	hdrs := map[string]string{}
 	hdrs["343-clearance"] = gamerInfo.ClearanceCode
@@ -572,9 +580,13 @@ func GetInventory(c *gin.Context, gamerInfo requests.GamerInfo) []SpartanInvento
 	err := makeAPIRequest(gamerInfo.SpartanKey, url, hdrs, &inventoryResponse)
 	if err != nil {
 		fmt.Println("Error getting inventory: ", err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Internal server error",
+		})
 		// if err status code == 401, sign user out and re sign in
 
 		HandleLogout(c)
+		return nil, err
 	}
 
 	spartanInventories := make([]SpartanInventory, 0, len(inventoryResponse.PlayerCustomizations))
@@ -585,6 +597,7 @@ func GetInventory(c *gin.Context, gamerInfo requests.GamerInfo) []SpartanInvento
 		var rawResponse map[string]interface{}
 		if err := makeAPIRequest(gamerInfo.SpartanKey, "https://gamecms-hacs.svc.halowaypoint.com/hi/Waypoint/file/images/emblems/mapping.json", nil, &rawResponse); err != nil {
 			c.Error(err)
+
 			continue // Skip this iteration due to error
 		}
 
@@ -631,7 +644,7 @@ func GetInventory(c *gin.Context, gamerInfo requests.GamerInfo) []SpartanInvento
 	}
 	fmt.Println("Done!")
 
-	return spartanInventories
+	return spartanInventories, nil
 }
 
 func FetchCoreDetails(spartanInventory *SpartanInventory, gamerInfo requests.GamerInfo) {
