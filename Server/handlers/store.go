@@ -1,7 +1,6 @@
 package spartanreport
 
 import (
-	"fmt"
 	"net/http"
 	requests "spartanreport/requests"
 	"sync"
@@ -79,12 +78,75 @@ type OfferingDetails struct {
 	OfferingImage                   string  `json:"OfferingImage"`
 }
 
+var storeDataCache *StoreDataCache
+
+func init() {
+	storeDataCache = &StoreDataCache{
+		data: make(map[string]StoreDataToReturn),
+	}
+}
+
+type StoreDataCache struct {
+	data  map[string]StoreDataToReturn
+	mutex sync.RWMutex
+}
+
+func (sc *StoreDataCache) Get(key string) (StoreDataToReturn, bool) {
+	sc.mutex.RLock()
+	defer sc.mutex.RUnlock()
+	data, exists := sc.data[key]
+	return data, exists
+}
+
+func (sc *StoreDataCache) Set(key string, data StoreDataToReturn) {
+	sc.mutex.Lock()
+	defer sc.mutex.Unlock()
+	sc.data[key] = data
+}
+
+func (sc *StoreDataCache) Delete(key string) {
+	sc.mutex.Lock()
+	defer sc.mutex.Unlock()
+	delete(sc.data, key)
+}
+
+func getNextTuesdayCST() time.Time {
+	loc, _ := time.LoadLocation("America/Chicago")
+	now := time.Now().In(loc)
+	daysUntilTuesday := (9 - int(now.Weekday())) % 7
+	nextTuesday := now.AddDate(0, 0, daysUntilTuesday)
+	return time.Date(nextTuesday.Year(), nextTuesday.Month(), nextTuesday.Day(), 13, 0, 0, 0, loc)
+}
+
 func HandleStore(c *gin.Context) {
+	expirationTime := getNextTuesdayCST()
+	cacheKey := expirationTime.Format(time.RFC3339)
+
+	if time.Now().After(expirationTime) {
+		storeDataCache.Delete(cacheKey) // Clear the expired cache
+	}
+
+	if cachedData, exists := storeDataCache.Get(cacheKey); exists {
+		c.JSON(http.StatusOK, cachedData)
+		return
+	}
 	var gamerInfo requests.GamerInfo
 	if err := c.ShouldBindJSON(&gamerInfo); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+
+	// Check if gamerInfo is nil or empty and serve from cache
+	if gamerInfo.SpartanKey == "" {
+		cachedData, found := c.Get("storeData")
+		if found {
+			cachedStoreData := cachedData
+			c.JSON(http.StatusOK, cachedStoreData)
+			return
+
+		}
+	}
+
 	url := "https://economy.svc.halowaypoint.com/hi/players/xuid(" + gamerInfo.XUID + ")/stores/Main"
 	var store StoreData
 	hdrs := map[string]string{}
@@ -97,24 +159,28 @@ func HandleStore(c *gin.Context) {
 	wg.Add(len(store.Offerings))
 
 	for i := range store.Offerings {
-		// Get detailed offering data
 		go func(i int) {
-			defer wg.Done() // Decrement the counter when the goroutine completes
+			defer wg.Done()
 
 			fullPath := basePath + store.Offerings[i].OfferingDisplayPath
-			var offeringDetails OfferingDetails // Replace with your actual struct
+			var offeringDetails OfferingDetails
 			makeAPIRequest(gamerInfo.SpartanKey, fullPath, hdrs, &offeringDetails)
+
 			// Safely update the original Offering object
 			store.Offerings[i].OfferingDetails = offeringDetails
-			fmt.Println(offeringDetails.Title.Value)
 
-			url := "https://gamecms-hacs.svc.halowaypoint.com/hi/Images/file/" + store.Offerings[i].OfferingDetails.ObjectImagePath
-			store.Offerings[i].OfferingDetails.OfferingImage, _ = makeAPIRequestImage(gamerInfo.SpartanKey, url, hdrs)
-
+			url := "https://gamecms-hacs.svc.halowaypoint.com/hi/Images/file/" + offeringDetails.ObjectImagePath
+			offeringImage, _ := makeAPIRequestImage(gamerInfo.SpartanKey, url, hdrs)
+			store.Offerings[i].OfferingDetails.OfferingImage = offeringImage
 		}(i)
 	}
-	wg.Wait()
 
+	wg.Wait()
+	dataToStore := StoreDataToReturn{
+		gamerInfo: requests.GamerInfo{},
+		StoreData: store,
+	}
+	storeDataCache.Set(cacheKey, dataToStore)
 	data := StoreDataToReturn{
 		gamerInfo: gamerInfo,
 		StoreData: store,

@@ -12,7 +12,9 @@ const Store = ({ gamerInfo }) => {
             try {
                 // Use gamerInfo in the Axios POST request
                 const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8080'; // Fallback URL if the env variable is not set
-                const response = await axios.post(`${apiUrl}/store`, gamerInfo);
+                const response = await axios.post(`${apiUrl}/store`, gamerInfo || {});
+                console.log("response: ",response);
+
                 setStoreData(response.data.StoreData); // assuming the data is under response.data.StoreData
                 console.log(response);
             } catch (error) {

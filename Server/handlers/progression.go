@@ -23,15 +23,15 @@ import (
 func initCache() {
 	// Initialize the cache
 	cacheOnce.Do(func() {
-		cache = make(map[string][]RankImage)
+		progressionCache = make(map[string][]RankImage)
 	})
 }
 
 var (
-	cache         map[string][]RankImage // Cache variable to store rank images
-	cacheOnce     sync.Once              // Ensures the cache is only initialized once
-	cacheMutex    sync.RWMutex           // Read Write mutex for cache access
-	isCacheLoaded bool
+	progressionCache map[string][]RankImage // Cache variable to store rank images
+	cacheOnce        sync.Once              // Ensures the cache is only initialized once
+	cacheMutex       sync.RWMutex           // Read Write mutex for cache access
+	isCacheLoaded    bool
 )
 
 type CurrentProgress struct {
@@ -140,7 +140,7 @@ func GetRankImagesFromDB() ([]RankImage, error) {
 	initCache() // init if not already done
 
 	cacheMutex.RLock()
-	cached, exists := cache["rank_images"]
+	cached, exists := progressionCache["rank_images"]
 	cacheMutex.RUnlock()
 
 	if exists {
@@ -169,7 +169,7 @@ func GetRankImagesFromDB() ([]RankImage, error) {
 
 	// Populate the cache
 	cacheMutex.Lock()
-	cache["rank_images"] = rankImages
+	progressionCache["rank_images"] = rankImages
 	cacheMutex.Unlock()
 
 	return rankImages, nil
