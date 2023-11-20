@@ -271,7 +271,6 @@
   .title-container-home, .subheader-container-home {
   }
 
-  .main-grid-container{}
   .cards-container{
     margin-top:10px;
   }
@@ -303,6 +302,40 @@
     /* Cards take full width minus the gap */
     width: calc(100% - 10px); /* Assuming a 5px gap on either side */
     margin: 0; /* Reset margins */
+    
+  }
+  .challenge-title, .challenge-description{
+    font-size:14px;
+  }
+  
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+
+  .main-grid-container{
+    margin:-50px;
+    margin-bottom: 150px;
+  }
+  .card-column{
+    margin-top:50px;
+
+  }
+
+
+  .title-container-home{
+    margin-left: 5px;
+  }
+  .subheader-container-home{
+    margin-left:5px;
+    
+  }
+  
+  .welcome-cards, .welcome-cards-spartan, .welcome-cards-rank {
+    /* Cards take full width minus the gap */
+    width: calc(100% - 20px); /* Assuming a 5px gap on either side */
+    margin-bottom: 15px;
+
     
   }
   .challenge-title, .challenge-description{

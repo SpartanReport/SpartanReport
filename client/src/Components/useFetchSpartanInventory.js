@@ -39,6 +39,7 @@ const useFetchSpartanInventory = (gamerInfo, includeArmory = false, setHighlight
             await axios.post(`${apiUrl}/logout`, parsedGamerInfo);
             localStorage.clear();
             window.location.href = `${apiUrl}/`;
+            return
     
             
           }
@@ -132,9 +133,12 @@ const useFetchSpartanInventory = (gamerInfo, includeArmory = false, setHighlight
         const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8080';
         const storedGamerInfo = localStorage.getItem('gamerInfo');
         const parsedGamerInfo = JSON.parse(storedGamerInfo);
+        console.log("Got gamerinfo: ", parsedGamerInfo)
         await axios.post(`${apiUrl}/logout`, parsedGamerInfo);
         localStorage.clear();
         window.location.href = `${apiUrl}/`;
+        return
+
       }
       console.error("Error fetching Spartan inventory:", error);
       setIsLoading(false);

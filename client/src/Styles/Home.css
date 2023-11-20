@@ -260,4 +260,64 @@
   .event-card {
     flex-basis: 100%; /* Stack cards in a single column on small screens */
   }
+  .home-grid-container{
+    margin: -50px;
+  }
+
+  .title-container-events-home{
+    margin-left: 10px;
+  }
+  .title-container-home{
+    margin-left: 10px;
+  }
+
+  .title-container-event-home-active{
+    margin-left: 10px;
+    margin-right:50px;
+  }
+  .title-container-event-home-past{
+    margin-left: 10px;
+  }
+  .subheader-container-home{
+    margin-left: 10px;
+  }
+  .description-container-home{
+    margin-left: 10px;
+  }
+  .event-card img{
+    max-width: 88%;
+    max-height: 100%;
+    padding-bottom: 50px;
+    padding-left:10px;
+  }
+  .event-subheader{
+    margin-left:10px;
+    margin-right:150px;
+  }
+  .event-days{
+    margin-left:10px;
+    margin-right:150px;
+  }
+  .event-date{
+    margin-left:10px;
+    margin-right:150px;
+  }
+  .spartan-description-home{
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .event-title-home{
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+  .welcome-title{
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+  .event-date-home{
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+  
 }
