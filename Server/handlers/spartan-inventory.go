@@ -237,6 +237,9 @@ func HandleInventory(c *gin.Context) {
 	if newGamerInfo.SpartanKey == "" {
 		fmt.Println("Empty GamerInfo received!")
 		c.JSON(http.StatusForbidden, "Empty GamerInfo received")
+		c.Redirect(http.StatusSeeOther, "/logout")
+
+		return
 	}
 	playerInventory, err := GetInventory(c, newGamerInfo)
 	if err != nil {

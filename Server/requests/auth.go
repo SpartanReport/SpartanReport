@@ -67,8 +67,9 @@ type UserTokenResponse struct {
 }
 
 type RefreshTokenInfo struct {
-	RefreshToken   string    `json:"refresh_token"`
-	ExpirationData time.Time `json:"expiration_data"`
+	RefreshToken    string    `json:"refresh_token"`
+	ExpirationData  time.Time `json:"expiration_data"`
+	OAuthExpiration time.Time `json:"oauth_expiration"`
 }
 
 // requestUserToken sends a request to get the user token and returns the response body.
@@ -185,11 +186,12 @@ func ProcessAuthCode(code string, w http.ResponseWriter, r *http.Request) {
 	}
 	// Get the current time
 	now := time.Now()
-	expirationTime := now.Add(time.Second * time.Duration(310))
+	expirationTime := now.Add(time.Second * time.Duration(oauthResp.ExpiresIn))
 
 	tokenData := RefreshTokenInfo{
-		RefreshToken:   oauthResp.RefreshToken,
-		ExpirationData: expirationTime,
+		RefreshToken:    oauthResp.RefreshToken,
+		ExpirationData:  expirationTime,
+		OAuthExpiration: expirationTime,
 	}
 	SetTokenInfo(SpartanResp.SpartanToken, tokenData)
 
@@ -203,7 +205,7 @@ func ProcessAuthCode(code string, w http.ResponseWriter, r *http.Request) {
 
 }
 
-func ProcessAuthCodeWithRefresh(code string, w http.ResponseWriter, r *http.Request) (SpartanTokenResponse, error) {
+func ProcessAuthCodeWithRefresh(code string, w http.ResponseWriter, r *http.Request, OAuthExpiration time.Time) (SpartanTokenResponse, error) {
 	fmt.Println("Received authorization code:", code)
 	SpartanTokenResponse := SpartanTokenResponse{}
 	// Make the OAuth request
@@ -249,8 +251,9 @@ func ProcessAuthCodeWithRefresh(code string, w http.ResponseWriter, r *http.Requ
 	expirationTime := now.Add(time.Second * time.Duration(oauthResp.ExpiresIn))
 
 	tokenData := RefreshTokenInfo{
-		RefreshToken:   oauthResp.RefreshToken,
-		ExpirationData: expirationTime,
+		RefreshToken:    oauthResp.RefreshToken,
+		ExpirationData:  expirationTime,
+		OAuthExpiration: OAuthExpiration,
 	}
 
 	// Set the new token info in the map
@@ -265,7 +268,12 @@ func CheckAndUpdateGamerInfo(c *gin.Context, gamerInfoPassedIn GamerInfo) GamerI
 		fmt.Println("Token Expiration: ", tokenInfo.ExpirationData)
 		currentTime := time.Now()
 		expirationTime := tokenInfo.ExpirationData
-
+		OAuthExpiration := tokenInfo.OAuthExpiration
+		if OAuthExpiration.Before(currentTime) {
+			fmt.Println("OAuth Token has expired")
+			DeleteTokenInfo(spartanTokenPassedIn)
+			return GamerInfo{XBLToken: "", SpartanKey: "", Gamertag: "", XUID: ""}
+		}
 		// Check if the token is expired or expiring within 5 minutes
 		if expirationTime.Before(currentTime) || expirationTime.Sub(currentTime) <= 5*time.Minute {
 			fmt.Println("Token is expired or expiring within 5 minutes.")
@@ -274,7 +282,7 @@ func CheckAndUpdateGamerInfo(c *gin.Context, gamerInfoPassedIn GamerInfo) GamerI
 			// Get the refresh token from the map
 			refreshtoken := tokenInfo.RefreshToken
 			// Make the OAuth request
-			spartanTokenResp, err := ProcessAuthCodeWithRefresh(refreshtoken, c.Writer, c.Request)
+			spartanTokenResp, err := ProcessAuthCodeWithRefresh(refreshtoken, c.Writer, c.Request, OAuthExpiration)
 			if err != nil {
 				fmt.Println("Error when processing auth code with refresh token: ", err)
 				fmt.Println("Signing user out")
