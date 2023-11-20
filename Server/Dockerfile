@@ -25,6 +25,9 @@ RUN go build -o main .
 # Stage 3: Final setup
 FROM mongo:latest
 
+# Install pngquant
+RUN apt-get update && apt-get install -y pngquant
+
 # Accept build-time argument for HOST
 ARG HOST
 ARG REDIRECT-HOST
@@ -36,6 +39,7 @@ ENV REDIRECT-HOST=$REDIRECT-HOST
 
 # Copy the Go binary from the builder stage
 COPY --from=builder /app/main /app/main
+
 # Set the Google Cloud credentials environment variable
 ENV GOOGLE_APPLICATION_CREDENTIALS=/app/google-key.json
 
@@ -44,6 +48,7 @@ COPY google-key.json /app/google-key.json
 # Also copy the google-key.json file
 COPY google-key.json /app/google-key.json
 COPY azure-keys.env /app/azure-keys.env
+
 # Set the working directory in the container
 WORKDIR /app
 

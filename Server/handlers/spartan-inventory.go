@@ -10,6 +10,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"os/exec"
 	"spartanreport/db"
 	requests "spartanreport/requests"
 	"strings"
@@ -462,7 +463,7 @@ func GetInventoryItemImages(gamerInfo requests.GamerInfo, Items Items) Items {
 		if err != nil {
 			fmt.Println("Error getting image data: ", err)
 		}
-		rawImageData, err = compressPNGWithImaging(rawImageData, true, 150, 150)
+		rawImageData, err = compressPNGWithImaging(rawImageData, true, 140, 140)
 		if err != nil {
 			// fmt.Println("Error getting item image: ", err)
 			results <- RewardResult{} // Send an empty result to ensure channel doesn't block
@@ -512,6 +513,7 @@ func GetInventoryItemImages(gamerInfo requests.GamerInfo, Items Items) Items {
 	return Items
 }
 
+// compressPNGWithImaging optimizes and compresses a PNG image.
 func compressPNGWithImaging(base64PNG string, resize bool, width, height int) (string, error) {
 	// Decode the base64 string to get the raw PNG data
 	pngData, err := base64.StdEncoding.DecodeString(base64PNG)
@@ -530,15 +532,41 @@ func compressPNGWithImaging(base64PNG string, resize bool, width, height int) (s
 		img = imaging.Resize(img, width, height, imaging.Lanczos)
 	}
 
-	// Compress the image by re-encoding it
+	// Encode the image to PNG
 	var buf bytes.Buffer
 	if err := png.Encode(&buf, img); err != nil {
 		return "", err
 	}
 
+	optimizedImage, err := optimizePNGWithPngquant(buf.Bytes())
+	if err != nil {
+		return "", err
+	}
+
 	// Convert back to base64
-	compressedBase64 := base64.StdEncoding.EncodeToString(buf.Bytes())
+	compressedBase64 := base64.StdEncoding.EncodeToString(optimizedImage)
 	return compressedBase64, nil
+}
+
+func optimizePNGWithPngquant(input []byte) ([]byte, error) {
+	// Set up the pngquant command with desired options.
+	// The following example uses "--quality=65-80" for quality settings,
+	cmd := exec.Command("pngquant", "--quality=60-80", "--speed", "1", "--floyd=0.5 ", "--force", "--output", "-", "-")
+
+	// Provide the input image data.
+	cmd.Stdin = bytes.NewReader(input)
+
+	// Capture the output.
+	var out bytes.Buffer
+	cmd.Stdout = &out
+
+	// Run the command.
+	if err := cmd.Run(); err != nil {
+		return nil, err
+	}
+
+	// Return the optimized image data.
+	return out.Bytes(), nil
 }
 
 func isExcludedItemType(itemType string) bool {
