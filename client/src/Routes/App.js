@@ -33,8 +33,14 @@ function App() {
     const storedGamerInfo = localStorage.getItem('gamerInfo');
     if (storedGamerInfo) {
       const parsedGamerInfo = JSON.parse(storedGamerInfo);
-      setGamerInfo(parsedGamerInfo); // Set the gamerInfo state
-      setIsAuthenticated(true); // Set isAuthenticated to true
+      if (parsedGamerInfo.spartankey === ""){
+        setIsAuthenticated(false); // Set isAuthenticated to true
+
+      }else{
+        setGamerInfo(parsedGamerInfo); // Set the gamerInfo state
+        setIsAuthenticated(true); // Set isAuthenticated to true
+  
+      }
     } else {
       setIsAuthenticated(false);
     }
