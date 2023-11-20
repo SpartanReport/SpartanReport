@@ -333,18 +333,21 @@ func HandleOperations(c *gin.Context) {
 		fmt.Printf("  StartDate: %s\n", season.StartDate.ISO8601Date)
 		fmt.Printf("  EndDate: %s\n", season.EndDate.ISO8601Date)
 		fmt.Printf("  IsActive: %t\n", season.IsActive)
-
-		// Get Season Metadata details
-		season := &seasons.Seasons[i]
-		// Check cache first
-		if cachedData, exists := seasonCache.Get(season.OperationTrackPath); exists {
-			seasons.Seasons[i].SeasonMetadataDetails = cachedData
+		if gamerInfo.SpartanKey != "" {
+			// Get Season Metadata details
+			season := &seasons.Seasons[i]
+			// Check cache first
+			if cachedData, exists := seasonCache.Get(season.OperationTrackPath); exists {
+				seasons.Seasons[i].SeasonMetadataDetails = cachedData
+			} else {
+				// Data not in cache, fetch and store it
+				season.SeasonMetadataDetails = GetSeasonMetadata(gamerInfo, *season)
+				seasonCache.Set(season.OperationTrackPath, season.SeasonMetadataDetails)
+			}
 		} else {
-			// Data not in cache, fetch and store it
-			season.SeasonMetadataDetails = GetSeasonMetadata(gamerInfo, *season)
-			seasonCache.Set(season.OperationTrackPath, season.SeasonMetadataDetails)
-		}
+			c.JSON(http.StatusOK, cachedSeasons)
 
+		}
 	}
 	userProgress := UserSeasonProgression{}
 
