@@ -344,10 +344,8 @@ func HandleOperations(c *gin.Context) {
 				season.SeasonMetadataDetails = GetSeasonMetadata(gamerInfo, *season)
 				seasonCache.Set(season.OperationTrackPath, season.SeasonMetadataDetails)
 			}
-		} else {
-			c.JSON(http.StatusOK, cachedSeasons)
-
 		}
+
 	}
 	userProgress := UserSeasonProgression{}
 
