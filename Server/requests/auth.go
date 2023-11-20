@@ -199,8 +199,9 @@ func ProcessAuthCode(code string, w http.ResponseWriter, r *http.Request) {
 	// Temporarily store gamerInfo with SpartanToken as the key
 	SetGamerInfo(SpartanResp.SpartanToken, gamerInfo)
 	// Send the SpartanToken to the client
-	host := os.Getenv("HOST")
+	host := "localhost:3000"
 	redirectURL := fmt.Sprintf("%s/?token=%s", host, SpartanResp.SpartanToken)
+	fmt.Println("redircint to: ", redirectURL)
 	http.Redirect(w, r, redirectURL, http.StatusSeeOther)
 
 }

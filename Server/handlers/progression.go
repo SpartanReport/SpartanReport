@@ -650,7 +650,7 @@ func GetCareerLadder(gamerInfo requests.GamerInfo, c *gin.Context) CareerLadderR
 	}
 
 	if err := makeAPIRequest(gamerInfo.SpartanKey, url, headers, &careerLadder); err != nil {
-		log.Fatal("Error:", err)
+		fmt.Println("Error:", err)
 	}
 
 	return careerLadder
@@ -665,7 +665,7 @@ func GetCareerStats(gamerInfo requests.GamerInfo, c *gin.Context) RewardTrackRes
 	}
 
 	if err := makeAPIRequest(gamerInfo.SpartanKey, url, headers, &careerTrack); err != nil {
-		log.Fatal("Error:", err)
+		fmt.Println("Error:", err)
 	}
 
 	return careerTrack
