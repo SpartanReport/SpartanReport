@@ -11,6 +11,9 @@ import (
 
 	"cloud.google.com/go/storage"
 	"github.com/gin-gonic/gin"
+	"github.com/newrelic/go-agent/v3/integrations/nrgin"
+	"github.com/newrelic/go-agent/v3/integrations/nrmongo"
+	"github.com/newrelic/go-agent/v3/newrelic"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -18,9 +21,30 @@ import (
 
 func main() {
 	mongodb_host := os.Getenv("MONGODB_HOST")
+
+	// Initialize New Relic
+	// Create an Application:
+	app, err := newrelic.NewApplication(
+		// Name your application
+		newrelic.ConfigAppName("SpartanReport"),
+		// Fill in your New Relic license key
+		newrelic.ConfigLicense("6ef9ceb3452731978dc1bf6c6df5f2f8FFFFNRAL"),
+		// Add logging:
+		newrelic.ConfigDebugLogger(os.Stdout),
+		// Optional: add additional changes to your configuration via a config function:
+		func(cfg *newrelic.Config) {
+			cfg.CustomInsightsEvents.Enabled = false
+		},
+	)
+	// If an application could not be created then err will reveal why.
+	if err != nil {
+		fmt.Println("unable to create New Relic Application", err)
+	}
+	app.WaitForConnection(10 * time.Second)
+	nrMon := nrmongo.NewCommandMonitor(nil)
+	ctx := context.Background()
 	host := os.Getenv("HOST")
 	// Initialize Google Cloud Storage Client
-	ctx := context.Background()
 	client, err := storage.NewClient(ctx)
 	if err != nil {
 		log.Fatalf("Failed to create client: %v", err)
@@ -28,7 +52,7 @@ func main() {
 	client.Bucket("haloseasondata")
 
 	// Initialize MongoDB Client
-	db.MongoClient, err = mongo.NewClient(options.Client().ApplyURI(mongodb_host))
+	db.MongoClient, err = mongo.NewClient(options.Client().ApplyURI(mongodb_host).SetMonitor(nrMon))
 	if err != nil {
 		fmt.Println("Error creating MongoDB client:", err)
 		return
@@ -55,7 +79,7 @@ func main() {
 	}
 
 	r := gin.Default()
-
+	r.Use(nrgin.Middleware(app))
 	// Global CORS middleware
 	r.Use(func(c *gin.Context) {
 		c.Header("Access-Control-Allow-Origin", host)
