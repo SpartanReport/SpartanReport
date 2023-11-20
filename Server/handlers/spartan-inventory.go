@@ -237,8 +237,6 @@ func HandleInventory(c *gin.Context) {
 	if newGamerInfo.SpartanKey == "" {
 		fmt.Println("Empty GamerInfo received!")
 		c.JSON(http.StatusForbidden, "Empty GamerInfo received")
-		c.Redirect(http.StatusSeeOther, "/logout")
-
 		return
 	}
 	playerInventory, err := GetInventory(c, newGamerInfo)
@@ -247,7 +245,6 @@ func HandleInventory(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": "Internal server error",
 		})
-		c.Redirect(http.StatusSeeOther, "/logout")
 		return
 	}
 	includeArmory := c.Query("includeArmory") == "true"

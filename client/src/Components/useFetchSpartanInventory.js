@@ -31,6 +31,17 @@ const useFetchSpartanInventory = (gamerInfo, includeArmory = false, setHighlight
       if (response.data.GamerInfo){
         if (storedGamerInfo) {
           localStorage.setItem('isSignedIn', "true");
+          if (response.data.GamerInfo.spartankey === ""){
+            console.log("No spartankey, logging out")
+            const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8080';
+            const storedGamerInfo = localStorage.getItem('gamerInfo');
+            const parsedGamerInfo = JSON.parse(storedGamerInfo);
+            await axios.post(`${apiUrl}/logout`, parsedGamerInfo);
+            localStorage.clear();
+            window.location.href = `${apiUrl}/`;
+    
+            
+          }
           if (response.data.GamerInfo.spartankey !== parsedGamerInfo.spartankey){
             console.log("New GamerInfo!")
             localStorage.setItem('gamerInfo', JSON.stringify(response.data.GamerInfo));
@@ -121,7 +132,7 @@ const useFetchSpartanInventory = (gamerInfo, includeArmory = false, setHighlight
         const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8080';
         const storedGamerInfo = localStorage.getItem('gamerInfo');
         const parsedGamerInfo = JSON.parse(storedGamerInfo);
-        const response = await axios.post(`${apiUrl}/logout`, storedGamerInfo);
+        await axios.post(`${apiUrl}/logout`, parsedGamerInfo);
         localStorage.clear();
         window.location.href = `${apiUrl}/`;
       }

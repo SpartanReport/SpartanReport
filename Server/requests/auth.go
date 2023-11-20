@@ -303,7 +303,11 @@ func CheckAndUpdateGamerInfo(c *gin.Context, gamerInfoPassedIn GamerInfo) GamerI
 			fmt.Println("Token is valid.")
 			return gamerInfoPassedIn
 		}
+	} else {
+		fmt.Println("Error when processing auth code with refresh token")
+		fmt.Println("Signing user out")
+		DeleteTokenInfo(spartanTokenPassedIn)
+		return GamerInfo{XBLToken: "", SpartanKey: "", Gamertag: "", XUID: ""}
 	}
-	return gamerInfoPassedIn
 
 }
