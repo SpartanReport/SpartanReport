@@ -8,7 +8,49 @@ import ItemDetailsPage from '../Components/itemdetails';
 import challengeSwap from '../challengeswap.png';
 import checkmark from "../checkmark.svg"
 import { Routes, Route,useParams } from 'react-router-dom';
+import SvgBorderWrapper from '../Styles/Border';
 
+
+function SeasonImage(base64ImageData) {
+  return `data:image/png;base64,${base64ImageData}`;
+}
+
+function DisplayEvent({ season }) {
+  if (!season) return null; // Don't render if no season data is present
+
+  // Get the current date and the start date of the season
+  const currentDate = new Date();
+  const startDate = new Date(season.StartDate.ISO8601Date);
+
+  // Determine whether the season is past, present, or future
+  let seasonStatus;
+  if (startDate > currentDate) {
+    seasonStatus = "FUTURE";
+  } else if (season.IsActive) {
+    seasonStatus = "ACTIVE";
+  } else {
+    seasonStatus = "PAST";
+  }
+
+  // Determine the class name based on the season's status
+  const titleContainerClassName = `title-container-event-home-${seasonStatus.toLowerCase()}`;
+
+  return (
+    <div className="event-card-ops">
+      <div className={titleContainerClassName}>
+        <h2 className="event-title-ops">
+          {seasonStatus === "ACTIVE" && <span className="live-text">LIVE </span>}
+          {seasonStatus === "PAST" && <span className="past-text">PAST </span>}
+          {seasonStatus === "FUTURE" && <span className="future-text">FUTURE </span>} - 
+          <span className="event-date-ops">{season.SeasonMetadataDetails.DateRange.value}</span>
+        </h2>
+      </div>
+
+      <img className="event-image" src={SeasonImage(season.SeasonMetadataDetails.SeasonImage)} alt="Season Logo" />
+      <br />
+    </div>
+  );
+}
 function SelectedOperation({ gamerInfo }) {
   const { operationId } = useParams();
   const [trackData, setTrack] = useState([]);
@@ -20,6 +62,7 @@ function SelectedOperation({ gamerInfo }) {
             console.log("checking:" , operationId)
               const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8080';
               const response = await axios.post(`${apiUrl}/operations/${operationId}`,gamerInfo || {});
+              console.log("response: ", response.data)
               setSelectedSeason(response.data.selectedSeason); // Assuming the response has a selectedSeason field
               setTrack(response.data.track);
           } catch (error) {
@@ -106,20 +149,28 @@ const navigate = useNavigate();
       let rewardType;
       let coreDesignation;
       let name;
+      if (reward.Type === "ArmorMythicFx" || reward.Type === "ArmorFx") {
+        reward.Item.IsCrossCompatible = true
 
+      }
       if (reward.CurrencyPath === "Currency/Currencies/xpboost.json") {
         imageSrc = xpboostImage
         rewardType = reward.Amount + "x Boost";
+        reward.Item.Quality = "Common";
         name = "XP Boost";
 
       } else if (reward.CurrencyPath === "Currency/Currencies/cR.json") {
         imageSrc = currencyImage;
         rewardType = reward.Amount + " cR";
+        reward.Item.Quality = "Common";
+
         name = "Credits";
 
       }else if (reward.CurrencyPath === "Currency/Currencies/rerollcurrency.json") {
         imageSrc = challengeSwap;
         rewardType = reward.Amount  + "x Swap";
+        reward.Item.Quality = "Common";
+
         name = "Challenge Swap";
       } else {
         imageSrc = SeasonImage(reward.ItemImageData);
@@ -128,9 +179,9 @@ const navigate = useNavigate();
         if (reward.Item.IsCrossCompatible){
           coreDesignation = "Cross Core"
         }else if(reward.Item.Core === "Unknown Core"){
-          coreDesignation = ""
+          coreDesignation = "e"
         }else{
-          coreDesignation = reward.Item.Core
+          coreDesignation = reward.Item.CoreTitle
         }
       }
       const handleItemClick = (reward, gamerInfo, selectedSeason, handleBackClick) => {
@@ -149,24 +200,29 @@ const navigate = useNavigate();
           }
         });
       };
-
+      const rarityClass = reward.Item?.Rarity; // e.g., "Common", "Rare", "Epic", "Legendary"
+      const cardClassName = `objectCard-ops cardWithGradient ${rarityClass}`;
+      console.log("reward: ", reward)
       return (
+        <SvgBorderWrapper height={300} width={245} rarity={reward.Item?.Quality}>
+
         <div>
-          <div className='track-label-div'>
-            <h4 className="track-label">{reward.type}</h4>
-          </div>
-          <div onClick={() => handleItemClick(reward, gamerInfo, selectedSeason, handleBackClick)} key={index} className={`season-rank-card ${getBackgroundStyle(reward.Item?.Quality)}`}>
-            
-                       <p className='item-data'>{name}</p>
-            {reward.Amount && (
-              <p className="item-type">
-                {rewardType}
-              </p>
-            )}
-            <img className="item-img" src={imageSrc} alt="Reward Logo" />
-            <p className='item-core'>{coreDesignation}</p>
+          <div onClick={() => handleItemClick(reward, gamerInfo, selectedSeason, handleBackClick)} key={index} className={cardClassName}>
+            <p className='card-subheader-mini-ops'>{name} </p>
+            <p className='card-subheader-mini-ops'>{rewardType}</p>
+                    <img
+                className="item-img"
+                src={imageSrc}
+                alt="Reward Logo"
+                style={{ 
+                  height: coreDesignation ? '225px' : '245px',
+                  width: coreDesignation ? '225px' : '230px'
+                  }}
+              />
+            <p className='card-subheader-mini-ops'>{coreDesignation}</p>
           </div>
         </div>
+        </SvgBorderWrapper>
       );
     });
   };
@@ -183,14 +239,11 @@ const navigate = useNavigate();
         </div>
 
       <div className="operation-container-single">
-        <div className="season-card-selected">
-          <img className="season-img-selected" src={SeasonImage(selectedSeason.SeasonMetadataDetails.SeasonImage)} alt="Season Logo" />
-          <div className="text-overlay">
-            <h3 className="season-name-selected"><strong>{selectedSeason.SeasonMetadataDetails.DateRange.value}</strong></h3>
-          </div>
-          
+        <div className="event-info-container">
+          <DisplayEvent season={selectedSeason} />
+          <div className="placeholder-card">
+      </div>
         </div>
-
         <div className="scrollable-ranks">
         {trackData.Ranks && trackData.Ranks.map((rank, index) => {
           // Check if rank is completed

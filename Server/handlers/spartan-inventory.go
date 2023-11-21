@@ -752,3 +752,29 @@ func FetchImageData(imageURL string, gamerInfo requests.GamerInfo) []byte {
 	}
 	return imgData
 }
+
+func LoadArmorCores(gamerInfo requests.GamerInfo, armorcore string) {
+	url := "https://gamecms-hacs.svc.halowaypoint.com/hi/progression/file/cores/armorcores/" + armorcore + ".json"
+	currentItemResponse := ItemResponse{}
+
+	// Make API Request to get item data
+	err := makeAPIRequest(gamerInfo.SpartanKey, url, nil, &currentItemResponse)
+	if err != nil {
+		fmt.Println("Error making request for item data: ", err)
+	}
+	itemImagePath := currentItemResponse.CommonData.Media.Media.MediaUrl.Path
+	url = "https://gamecms-hacs.svc.halowaypoint.com/hi/images/file/" + itemImagePath
+	rawImageData, err := makeAPIRequestImage(gamerInfo.SpartanKey, url, nil)
+	path := "cores/armorcores/" + armorcore + ".json"
+	t := RewardResult{Path: path, ImageData: rawImageData, Item: currentItemResponse.CommonData}
+
+	reward := InventoryReward{}
+	reward.InventoryItemPath = t.Path
+	reward.Amount = 1
+	reward.Type = "ArmorCore"
+	reward.ItemImageData = rawImageData
+	reward.ItemMetaData = currentItemResponse.CommonData
+	reward.ItemMetaData.Core = armorcore
+	db.StoreData("item_data", reward)
+
+}

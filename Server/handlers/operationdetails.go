@@ -61,6 +61,21 @@ func HandleOperationDetails(c *gin.Context) {
 			return
 		}
 		rc.Close()
+
+		// Populate User Track
+		// Retrieve user season progression and append it to the seasons data
+		userProgress := OperationRewardTracks{}
+		if gamerInfo.XUID != "" {
+			url := "https://economy.svc.halowaypoint.com/hi/players/xuid(" + gamerInfo.XUID + ")/rewardtracks/operations/" + operationID
+			fmt.Println("Querying: ", url)
+			hdrs := map[string]string{"343-clearance": gamerInfo.ClearanceCode}
+			if err := makeAPIRequest(gamerInfo.SpartanKey, url, hdrs, &userProgress); err != nil {
+				fmt.Println("Error while getting user season progression: ", err)
+				return
+			}
+			seasonFound = appendMatchingSeasonProgression(seasonFound, userProgress)
+		}
+
 		c.JSON(http.StatusOK, OpsDetailsToReturn{Season: seasonFound, Track: trackData})
 		return
 	} else if err != storage.ErrObjectNotExist {
@@ -85,4 +100,9 @@ func HandleOperationDetails(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, OpsDetailsToReturn{Season: seasonFound, Track: track})
+}
+
+func appendMatchingSeasonProgression(season Season, userTrack OperationRewardTracks) Season {
+	season.SeasonProgression = userTrack
+	return season
 }

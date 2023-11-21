@@ -110,16 +110,22 @@ func (sc *StoreDataCache) Delete(key string) {
 	delete(sc.data, key)
 }
 
-func getNextTuesdayCST() time.Time {
+func getNextInvalidateTimeCST() time.Time {
 	loc, _ := time.LoadLocation("America/Chicago")
 	now := time.Now().In(loc)
-	daysUntilTuesday := (9 - int(now.Weekday())) % 7
-	nextTuesday := now.AddDate(0, 0, daysUntilTuesday)
-	return time.Date(nextTuesday.Year(), nextTuesday.Month(), nextTuesday.Day(), 13, 0, 0, 0, loc)
-}
 
+	// Set the next invalidate time to today at 1:30 PM CST
+	nextInvalidateTime := time.Date(now.Year(), now.Month(), now.Day(), 13, 30, 0, 0, loc)
+
+	// If the current time is past today's 1:30 PM CST, set the next invalidate time to tomorrow at 1:30 PM CST
+	if now.After(nextInvalidateTime) {
+		nextInvalidateTime = nextInvalidateTime.AddDate(0, 0, 1)
+	}
+
+	return nextInvalidateTime
+}
 func HandleStore(c *gin.Context) {
-	expirationTime := getNextTuesdayCST()
+	expirationTime := getNextInvalidateTimeCST()
 	cacheKey := expirationTime.Format(time.RFC3339)
 
 	if time.Now().After(expirationTime) {

@@ -195,9 +195,9 @@ type OperationRewardTracks struct {
 }
 
 type UserSeasonProgression struct {
-	ActiveOperationRewardTrackPath    string                  `json:"ActiveOperationRewardTrackPath"`
-	OperationRewardTracks             []OperationRewardTracks `json:"OperationRewardTracks"`
-	ScheduledOperationRewardTrackPath string                  `json:"ScheduledOperationRewardTrackPath"`
+	ActiveOperationRewardTrackPath    string                `json:"ActiveOperationRewardTrackPath"`
+	OperationRewardTracks             OperationRewardTracks `json:"OperationRewardTracks"`
+	ScheduledOperationRewardTrackPath string                `json:"ScheduledOperationRewardTrackPath"`
 }
 
 var (
@@ -229,18 +229,6 @@ func (sc *SeasonCache) Set(seasonID string, data SeasonMetadata) {
 	sc.mutex.Lock()
 	defer sc.mutex.Unlock()
 	sc.data[seasonID] = data
-}
-
-func appendMatchingSeasonProgression(seasons []Season, userSeasonProgression UserSeasonProgression) []Season {
-	for i := range seasons {
-		for _, operationRewardTrack := range userSeasonProgression.OperationRewardTracks {
-			if operationRewardTrack.RewardTrackPath == seasons[i].OperationTrackPath {
-				seasons[i].SeasonProgression = operationRewardTrack
-				break
-			}
-		}
-	}
-	return seasons
 }
 
 func getCoreFromInventoryItemPath(inventoryItemPath string) string {
@@ -295,6 +283,7 @@ func GetCachedSeasons() OperationsData {
 func HandleOperations(c *gin.Context) {
 	// Ensuring that the cache is initialized
 	InitSeasonCache()
+
 	var gamerInfo requests.GamerInfo
 	if err := c.ShouldBindJSON(&gamerInfo); err != nil {
 		if !cachedSeasons.IsEmpty() {
@@ -303,100 +292,56 @@ func HandleOperations(c *gin.Context) {
 		}
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		fmt.Println("Couldn't bind")
+		return
 	}
+
+	// Retrieve seasons data
 	seasons := Seasons{}
 	err := makeAPIRequest(gamerInfo.SpartanKey, "https://gamecms-hacs.svc.halowaypoint.com/hi/progression/file/calendars/seasons/seasoncalendar.json", nil, &seasons)
 	if err != nil {
 		fmt.Println("Error Obtaining Season Info")
+		return
 	}
 
+	// Process and cache seasons data only if not already cached
+	if cachedSeasons.IsEmpty() && gamerInfo.SpartanKey != "" {
+		processSeasons(gamerInfo, &seasons, true)
+	} else {
+		processSeasons(gamerInfo, &seasons, false)
+
+	}
+
+	// Respond with the seasons data along with the user's season progression
+	data := OperationsData{
+		Seasons:   seasons,
+		GamerInfo: gamerInfo,
+	}
+	c.JSON(http.StatusOK, data)
+}
+func processSeasons(gamerInfo requests.GamerInfo, seasons *Seasons, cache bool) {
 	// Populate IsActive flag
 	currentTime := time.Now().UTC()
 	for i := range seasons.Seasons {
 		startTime, _ := time.Parse(time.RFC3339, seasons.Seasons[i].StartDate.ISO8601Date)
 		endTime, _ := time.Parse(time.RFC3339, seasons.Seasons[i].EndDate.ISO8601Date)
 		seasons.Seasons[i].IsActive = currentTime.After(startTime) && currentTime.Before(endTime)
+		seasons.Seasons[i].SeasonMetadataDetails = GetSeasonMetadata(gamerInfo, seasons.Seasons[i])
+
 	}
 
-	// Sort by start date
+	// Sort seasons by start date in descending order
 	sort.Slice(seasons.Seasons, func(i, j int) bool {
 		startTimeI, _ := time.Parse(time.RFC3339, seasons.Seasons[i].StartDate.ISO8601Date)
 		startTimeJ, _ := time.Parse(time.RFC3339, seasons.Seasons[j].StartDate.ISO8601Date)
 		return startTimeI.After(startTimeJ)
 	})
 
-	// Printing out each season
-	for i, season := range seasons.Seasons {
-		fmt.Printf("Season %d:\n", i)
-		fmt.Printf("  CsrSeasonFilePath: %s\n", season.CsrSeasonFilePath)
-		fmt.Printf("  OperationTrackPath: %s\n", season.OperationTrackPath)
-		fmt.Printf("  SeasonMetadata: %s\n", season.SeasonMetadata)
-		fmt.Printf("  StartDate: %s\n", season.StartDate.ISO8601Date)
-		fmt.Printf("  EndDate: %s\n", season.EndDate.ISO8601Date)
-		fmt.Printf("  IsActive: %t\n", season.IsActive)
-
-		// Get Season Metadata details
-		season := &seasons.Seasons[i]
-		// Check cache first
-		if cachedData, exists := seasonCache.Get(season.OperationTrackPath); exists {
-			seasons.Seasons[i].SeasonMetadataDetails = cachedData
-		} else {
-			// Data not in cache, fetch and store it
-			season.SeasonMetadataDetails = GetSeasonMetadata(gamerInfo, *season)
-			seasonCache.Set(season.OperationTrackPath, season.SeasonMetadataDetails)
+	// Cache the processed seasons data
+	if cache {
+		cachedSeasons = OperationsData{
+			Seasons: *seasons,
 		}
-
 	}
-	userProgress := UserSeasonProgression{}
-
-	// Cache the seasons data
-	cachedSeasons = OperationsData{
-		Seasons: seasons,
-	}
-	// Get Season Progress
-	if gamerInfo.XUID != "" {
-		url := "https://economy.svc.halowaypoint.com/hi/players/xuid(" + gamerInfo.XUID + ")/rewardtracks/operations?view=all"
-		hdrs := map[string]string{}
-		hdrs["343-clearance"] = gamerInfo.ClearanceCode
-		err = makeAPIRequest(gamerInfo.SpartanKey, url, hdrs, &userProgress)
-		if err != nil {
-			fmt.Println("Error while getting user season progression: ", err)
-			return
-		}
-		seasons.Seasons = appendMatchingSeasonProgression(seasons.Seasons, userProgress)
-	}
-	data := OperationsData{
-		Seasons:   seasons,
-		GamerInfo: gamerInfo,
-	}
-
-	c.JSON(http.StatusOK, data)
-}
-
-func LoadArmorCores(gamerInfo requests.GamerInfo, armorcore string) {
-	url := "https://gamecms-hacs.svc.halowaypoint.com/hi/progression/file/cores/armorcores/" + armorcore + ".json"
-	currentItemResponse := ItemResponse{}
-
-	// Make API Request to get item data
-	err := makeAPIRequest(gamerInfo.SpartanKey, url, nil, &currentItemResponse)
-	if err != nil {
-		fmt.Println("Error making request for item data: ", err)
-	}
-	itemImagePath := currentItemResponse.CommonData.Media.Media.MediaUrl.Path
-	url = "https://gamecms-hacs.svc.halowaypoint.com/hi/images/file/" + itemImagePath
-	rawImageData, err := makeAPIRequestImage(gamerInfo.SpartanKey, url, nil)
-	path := "cores/armorcores/" + armorcore + ".json"
-	t := RewardResult{Path: path, ImageData: rawImageData, Item: currentItemResponse.CommonData}
-
-	reward := InventoryReward{}
-	reward.InventoryItemPath = t.Path
-	reward.Amount = 1
-	reward.Type = "ArmorCore"
-	reward.ItemImageData = rawImageData
-	reward.ItemMetaData = currentItemResponse.CommonData
-	reward.ItemMetaData.Core = armorcore
-	db.StoreData("item_data", reward)
-
 }
 
 func GetSeasonRewards(gamerInfo requests.GamerInfo, season Season) Track {
@@ -522,11 +467,7 @@ func GetSeasonMetadata(gamerInfo requests.GamerInfo, season Season) SeasonMetada
 		return metadata
 	}
 
-	// Special Case: WC3 and CA
-	if season.OperationTrackPath == "RewardTracks/Operations/S05OpPassM01.json" {
-		metadata.SeasonImage, err = makeAPIRequestImage("", "https://wpassets.halowaypoint.com/wp-content/2023/10/OperationCombinedArms.jpg", nil)
-		return metadata
-	}
+	// Special Case: WC3
 	if season.OperationTrackPath == "RewardTracks/Operations/S05OpPassM02.json" {
 		metadata.SeasonImage, err = makeAPIRequestImage("", "https://wpassets.halowaypoint.com/wp-content/2023/10/OperationWinterContingency.jpg", nil)
 		return metadata

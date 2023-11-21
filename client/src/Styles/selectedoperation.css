@@ -61,12 +61,136 @@
 
 }
 .item-img{
-    width: 223px;
-    height: 225px;
-    transform: translateY(-14%);
+  height: 220px;
+  width:220px;
+  margin: auto;
+  display: block;
+}
+
+.objectCard-ops {
+  cursor: pointer;
+  min-width: 245px;
+  height: 300px;
+  color: white;
+  border: 5px solid transparent;
+  display:block;
+  transition: all 0.3s ease;
+  transform: scale(0.95);
+
+}
+/* Container for the events */
+.events-container-ops {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  width: auto; /* 2/3rd of the width */
+  height: auto; /* Adjusted for variable content height */
+  margin: 0 auto;
+}
+.event-info-container{
+  display: flex;
+  align-items: stretch; /* Ensures both elements have the same height */
+}
+
+.description-subheader {
+  height: 50px;
+  line-height: 50px; /* Centers text vertically */
+  overflow: hidden; /* Ensures content doesn't exceed the height */
+  white-space: nowrap; /* Keeps text in one line */
+  overflow-x: auto; /* Adds horizontal scrolling if text exceeds width */
+  text-overflow: ellipsis; /* Adds an ellipsis if text overflows */
+}
+/* Additional styles for the paragraph */
+.placeholder-card p {
+  margin-top: 0; /* Removes default top margin */
+  /* Add any other necessary styling */
+}
+.placeholder-card {
+  flex: 1; /* Takes up 2 portions of the space, making it double the width */
+  display: flex;
+  font-family: 'Oswald', sans-serif;
+  color: white;
+  justify-content: center;
+  padding: 20px;
+  margin-right:50px;
+  margin-top:10px;
+  margin-bottom:20px;
+}
+.event-card-ops {
+  flex-basis: calc(33.33% - 10px);
+  margin-bottom: 20px;
+  margin-top:10px;
+  margin-left:50px;
+  height: 450px;
+  width: 400px;
+  padding-right:20px;
+  transition: all 0.3s ease;
+
+}
+.event-card-ops img {
+  height: 100%;
+  object-fit: cover;
+  width:100%;
+  max-height: 400px;
+  max-width: 400px;
+}
+.event-subheader-ops-description {
+  font-family: 'Oswald', sans-serif;
+  font-style: normal;
+  font-size: 18px;
+  width: 100%;
+  max-width: 400px;
+  color: white;
+  background-color: #4389BA;
+  margin: 0; /* Remove default margins */
+  display: block; /* Ensure it's a block element */
+}
+
+.event-subheader-ops {
+  font-family: 'Oswald', sans-serif;
+  font-style: normal;
+  font-size: 18px;
+  width: 100%;
+  max-width: 400px;
+  color: white;
+  background-color: #4389BA;
+}
+.event-description-subheader {
+  font-family: 'Oswald', sans-serif;
+  font-style: normal;
+  font-size: 18px;
+  width: 100%;
+  max-width: 400px;
+  color: white;
+  background-color: #4389BA;
+
+  margin: 0; /* Remove default margins */
+  padding: 0 10px; /* Add some padding on the sides */
+}
+.event-title-ops {
+  font-family: 'Oswald', sans-serif;
+  font-size: large;
+  color: #7FCDE9;
+  margin-bottom: 0px;
+}
+
+
+.event-date-ops{
+  font-family: 'Oswald', sans-serif;
+  letter-spacing: 1px;
+  
+}
+
+.card-subheader-mini-ops {
+  font-family: 'Oswald', sans-serif;
+  text-align: center;
+  font-style: normal;
+  font-size: 15px;
+  color: white;
+  background-color: #4389BA;
+  margin-bottom: 0px;
 }
 .item-data{
-    border-radius: 10px 10px 0 0;
     text-align: center;
     background: rgba(255, 255, 255, 0.1);
     font-style: italic;
@@ -91,7 +215,7 @@
 
 }
 .scrollable-ranks {
-    transform: scale(0.9);
+    transform: scale(0.95);
     display: flex;
     overflow-x: auto;
     height: 450px;
@@ -107,7 +231,7 @@
     display: flex;
     flex-direction: row;
     margin: 10px;
-    height: 250px;
+    height: 300px;
     align-items: center; /* Vertically centers the items, but depends on flex-direction */
   }
 
@@ -135,19 +259,6 @@
 }
 
 
-.season-rank-card {    
-  
-    background: rgba(255, 255, 255, 0.5);
-    height: 300px;
-    width:225px;
-    border-radius: 10px;
-    border: 1px solid #000000;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    margin-top: 60px;
-    margin-left:10px;
-    margin-right:10px;
-
-}
 .season-rank-card:hover{
   transform: scale(1.05); /* Make the card slightly larger */
   border-radius: 15px; /* bigger rounded corners */
