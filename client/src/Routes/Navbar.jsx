@@ -67,7 +67,7 @@ const Navbar = ({ isAuthenticated, startAuth }) => {
   const isHomeRoute = location.pathname === '/'; // Check if the current route is HOME
   return (
     <div>
-      <div className={`title-container ${isHomeRoute ? 'fixed' : ''}`}>    
+      <div className={`title-container `}>    
          <h1 className="spartan-title">SPARTAN REPORT</h1>
         <button className="hamburger" onClick={toggleMobileNav}>
           <div></div>
@@ -76,7 +76,7 @@ const Navbar = ({ isAuthenticated, startAuth }) => {
         </button>
       </div>
       <div className="navbar-container">
-      <nav className={`App-nav ${showMobileNav ? 'show' : ''} ${isHomeRoute ? 'fixed-nav' : ''}`}>
+      <nav className={`App-nav ${showMobileNav ? 'show' : ''}`}>
                 {routes.filter(route => !dropdownRoutes.includes(route.name)).map(route => (
             <div key={route.name} className={`nav-button-wrapper ${activeButton === route.name ? 'active-wrapper' : ''}`}>
               <button 

@@ -112,7 +112,7 @@ func main() {
 	r.POST("/stats", spartanreport.HandleStats)
 	r.POST("/progression", spartanreport.HandleProgression)
 	r.POST("/operations", spartanreport.HandleOperations)
-	r.POST("/operationdetails", spartanreport.HandleOperationDetails)
+	r.POST("/operations/:id", spartanreport.HandleOperationDetails)
 	r.POST("/store", spartanreport.HandleStore)
 	r.POST("/ranking", spartanreport.SendRanks)
 	r.POST("/challengedeck", spartanreport.HandleChallengeDeck)

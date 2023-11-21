@@ -1,8 +1,6 @@
 package spartanreport
 
 import (
-	"context"
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"sort"
@@ -12,7 +10,6 @@ import (
 	"sync"
 	"time"
 
-	"cloud.google.com/go/storage"
 	"github.com/gin-gonic/gin"
 )
 
@@ -291,6 +288,10 @@ func getCoreIDFromInventoryItemPath(inventoryItemPath string) string {
 }
 
 var cachedSeasons OperationsData // Global cache variable
+// Getter for cachedSeason
+func GetCachedSeasons() OperationsData {
+	return cachedSeasons
+}
 func HandleOperations(c *gin.Context) {
 	// Ensuring that the cache is initialized
 	InitSeasonCache()
@@ -396,62 +397,6 @@ func LoadArmorCores(gamerInfo requests.GamerInfo, armorcore string) {
 	reward.ItemMetaData.Core = armorcore
 	db.StoreData("item_data", reward)
 
-}
-
-func HandleOperationDetails(c *gin.Context) {
-	var SpecificOpsData SpecificOpsData
-	if err := c.ShouldBindJSON(&SpecificOpsData); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	gamerInfo := SpecificOpsData.GamerInfo
-	season := SpecificOpsData.Season
-	key := season.OperationTrackPath
-	ctx := context.Background()
-	client, err := storage.NewClient(ctx)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Couldn't initialize GCS client"})
-		return
-	}
-	bucket := client.Bucket("haloseasondata")
-	obj := bucket.Object(key)
-
-	// Quick Function to load all armor cores
-
-	// Try to read the data from Google Cloud Storage first
-	rc, err := obj.NewReader(ctx)
-	if err == nil {
-		// Data exists, decode and return it
-		var trackData Track
-		if err := json.NewDecoder(rc).Decode(&trackData); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Couldn't decode stored data"})
-			return
-		}
-		rc.Close()
-		c.JSON(http.StatusOK, trackData)
-		return
-	} else if err != storage.ErrObjectNotExist {
-		// Some other error occurred
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Couldn't retrieve data"})
-		return
-	}
-
-	// If data doesn't exist, fetch and store it
-	track := GetSeasonRewards(gamerInfo, season)
-	track.Ranks = GetTrackImages(gamerInfo, track.Ranks)
-
-	// Store the data into Google Cloud Storage
-	wc := obj.NewWriter(ctx)
-	if err := json.NewEncoder(wc).Encode(track); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Couldn't encode data"})
-		return
-	}
-	if err := wc.Close(); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Couldn't write data"})
-		return
-	}
-
-	c.JSON(http.StatusOK, track)
 }
 
 func GetSeasonRewards(gamerInfo requests.GamerInfo, season Season) Track {

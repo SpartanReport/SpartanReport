@@ -2,6 +2,7 @@ import "../Styles/Home.css"
 import GoogleAd from "../Components/GoogleAds";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { useNavigate, Link } from 'react-router-dom';
 
 function SeasonImage(base64ImageData){
   return `data:image/png;base64,${base64ImageData}`;
@@ -27,6 +28,7 @@ const calculateDays = (dateRange) => {
     return 'Operation Ended';
   }
 };
+
 
 function DisplayEvent({ season }) {
   if (!season) return null; // Don't render if no season data is present
@@ -54,10 +56,21 @@ function DisplayEvent({ season }) {
     </div>
   );
 }
-
+const getSeasonLink = (season) => {
+  let seasonMetadata = season.OperationTrackPath;
+  if (seasonMetadata.endsWith('.json')) {
+      seasonMetadata = seasonMetadata.replace(/\.json$/, '');
+  }
+  if (seasonMetadata.startsWith('RewardTracks/Operations/')) {
+      seasonMetadata = seasonMetadata.replace(/^RewardTracks\/Operations\//, '');
+  }
+  return `/operations/${seasonMetadata}`;
+};
 function Home() {
   const [CurrentSeason, setCurrentSeason] = useState(null);
   const [PreviousSeason, setPreviousSeason] = useState(null);
+  const [selectedSeason, setSelectedSeason] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
 
@@ -91,17 +104,23 @@ function Home() {
       </div>
       <div className="events-container-home">
         {/* Event Cards */}
-        <div className="event-card">
-          <DisplayEvent season={PreviousSeason} />
-        </div>
-        <div className="event-card">
-        <div className="event-card">
-          <DisplayEvent season={CurrentSeason} />
-        </div>
-        </div>
-        
-      </div>
+        {PreviousSeason && (
+            <div className="event-card">
+              <Link to={getSeasonLink(PreviousSeason)} className="season-card" style={{ textDecoration: 'none' }}>
+                <DisplayEvent season={PreviousSeason} />
+              </Link>
+            </div>
+          )}
 
+          {CurrentSeason && (
+            <div className="event-card">
+              <Link to={getSeasonLink(CurrentSeason)} className="season-card" style={{ textDecoration: 'none' }}>
+
+                <DisplayEvent season={CurrentSeason} />
+              </Link>
+            </div>
+          )}
+        </div>
       <GoogleAd slot="7820477824" googleAdId="ca-pub-9090570730897630"/>
 
       </div>

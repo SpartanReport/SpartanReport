@@ -79,6 +79,10 @@
   color: #D6A948;
   font-family: 'Oswald', sans-serif;
 }
+.future-text {
+  color: #80cde9;
+  font-family: 'Oswald', sans-serif;
+}
 .title-container-event-home-active {
   margin-top: 10px;
   text-align: center;
@@ -98,6 +102,15 @@
   text-align: center;
   background-color: #273b44;
   border-left: 5px solid #D6A948;
+  border-right: 15px solid #1D435D;
+  max-width: 400px;
+  margin-bottom:10px;
+}
+.title-container-event-home-future {
+  margin-top: 10px;
+  text-align: center;
+  background-color: #273b44;
+  border-left: 5px solid #80cde9;
   border-right: 15px solid #1D435D;
   max-width: 400px;
   margin-bottom:10px;
@@ -163,7 +176,11 @@
 }
 
 
+.event-card:hover {
+  transform: scale(1.01); /* Make the card slightly larger */
+  cursor: pointer;
 
+}
 @media screen and (max-width: 500px) {
 
   .cards-container{
@@ -194,8 +211,12 @@
 .event-card {
   flex-basis: calc(33.33% - 10px);
   margin-bottom: 20px;
+  margin-top:10px;
   height: 450px;
-  width: 450px;
+  width: 400px;
+  padding-right:20px;
+  transition: all 0.3s ease;
+
 }
 .event-card img {
   height: 100%;

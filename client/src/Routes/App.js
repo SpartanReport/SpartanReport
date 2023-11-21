@@ -9,13 +9,14 @@ import Progression from './Progression';
 import MatchStats from './match-stats';
 import Header from './Header';
 import UnauthenticatedContent from './UnauthenticatedContent';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes , useNavigate} from 'react-router-dom';
 import Navbar from './Navbar';
 import Operations from './Operations';
 import Store from './store';
 import ItemDetailsPage from '../Components/itemdetails';
 import CommandCenter from './CommandCenter';
 import Policy from './policy';
+import SelectedOperation from './SelectedOperation';
 
 function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -24,7 +25,7 @@ function App() {
   const [HaloStats, setHaloStats] = useState(null);
   const [selectedMatch, setSelectedMatch] = useState(null);
   const [spartanInventory, setSpartanInventory] = useState(null);
-
+  const [selectedSeason, setSelectedSeason] = useState(null);
   const searchParams = new URLSearchParams(window.location.search);
   const token = searchParams.get('token');
 
@@ -134,7 +135,8 @@ function App() {
               <Route path="/" element={<Home />} />
               <Route path="/match/:matchId" element={<MatchStats gamerInfo={JSON.parse(localStorage.getItem('gamerInfo'))} HaloStats={HaloStats} selectedMatch={selectedMatch} />} />
               <Route path="/stats" element={<Stats gamerInfo={JSON.parse(localStorage.getItem('gamerInfo'))} HaloStats={HaloStats} setHaloStats={setHaloStats} setSelectedMatch={setSelectedMatch} />} />
-              <Route path="/operations" element={<Operations gamerInfo={JSON.parse(localStorage.getItem('gamerInfo'))} />} />
+              <Route path="/operations" element={<Operations gamerInfo={gamerInfo} />} />
+              <Route path="/operations/:operationId" element={<SelectedOperation gamerInfo={gamerInfo} />} />
               <Route path="/progression" element={<Progression gamerInfo={JSON.parse(localStorage.getItem('gamerInfo'))} HaloStats={HaloStats} setHaloStats={setHaloStats} setSelectedMatch={setSelectedMatch} />} />
               <Route path="/store" element={<Store gamerInfo={JSON.parse(localStorage.getItem('gamerInfo'))} />} />
               <Route path="/item-details" element={<ItemDetailsPage />} />

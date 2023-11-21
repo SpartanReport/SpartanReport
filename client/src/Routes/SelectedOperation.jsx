@@ -7,33 +7,29 @@ import currencyImage from '../credit.png';
 import ItemDetailsPage from '../Components/itemdetails';
 import challengeSwap from '../challengeswap.png';
 import checkmark from "../checkmark.svg"
+import { Routes, Route,useParams } from 'react-router-dom';
 
-function SelectedOperation({ gamerInfo, seasonData, handleBackClick, SeasonImage }) {
+function SelectedOperation({ gamerInfo }) {
+  const { operationId } = useParams();
   const [trackData, setTrack] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-
+  const [selectedSeason, setSelectedSeason] = useState(null);
   useEffect(() => {
-    const fetchOperations = async () => {
-      try {
-        const payload = {
-          gamerInfo,
-          seasonData,
-        };
+      const fetchOperationDetails = async () => {
+          try {
+            console.log("checking:" , operationId)
+              const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8080';
+              const response = await axios.post(`${apiUrl}/operations/${operationId}`,gamerInfo || {});
+              setSelectedSeason(response.data.selectedSeason); // Assuming the response has a selectedSeason field
+              setTrack(response.data.track);
+          } catch (error) {
+              console.error("Error fetching operation details:", error);
+          }
+          setIsLoading(false);
+      };
 
-        const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8080'; // Fallback URL if the env variable is not set
-
-        const response = await axios.post(`${apiUrl}/operationdetails`, payload);
-        setTrack(response.data);
-        console.log(response.data)
-        console.log(seasonData.UserSeasonProgression.CurrentProgress)
-      } catch (error) {
-        console.error("Error fetching Spartan inventory:", error);
-      }
-      setIsLoading(false);
-    };
-
-    fetchOperations();
-  }, [gamerInfo, seasonData]);
+      fetchOperationDetails();
+  }, [operationId]);
 
   useEffect(() => {
     const adjustTextSize = () => {
@@ -49,7 +45,9 @@ function SelectedOperation({ gamerInfo, seasonData, handleBackClick, SeasonImage
     adjustTextSize();
   }, [trackData]);
 
-  
+  function SeasonImage(base64ImageData){
+    return `data:image/png;base64,${base64ImageData}`;
+}
   const getBackgroundStyle = (quality) => {
     switch (quality) {
       case 'Epic':
@@ -135,7 +133,7 @@ const navigate = useNavigate();
           coreDesignation = reward.Item.Core
         }
       }
-      const handleItemClick = (reward, gamerInfo, seasonData, handleBackClick) => {
+      const handleItemClick = (reward, gamerInfo, selectedSeason, handleBackClick) => {
         // SeasonImage processing could happen here if needed before passing it along
         // For example, if you need to transform reward item data:
         if (reward.ItemImageData) {
@@ -147,19 +145,17 @@ const navigate = useNavigate();
           state: {
             reward: reward,
             gamerInfo: gamerInfo,
-            seasonData: seasonData,
+            seasonData: selectedSeason,
           }
         });
       };
-      const handleBackClick = () => {
-        navigate(-1);
-      };
+
       return (
         <div>
           <div className='track-label-div'>
             <h4 className="track-label">{reward.type}</h4>
           </div>
-          <div onClick={() => handleItemClick(reward, gamerInfo, seasonData, handleBackClick)} key={index} className={`season-rank-card ${getBackgroundStyle(reward.Item?.Quality)}`}>
+          <div onClick={() => handleItemClick(reward, gamerInfo, selectedSeason, handleBackClick)} key={index} className={`season-rank-card ${getBackgroundStyle(reward.Item?.Quality)}`}>
             
                        <p className='item-data'>{name}</p>
             {reward.Amount && (
@@ -176,18 +172,21 @@ const navigate = useNavigate();
   };
 
   
-
+  const handleBackClick = () => {
+    navigate(-1); // Navigate back
+  };
+  if (isLoading || !selectedSeason) return <div>Loading...</div>;
   return (
     <div>
         <div className="title-container-singleoperations">
-                <h1 className="operations-title-singleoperations"> {seasonData.SeasonMetadataDetails.Name.value}</h1>
+                <h1 className="operations-title-singleoperations"> {selectedSeason.SeasonMetadataDetails.Name.value}</h1>
         </div>
 
       <div className="operation-container-single">
         <div className="season-card-selected">
-          <img className="season-img-selected" src={SeasonImage(seasonData.SeasonMetadataDetails.SeasonImage)} alt="Season Logo" />
+          <img className="season-img-selected" src={SeasonImage(selectedSeason.SeasonMetadataDetails.SeasonImage)} alt="Season Logo" />
           <div className="text-overlay">
-            <h3 className="season-name-selected"><strong>{seasonData.SeasonMetadataDetails.DateRange.value}</strong></h3>
+            <h3 className="season-name-selected"><strong>{selectedSeason.SeasonMetadataDetails.DateRange.value}</strong></h3>
           </div>
           
         </div>
@@ -195,7 +194,7 @@ const navigate = useNavigate();
         <div className="scrollable-ranks">
         {trackData.Ranks && trackData.Ranks.map((rank, index) => {
           // Check if rank is completed
-          const isCompleted = index < seasonData.UserSeasonProgression.CurrentProgress.Rank;
+          const isCompleted = index < selectedSeason.UserSeasonProgression.CurrentProgress.Rank;
           return (
             <div key={index} className={`season-rank-container ${isCompleted ? "completed-rank" : ""}`}>
                 <div className="rank-number">
@@ -212,8 +211,13 @@ const navigate = useNavigate();
       <button className="nav-button back" onClick={handleBackClick}>BACK</button>
 
     </div>
+    <Routes>
+              <Route path="operations/:operationid" element={<SelectedOperation gamerInfo={gamerInfo} seasonData={selectedSeason} handleBackClick={handleBackClick} />} />
+    </Routes>
   </div>
+  
   );
+  
 }
 
 export default SelectedOperation;

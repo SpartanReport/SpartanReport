@@ -6,11 +6,11 @@
     margin: 0 auto;  /* Center horizontally */
     padding-bottom: 30px;
     padding-top: 30px;
+    padding-left:50px;
     border: 5px solid #32525E;
     background: rgba(0, 0, 0, 0.3);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.31);
     backdrop-filter: blur(10px);
-    border-radius: 10px;
 }
 .operations-container::-webkit-scrollbar {
     display: none;
@@ -73,14 +73,9 @@
 .season-card {
     color: white;
     background: rgba(7, 7, 7, 0.2);
-    border: 5px solid #32525E;
-    border-top: 5px solid #477289;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.269);
     transition: all 0.3s ease;
     position: relative;
-    margin: 5px;
     margin-top:50px;
-    min-width: 300px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* softer shadow */
 }
 
@@ -140,10 +135,8 @@
 .season-card:hover {
     transform: scale(1.02); /* Make the card slightly larger */
     cursor: pointer;
-    border: 5px solid #81CDE9;
 
     background: rgba(7, 7, 7, 0.3);
-    z-index: 2; /* Make it above other elements */
 }
 .season-date{
     text-align: center;
@@ -154,3 +147,30 @@
     display: none;
 }
 
+
+@media (max-width: 768px) {
+    .operations-container {
+        flex-direction: column;
+        align-items: center;
+        margin:-60px;
+        overflow-x:hidden;
+
+    }
+
+
+    .season-card {
+        margin: 10px 0 30px 20px;
+        transform: scale(0.9);
+        width: 160%;
+    }
+
+    .title-container-operations {
+        margin: 0;
+        margin-left:-30px;
+        margin-top:10px;
+        margin-bottom:20px;
+        z-index: 2;
+        
+      }
+    
+}
