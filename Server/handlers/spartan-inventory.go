@@ -2,6 +2,7 @@ package spartanreport
 
 import (
 	"bytes"
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -17,7 +18,7 @@ import (
 
 	"github.com/disintegration/imaging"
 	"github.com/gin-gonic/gin"
-	"go.mongodb.org/mongo-driver/bson"
+	"github.com/go-redis/redis"
 )
 
 type ISO8601Date struct {
@@ -269,13 +270,25 @@ func HandleInventory(c *gin.Context) {
 			if isExcludedItemType(item.ItemType) {
 				continue
 			}
-			err := db.GetData("item_data", bson.M{"inventoryitempath": item.ItemPath}, &existingItem)
+			// Retrieve the item from Redis
+			ctx := context.Background()
+			val, err := db.RedisClient.HGet(ctx, "items", item.ItemPath).Result()
 			if err != nil {
-				// Item not found in DB, add to missing items
-				missingItems.InventoryItems = append(missingItems.InventoryItems, item)
+				if err == redis.Nil {
+					fmt.Println("Covered in nil check")
+					missingItems.InventoryItems = append(missingItems.InventoryItems, item)
+				} else {
+					fmt.Printf("Error getting from Redis: %v\n", err)
+					missingItems.InventoryItems = append(missingItems.InventoryItems, item)
+				}
 			} else {
-				// Item found, add to existing items
-				existingItems.InventoryItems = append(existingItems.InventoryItems, existingItem)
+				if err := json.Unmarshal([]byte(val), &existingItem); err != nil {
+					fmt.Printf("Error unmarshalling item from Redis: %v", err)
+				} else {
+					// Item found, add to existing items
+					existingItems.InventoryItems = append(existingItems.InventoryItems, existingItem)
+
+				}
 			}
 		}
 		fetchedItems := GetInventoryItemImages(gamerInfo, missingItems)
@@ -495,9 +508,16 @@ func GetInventoryItemImages(gamerInfo requests.GamerInfo, Items Items) Items {
 			if item.ItemPath == result.Path {
 				item.ItemImageData = result.ImageData
 				item.ItemMetaData = result.Item
-				err := db.StoreDataItem("item_data", item, item.ItemPath)
+
+				ctx := context.Background()
+				itemPath := item.ItemPath
+				itemBytes, err := json.Marshal(item)
 				if err != nil {
-					fmt.Println("Error When attempting to add data into item db")
+					fmt.Printf("Error marshalling item: %v", err)
+				}
+
+				if err := db.RedisClient.HSet(ctx, "items", itemPath, itemBytes).Err(); err != nil {
+					fmt.Printf("error setting value in Redis: %v", err)
 				}
 
 			}

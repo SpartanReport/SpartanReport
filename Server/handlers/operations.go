@@ -433,8 +433,11 @@ func GetTrackImages(gamerInfo requests.GamerInfo, Ranks []Rank) []Rank {
 					result.ImageData, _ = compressPNGWithImaging(result.ImageData, false, 0, 0)
 					rank.FreeRewards.InventoryRewards[idx].ItemImageData = result.ImageData
 					rank.FreeRewards.InventoryRewards[idx].ItemMetaData = result.Item
-					db.StoreData("item_data", rank.FreeRewards.InventoryRewards[idx])
-
+					ctx := context.Background()
+					itemPath := rank.FreeRewards.InventoryRewards[idx].InventoryItemPath
+					if err := db.RedisClient.HSet(ctx, "items", itemPath, rank.FreeRewards.InventoryRewards[idx]).Err(); err != nil {
+						fmt.Printf("error setting value in Redis: %v", err)
+					}
 				}
 			}
 			for idx, currReward := range rank.FreeRewards.CurrencyRewards {
@@ -454,7 +457,11 @@ func GetTrackImages(gamerInfo requests.GamerInfo, Ranks []Rank) []Rank {
 
 					rank.PaidRewards.InventoryRewards[idx].ItemImageData = result.ImageData
 					rank.PaidRewards.InventoryRewards[idx].ItemMetaData = result.Item
-					db.StoreData("item_data", rank.PaidRewards.InventoryRewards[idx])
+					ctx := context.Background()
+					itemPath := rank.PaidRewards.InventoryRewards[idx].InventoryItemPath
+					if err := db.RedisClient.HSet(ctx, "items", itemPath, rank.PaidRewards.InventoryRewards[idx]).Err(); err != nil {
+						fmt.Printf("error setting value in Redis: %v", err)
+					}
 
 				}
 			}
