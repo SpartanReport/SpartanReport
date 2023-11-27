@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"cloud.google.com/go/storage"
+	"github.com/gin-gonic/contrib/gzip"
 	"github.com/gin-gonic/gin"
 	"github.com/newrelic/go-agent/v3/integrations/nrgin"
 	"github.com/newrelic/go-agent/v3/integrations/nrmongo"
@@ -30,7 +31,6 @@ func main() {
 		// Fill in your New Relic license key
 		newrelic.ConfigLicense("6ef9ceb3452731978dc1bf6c6df5f2f8FFFFNRAL"),
 		// Add logging:
-		newrelic.ConfigDebugLogger(os.Stdout),
 		// Optional: add additional changes to your configuration via a config function:
 		func(cfg *newrelic.Config) {
 			cfg.CustomInsightsEvents.Enabled = false
@@ -80,6 +80,7 @@ func main() {
 
 	r := gin.Default()
 	r.Use(nrgin.Middleware(app))
+	r.Use(gzip.Gzip(gzip.DefaultCompression))
 	// Global CORS middleware
 	r.Use(func(c *gin.Context) {
 		c.Header("Access-Control-Allow-Origin", host)

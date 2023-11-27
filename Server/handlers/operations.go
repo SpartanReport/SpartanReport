@@ -422,6 +422,7 @@ func GetTrackImages(gamerInfo requests.GamerInfo, Ranks []Rank) []Rank {
 			// Update Free Rewards
 			for idx, invReward := range rank.FreeRewards.InventoryRewards {
 				if invReward.InventoryItemPath == result.Path {
+					result.ImageData, _ = compressPNGWithImaging(result.ImageData, false, 0, 0)
 					rank.FreeRewards.InventoryRewards[idx].ItemImageData = result.ImageData
 					rank.FreeRewards.InventoryRewards[idx].ItemMetaData = result.Item
 					db.StoreData("item_data", rank.FreeRewards.InventoryRewards[idx])
@@ -430,6 +431,8 @@ func GetTrackImages(gamerInfo requests.GamerInfo, Ranks []Rank) []Rank {
 			}
 			for idx, currReward := range rank.FreeRewards.CurrencyRewards {
 				if currReward.CurrencyPath == result.Path {
+					result.ImageData, _ = compressPNGWithImaging(result.ImageData, false, 0, 0)
+
 					rank.FreeRewards.CurrencyRewards[idx].ItemImageData = result.ImageData
 					rank.FreeRewards.CurrencyRewards[idx].ItemMetaData = result.Item
 
@@ -439,15 +442,18 @@ func GetTrackImages(gamerInfo requests.GamerInfo, Ranks []Rank) []Rank {
 			// Update Paid Rewards
 			for idx, invReward := range rank.PaidRewards.InventoryRewards {
 				if invReward.InventoryItemPath == result.Path {
+					result.ImageData, _ = compressPNGWithImaging(result.ImageData, false, 0, 0)
+
 					rank.PaidRewards.InventoryRewards[idx].ItemImageData = result.ImageData
 					rank.PaidRewards.InventoryRewards[idx].ItemMetaData = result.Item
-					fmt.Println("Loading in ", rank.PaidRewards.InventoryRewards[idx].ItemMetaData.Title)
 					db.StoreData("item_data", rank.PaidRewards.InventoryRewards[idx])
 
 				}
 			}
 			for idx, currReward := range rank.PaidRewards.CurrencyRewards {
 				if currReward.CurrencyPath == result.Path {
+					result.ImageData, _ = compressPNGWithImaging(result.ImageData, false, 0, 0)
+
 					rank.PaidRewards.CurrencyRewards[idx].ItemImageData = result.ImageData
 					rank.PaidRewards.CurrencyRewards[idx].ItemMetaData = result.Item
 
@@ -480,5 +486,8 @@ func GetSeasonMetadata(gamerInfo requests.GamerInfo, season Season) SeasonMetada
 		return metadata
 
 	}
+
+	// Compress Images
+	metadata.SeasonImage, err = compressPNGWithImaging(metadata.SeasonImage, false, 0, 0)
 	return metadata
 }

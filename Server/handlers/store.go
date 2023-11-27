@@ -1,6 +1,7 @@
 package spartanreport
 
 import (
+	"fmt"
 	"net/http"
 	requests "spartanreport/requests"
 	"sync"
@@ -177,6 +178,10 @@ func HandleStore(c *gin.Context) {
 
 			url := "https://gamecms-hacs.svc.halowaypoint.com/hi/Images/file/" + offeringDetails.ObjectImagePath
 			offeringImage, _ := makeAPIRequestImage(gamerInfo.SpartanKey, url, hdrs)
+			offeringImage, err := compressPNGWithImaging(offeringImage, false, 0, 0)
+			if err != nil {
+				fmt.Println("Error Compressing Store Data: ", err)
+			}
 			store.Offerings[i].OfferingDetails.OfferingImage = offeringImage
 		}(i)
 	}
@@ -191,9 +196,7 @@ func HandleStore(c *gin.Context) {
 		gamerInfo: gamerInfo,
 		StoreData: store,
 	}
-
 	c.JSON(http.StatusOK, data)
 }
 
-// https://gamecms-hacs.svc.halowaypoint.com/hi/Progression/file/
 // https://gamecms-hacs.svc.halowaypoint.com/hi/Progression/file/Metadata/Metadata.json THIS GETS MANUFACTURERS

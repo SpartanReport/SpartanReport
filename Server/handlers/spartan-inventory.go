@@ -232,11 +232,7 @@ func HandleInventory(c *gin.Context) {
 		return
 	}
 	newGamerInfo := requests.CheckAndUpdateGamerInfo(c, gamerInfo)
-	if newGamerInfo.SpartanKey != gamerInfo.SpartanKey {
-		fmt.Println("New GamerInfo received!")
-	}
 	if newGamerInfo.SpartanKey == "" {
-		fmt.Println("Empty GamerInfo received!")
 		c.JSON(http.StatusForbidden, "Empty GamerInfo received")
 		return
 	}
@@ -262,13 +258,10 @@ func HandleInventory(c *gin.Context) {
 		hdrs := map[string]string{}
 		hdrs["343-clearance"] = gamerInfo.ClearanceCode
 		makeAPIRequest(gamerInfo.SpartanKey, url, hdrs, &InventoryResults)
-		formatted_data, err := json.MarshalIndent(InventoryResults, "", " ")
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
-		fmt.Println("Inventory Results: ", string(formatted_data))
-		fmt.Println("Current Core: ", playerInventory[0].CoreDetails.CommonData.Id)
 		var missingItems Items
 		var existingItems Items
 		for _, item := range InventoryResults.InventoryItems {
@@ -308,7 +301,6 @@ func HandleInventory(c *gin.Context) {
 				coreData.IsHighlighted = true
 				data.CurrentlyEquipped.Core = coreData
 			}
-			fmt.Printf("Iteration %d: %v\n", i, reward.ItemMetaData.Core)
 			objects = append(objects, coreData)
 		}
 		if err != nil {
@@ -320,6 +312,8 @@ func HandleInventory(c *gin.Context) {
 	// Aggregate Armory Row For Helmets
 	data = loadArmoryRow(data, playerInventory)
 	data.GamerInfo = newGamerInfo
+	data.Items = Items{}
+
 	c.JSON(http.StatusOK, data)
 }
 
@@ -336,7 +330,6 @@ func loadArmoryRow(data DataToReturn, playerInventory []SpartanInventory) DataTo
 	chestattachments := []ArmoryRowElements{}
 
 	for i, item := range data.Items.InventoryItems {
-		fmt.Println(item.ItemType)
 		// Skip if the item path is empty
 		if item.ItemPath == "" {
 			continue
@@ -611,7 +604,6 @@ func GetInventory(c *gin.Context, gamerInfo requests.GamerInfo) ([]SpartanInvent
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": "Internal server error",
 		})
-		// if err status code == 401, sign user out and re sign in
 
 		HandleLogout(c)
 		return nil, err
