@@ -8,10 +8,17 @@ services:
     ports:
       - "27017:27017"
 
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+
   proxy-server:
     build: ./client/src/utils
     ports:
-      - "3001:3001" 
+      - "3001:3001"
     environment:
       - PROXY_BASE_URL=http://localhost:3001/apiproxy
 
@@ -25,6 +32,7 @@ services:
       - "8080:8080"
     environment:
       - MONGODB_HOST=mongodb://mongodb:27017/
+      - REDIS_HOST=redis:6379
     depends_on:
       - mongodb
 
@@ -37,10 +45,10 @@ services:
         REACT_APP_REDIRECT_URL: http://localhost:3000
     ports:
       - "3000:80"
-
     depends_on:
       - server
-      - proxyserver
+      - proxy-server
 
 volumes:
   mongo-data:
+  redis-data:

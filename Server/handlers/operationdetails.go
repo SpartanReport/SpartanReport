@@ -23,14 +23,18 @@ func HandleOperationDetails(c *gin.Context) {
 	fmt.Println("operationPath: ", operationPath)
 	seasonFound := Season{}
 	// For each season in cachedSeasons check if the operation ID matches the one we are looking for
-	seasons := GetCachedSeasons()
-	for _, season := range seasons.Seasons.Seasons {
-		if season.OperationTrackPath == operationPath {
-			// If it does, set season to the current season and break out of the loop
-			fmt.Println("Found season!")
-			seasonFound = season
-			break
+	ctx := context.Background()
+	seasonID := "SeasonData"
+	cachedSeasons, exists := seasonCache.Get(ctx, seasonID)
+	if exists {
+		for _, season := range cachedSeasons.Seasons {
+			if season.OperationTrackPath == operationPath {
+				// If it does, set season to the current season and break out of the loop
+				fmt.Println("Found season!")
+				seasonFound = season
+				break
 
+			}
 		}
 	}
 
@@ -42,7 +46,6 @@ func HandleOperationDetails(c *gin.Context) {
 
 	key := seasonFound.OperationTrackPath
 	fmt.Println("key: ", key)
-	ctx := context.Background()
 	client, err := storage.NewClient(ctx)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Couldn't initialize GCS client"})

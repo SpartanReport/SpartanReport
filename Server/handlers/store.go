@@ -1,13 +1,17 @@
 package spartanreport
 
 import (
+	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
+	"spartanreport/db"
 	requests "spartanreport/requests"
 	"sync"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-redis/redis"
 )
 
 type StoreData struct {
@@ -81,34 +85,39 @@ type OfferingDetails struct {
 
 var storeDataCache *StoreDataCache
 
-func init() {
-	storeDataCache = &StoreDataCache{
-		data: make(map[string]StoreDataToReturn),
-	}
-}
-
 type StoreDataCache struct {
-	data  map[string]StoreDataToReturn
-	mutex sync.RWMutex
 }
 
-func (sc *StoreDataCache) Get(key string) (StoreDataToReturn, bool) {
-	sc.mutex.RLock()
-	defer sc.mutex.RUnlock()
-	data, exists := sc.data[key]
-	return data, exists
+func (sc *StoreDataCache) Get(ctx context.Context, key string) (StoreDataToReturn, bool) {
+	val, err := db.RedisClient.Get(ctx, key).Result()
+	if err == redis.Nil {
+		return StoreDataToReturn{}, false
+	} else if err != nil {
+		fmt.Println("Error getting from Redis:", err)
+		return StoreDataToReturn{}, false
+	}
+
+	var data StoreDataToReturn
+	err = json.Unmarshal([]byte(val), &data)
+	if err != nil {
+		fmt.Println("Error unmarshalling JSON:", err)
+		return StoreDataToReturn{}, false
+	}
+
+	return data, true
 }
 
-func (sc *StoreDataCache) Set(key string, data StoreDataToReturn) {
-	sc.mutex.Lock()
-	defer sc.mutex.Unlock()
-	sc.data[key] = data
-}
+func (sc *StoreDataCache) Set(ctx context.Context, key string, data StoreDataToReturn) {
+	jsonData, err := json.Marshal(data)
+	if err != nil {
+		fmt.Println("Error marshalling to JSON:", err)
+		return
+	}
 
-func (sc *StoreDataCache) Delete(key string) {
-	sc.mutex.Lock()
-	defer sc.mutex.Unlock()
-	delete(sc.data, key)
+	_, err = db.RedisClient.Set(ctx, key, jsonData, 24*time.Hour).Result()
+	if err != nil {
+		fmt.Println("Error setting in Redis:", err)
+	}
 }
 
 func getNextInvalidateTimeCST() time.Time {
@@ -127,16 +136,16 @@ func getNextInvalidateTimeCST() time.Time {
 }
 func HandleStore(c *gin.Context) {
 	expirationTime := getNextInvalidateTimeCST()
-	cacheKey := expirationTime.Format(time.RFC3339)
+	cacheKey := "storeData:" + expirationTime.Format("2006-01-02")
 
-	if time.Now().After(expirationTime) {
-		storeDataCache.Delete(cacheKey) // Clear the expired cache
-	}
+	ctx := context.Background()
+	storeCache := &StoreDataCache{} // Assuming this is now interfacing with Redis
 
-	if cachedData, exists := storeDataCache.Get(cacheKey); exists {
+	if cachedData, exists := storeCache.Get(ctx, cacheKey); exists {
 		c.JSON(http.StatusOK, cachedData)
 		return
 	}
+
 	var gamerInfo requests.GamerInfo
 	if err := c.ShouldBindJSON(&gamerInfo); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -191,7 +200,9 @@ func HandleStore(c *gin.Context) {
 		gamerInfo: requests.GamerInfo{},
 		StoreData: store,
 	}
-	storeDataCache.Set(cacheKey, dataToStore)
+	// Store the new data in Redis, do not delete the old entry
+	storeCache.Set(ctx, cacheKey, dataToStore)
+
 	data := StoreDataToReturn{
 		gamerInfo: gamerInfo,
 		StoreData: store,

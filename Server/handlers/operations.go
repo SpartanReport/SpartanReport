@@ -1,6 +1,8 @@
 package spartanreport
 
 import (
+	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"sort"
@@ -11,6 +13,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-redis/redis"
 )
 
 type Date struct {
@@ -205,30 +208,41 @@ var (
 	once        sync.Once
 )
 
-func InitSeasonCache() {
-	once.Do(func() {
-		seasonCache = &SeasonCache{
-			data: make(map[string]SeasonMetadata),
-		}
-	})
-}
-
 type SeasonCache struct {
-	data  map[string]SeasonMetadata
-	mutex sync.RWMutex
 }
 
-func (sc *SeasonCache) Get(seasonID string) (SeasonMetadata, bool) {
-	sc.mutex.RLock()
-	defer sc.mutex.RUnlock()
-	data, exists := sc.data[seasonID]
-	return data, exists
+func (sc *SeasonCache) Get(ctx context.Context, seasonID string) (Seasons, bool) {
+	val, err := db.RedisClient.Get(ctx, seasonID).Result()
+	if err != nil {
+		if err == redis.Nil {
+			fmt.Println("Covered in nil check")
+			return Seasons{}, false
+		} else {
+			fmt.Printf("Error getting from Redis: %v\n", err)
+			return Seasons{}, false
+		}
+	}
+
+	var data Seasons
+	err = json.Unmarshal([]byte(val), &data)
+	if err != nil {
+		fmt.Println("Error getting", err) // Handle the error appropriately
+	}
+
+	return data, true
 }
 
-func (sc *SeasonCache) Set(seasonID string, data SeasonMetadata) {
-	sc.mutex.Lock()
-	defer sc.mutex.Unlock()
-	sc.data[seasonID] = data
+func (sc *SeasonCache) Set(ctx context.Context, seasonID string, data Seasons) {
+	jsonData, err := json.Marshal(data)
+	if err != nil {
+		panic(err) // Handle the error appropriately
+	}
+
+	// Set in Redis only if it does not already exist
+	_, err = db.RedisClient.SetNX(ctx, seasonID, jsonData, 0).Result()
+	if err != nil {
+		panic(err) // Handle the error appropriately
+	}
 }
 
 func getCoreFromInventoryItemPath(inventoryItemPath string) string {
@@ -275,45 +289,38 @@ func getCoreIDFromInventoryItemPath(inventoryItemPath string) string {
 	return "Unknown Core"
 }
 
-var cachedSeasons OperationsData // Global cache variable
-// Getter for cachedSeason
-func GetCachedSeasons() OperationsData {
-	return cachedSeasons
-}
 func HandleOperations(c *gin.Context) {
-	// Ensuring that the cache is initialized
-	InitSeasonCache()
-
 	var gamerInfo requests.GamerInfo
 	if err := c.ShouldBindJSON(&gamerInfo); err != nil {
-		if !cachedSeasons.IsEmpty() {
-			c.JSON(http.StatusOK, cachedSeasons)
-			return
-		}
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		fmt.Println("Couldn't bind")
 		return
 	}
 
-	// Retrieve seasons data
-	seasons := Seasons{}
-	err := makeAPIRequest(gamerInfo.SpartanKey, "https://gamecms-hacs.svc.halowaypoint.com/hi/progression/file/calendars/seasons/seasoncalendar.json", nil, &seasons)
-	if err != nil {
-		fmt.Println("Error Obtaining Season Info")
-		return
-	}
+	ctx := context.Background()
+	seasonCache := &SeasonCache{}
 
-	// Process and cache seasons data only if not already cached
-	if cachedSeasons.IsEmpty() && gamerInfo.SpartanKey != "" {
+	// Use a static key for all season data
+	const seasonDataKey = "SeasonData"
+
+	// Check Redis cache first
+	seasonsData, found := seasonCache.Get(ctx, seasonDataKey)
+	if !found {
+		// Make API request if data not in cache
+		seasons := Seasons{}
+		err := makeAPIRequest(gamerInfo.SpartanKey, "https://gamecms-hacs.svc.halowaypoint.com/hi/progression/file/calendars/seasons/seasoncalendar.json", nil, &seasons)
+		if err != nil {
+			fmt.Println("Error Obtaining Season Info")
+			return
+		}
+
 		processSeasons(gamerInfo, &seasons, true)
-	} else {
-		processSeasons(gamerInfo, &seasons, false)
-
+		seasonsData = seasons
 	}
 
-	// Respond with the seasons data along with the user's season progression
+	// Respond with the seasons data
 	data := OperationsData{
-		Seasons:   seasons,
+		Seasons:   seasonsData,
 		GamerInfo: gamerInfo,
 	}
 	c.JSON(http.StatusOK, data)
@@ -336,12 +343,13 @@ func processSeasons(gamerInfo requests.GamerInfo, seasons *Seasons, cache bool) 
 		return startTimeI.After(startTimeJ)
 	})
 
-	// Cache the processed seasons data
-	if cache {
-		cachedSeasons = OperationsData{
-			Seasons: *seasons,
-		}
-	}
+	ctx := context.Background()
+	seasonCache := &SeasonCache{}
+
+	// Cache the processed seasons data using a static key
+	const seasonDataKey = "SeasonData"
+	seasonCache.Set(ctx, seasonDataKey, *seasons)
+
 }
 
 func GetSeasonRewards(gamerInfo requests.GamerInfo, season Season) Track {

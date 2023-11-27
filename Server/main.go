@@ -12,16 +12,24 @@ import (
 	"cloud.google.com/go/storage"
 	"github.com/gin-gonic/contrib/gzip"
 	"github.com/gin-gonic/gin"
+	"github.com/go-redis/redis/v8" // Updated import statement
 	"github.com/newrelic/go-agent/v3/integrations/nrgin"
 	"github.com/newrelic/go-agent/v3/integrations/nrmongo"
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"go.mongodb.org/mongo-driver/bson"
+
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func main() {
+	REDIS_HOST := os.Getenv("REDIS_HOST")
 	mongodb_host := os.Getenv("MONGODB_HOST")
+
+	// Initialize a Redis client
+	db.RedisClient = redis.NewClient(&redis.Options{
+		Addr: REDIS_HOST, // Redis server address
+	})
 
 	// Initialize New Relic
 	// Create an Application:

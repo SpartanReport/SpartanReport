@@ -1,6 +1,7 @@
 package spartanreport
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
@@ -14,9 +15,12 @@ type EventsHome struct {
 
 func HandleEventsHome(c *gin.Context) {
 	fmt.Println("HandleEventsHome")
-	if !cachedSeasons.IsEmpty() {
+	ctx := context.Background()
+	seasonID := "SeasonData"
+	cachedSeasons, exists := seasonCache.Get(ctx, seasonID)
+	if exists {
 		var activeIndex int
-		for i, season := range cachedSeasons.Seasons.Seasons {
+		for i, season := range cachedSeasons.Seasons {
 			if season.IsActive {
 				activeIndex = i
 				break
@@ -26,8 +30,8 @@ func HandleEventsHome(c *gin.Context) {
 		// Check if the active season is not the first one in the list
 		if activeIndex > 0 {
 			EventsToReturn := EventsHome{
-				PreviousSeason: cachedSeasons.Seasons.Seasons[activeIndex],
-				CurrentSeason:  cachedSeasons.Seasons.Seasons[activeIndex+1],
+				PreviousSeason: cachedSeasons.Seasons[activeIndex],
+				CurrentSeason:  cachedSeasons.Seasons[activeIndex+1],
 			}
 			c.JSON(http.StatusOK, EventsToReturn)
 			return
@@ -35,8 +39,8 @@ func HandleEventsHome(c *gin.Context) {
 
 		// Handle case where the active season is the first in the list
 		EventsToReturn := EventsHome{
-			PreviousSeason: cachedSeasons.Seasons.Seasons[activeIndex], // or set a default value
-			CurrentSeason:  cachedSeasons.Seasons.Seasons[activeIndex+1],
+			PreviousSeason: cachedSeasons.Seasons[activeIndex], // or set a default value
+			CurrentSeason:  cachedSeasons.Seasons[activeIndex+1],
 		}
 		c.JSON(http.StatusOK, EventsToReturn)
 		return
