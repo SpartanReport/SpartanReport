@@ -435,7 +435,11 @@ func GetTrackImages(gamerInfo requests.GamerInfo, Ranks []Rank) []Rank {
 					rank.FreeRewards.InventoryRewards[idx].ItemMetaData = result.Item
 					ctx := context.Background()
 					itemPath := rank.FreeRewards.InventoryRewards[idx].InventoryItemPath
-					if err := db.RedisClient.HSet(ctx, "items", itemPath, rank.FreeRewards.InventoryRewards[idx]).Err(); err != nil {
+					itemBytes, err := json.Marshal(rank.FreeRewards.InventoryRewards[idx])
+					if err != nil {
+						fmt.Println("Error marshalling item: ", err)
+					}
+					if err := db.RedisClient.HSet(ctx, "items", itemPath, itemBytes).Err(); err != nil {
 						fmt.Printf("error setting value in Redis: %v", err)
 					}
 				}
@@ -459,7 +463,11 @@ func GetTrackImages(gamerInfo requests.GamerInfo, Ranks []Rank) []Rank {
 					rank.PaidRewards.InventoryRewards[idx].ItemMetaData = result.Item
 					ctx := context.Background()
 					itemPath := rank.PaidRewards.InventoryRewards[idx].InventoryItemPath
-					if err := db.RedisClient.HSet(ctx, "items", itemPath, rank.PaidRewards.InventoryRewards[idx]).Err(); err != nil {
+					itemBytes, err := json.Marshal(rank.PaidRewards.InventoryRewards[idx])
+					if err != nil {
+						fmt.Printf("error marshalling value in Redis: %v", err)
+					}
+					if err := db.RedisClient.HSet(ctx, "items", itemPath, itemBytes).Err(); err != nil {
 						fmt.Printf("error setting value in Redis: %v", err)
 					}
 
