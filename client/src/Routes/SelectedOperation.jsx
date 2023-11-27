@@ -149,6 +149,8 @@ const navigate = useNavigate();
       let rewardType;
       let coreDesignation;
       let name;
+      let track;
+      track = reward.Item.type;
       if (reward.Type === "ArmorMythicFx" || reward.Type === "ArmorFx") {
         reward.Item.IsCrossCompatible = true
 
@@ -200,12 +202,16 @@ const navigate = useNavigate();
           }
         });
       };
-      const rarityClass = reward.Item?.Rarity; // e.g., "Common", "Rare", "Epic", "Legendary"
+      const rarityClass = reward.Item.Quality; // e.g., "Common", "Rare", "Epic", "Legendary"
       const cardClassName = `objectCard-ops cardWithGradient ${rarityClass}`;
+      const rewardClassName = `rewardType ${rarityClass}`;
       console.log("reward: ", reward)
       return (
+        <div>
+          <div className={rewardClassName}>
+          {reward.type}
+          </div>
         <SvgBorderWrapper height={300} width={245} rarity={reward.Item?.Quality}>
-
         <div>
           <div onClick={() => handleItemClick(reward, gamerInfo, selectedSeason, handleBackClick)} key={index} className={cardClassName}>
             <p className='card-subheader-mini-ops'>{name} </p>
@@ -223,6 +229,8 @@ const navigate = useNavigate();
           </div>
         </div>
         </SvgBorderWrapper>
+        </div>
+
       );
     });
   };
@@ -250,12 +258,17 @@ const navigate = useNavigate();
           const isCompleted = index < selectedSeason.UserSeasonProgression.CurrentProgress.Rank;
           return (
             <div key={index} className={`season-rank-container ${isCompleted ? "completed-rank" : ""}`}>
-                <div className="rank-number">
-                  {isCompleted && <img src={checkmark} className="completed-checkmark" alt="Completed" />}
-                  {index + 1}
-                </div>
+
               <div className="season-rank-row">
                 {displayRewards(rank)}
+              </div>
+              <div className="rank-number">
+                  <p className='rank-id'>{index + 1}</p>
+                  {isCompleted && (
+                      <div className="completed-checkmark">
+                          <img src={checkmark} className="checkmark-svg" alt="Completed" />
+                      </div>
+                  )}
               </div>
             </div>
           )

@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import "../Styles/styles.css"
 import "../Styles/store.css"
+import SvgBorderWrapper from '../Styles/Border';
+
+
 
 const Store = ({ gamerInfo }) => {
     const [isLoading, setIsLoading] = useState(true);
@@ -37,102 +40,121 @@ const Store = ({ gamerInfo }) => {
     function ShopImage(base64ImageData){
         return `data:image/png;base64,${base64ImageData}`;
     }
-    const renderOffering = (offering, index) => {
+    const renderOffering = (offering, index, isSpecialOffering=false) => {
         if (offering.OfferingDetails.HeightHint === 1){
             offering.OfferingDetails.HeightHint = 2;
+            offering.OfferingDetails.WidthHint = 3;
+
         }
         const dynamicStyle = {
             height: `${offering.OfferingDetails.HeightHint * baseDimension}px`,
+            heightInt: offering.OfferingDetails.HeightHint * baseDimension,
             width: `${offering.OfferingDetails.WidthHint * baseDimension}px`,
+            widthInt: offering.OfferingDetails.WidthHint * baseDimension,
         };
-        if (offering.IncludedItems.length === 0){
-            return (
-                <div key={index} className="offering" style={dynamicStyle}>
-                    <h3 className='offering-title'>{offering.OfferingDetails.Title.value}</h3>
-                    <img className="offering-img" src={ShopImage(offering.OfferingDetails.OfferingImage)} alt="Shop Logo" />
-                </div>
-            );
-        }
-        if (offering.OfferingDetails.HeightHint === 2 && offering.OfferingDetails.WidthHint === 2){
-            return (
-                <div key={index} className="offering" style={dynamicStyle}>
-                    <h3 className='offering-title'>{offering.OfferingDetails.Title.value}</h3>
-                    <img className="offering-img" src={ShopImage(offering.OfferingDetails.OfferingImage)} alt="Shop Logo" />
-                    <p className='offer-footer-2x2'>Items: {offering.IncludedItems.length} Price: {offering.Prices[0].Cost}</p>
-                </div>
-            );
-        }
+        let cardClassName;
+        if (!isSpecialOffering){
+             cardClassName = ` cardWithGradient-store ${offering.OfferingDetails.Quality}`;
 
+        }else{
+            cardClassName = ``;
+
+        }
+        const imageSrc = ShopImage(offering.OfferingDetails.OfferingImage);
+        const name = offering.OfferingDetails.Title.value;
+        const price = offering.Prices.length > 0 ? `${offering.Prices[0].Cost}` : '';
+
+        
         return (
-            <div key={index} className="offering" style={dynamicStyle}>
-                <h3 className='offering-title'>{offering.OfferingDetails.Title.value}</h3>
-                <img className="offering-img" src={ShopImage(offering.OfferingDetails.OfferingImage)} alt="Shop Logo" />
-                <p className='offer-footer'>Items: {offering.IncludedItems.length} Price: {offering.Prices[0].Cost}</p>
-            </div>
-        );
+            <SvgBorderWrapper height={dynamicStyle.heightInt} width={dynamicStyle.widthInt} rarity={offering.OfferingDetails.Quality}>
+                <div key={index} className={cardClassName}>
+                <div>
+                    <div>
+                        <p className='card-subheader-mini-store'>{name}</p>
+                        <p className='card-subheader-mini-store'>{price} cR</p>
+                        <img
+                            className="offering-img"
+                            src={imageSrc}
+                            alt="Shop Logo"
+                            style={{ 
+                                height: `${dynamicStyle.heightInt-50}px`,
+                                width: `${dynamicStyle.widthInt-15}px`,
+                                }}
+                        />
+                    </div>
+                </div>
+                </div> 
+            </SvgBorderWrapper>
+         );
     };
+    
     storeData.Offerings.sort((a, b) => (b.OfferingDetails.HeightHint * b.OfferingDetails.WidthHint) - (a.OfferingDetails.HeightHint * a.OfferingDetails.WidthHint));
     const renderOfferings = () => {
         let renderedOfferings = [];
-        let gridLength = 0;  // this keeps track of the total grid length used
+        let gridLength = 0; // this keeps track of the total grid length used
     
         const maxGridLength = 14;
         const resetGridLength = () => gridLength = 0;
     
-        // Separate the special titles
+        // Define functions to identify 2x2, 1x1, 2x3, and special tiles
+        const is2x2Tile = offering => offering.OfferingDetails.HeightHint === 2 && offering.OfferingDetails.WidthHint === 2;
+        const is1x1Tile = offering => offering.OfferingDetails.HeightHint === 1 && offering.OfferingDetails.WidthHint === 1;
+        const is2x3Tile = offering => offering.OfferingDetails.HeightHint === 2 && offering.OfferingDetails.WidthHint === 3;
         const specialTitles = ["VIEW BATTLE PASSES", "HCS OFFERS"];
-        const specialOfferings = storeData.Offerings.filter(offering => 
-            specialTitles.includes(offering.OfferingDetails.Title.value)
-        );
+    
+        // Filter out offerings by type
+        const specialOfferings = storeData.Offerings.filter(offering => specialTitles.includes(offering.OfferingDetails.Title.value));
+        const twoByTwoOfferings = storeData.Offerings.filter(is2x2Tile);
+        const twoByThreeOfferings = storeData.Offerings.filter(is2x3Tile);
+        const oneByOneOfferings = storeData.Offerings.filter(is1x1Tile);
         const otherOfferings = storeData.Offerings.filter(offering => 
-            !specialTitles.includes(offering.OfferingDetails.Title.value)
+            !specialTitles.includes(offering.OfferingDetails.Title.value) && 
+            !is2x2Tile(offering) && 
+            !is1x1Tile(offering) && 
+            !is2x3Tile(offering)
         );
     
-        // Create a container for the special titles to stack them vertically
-        const specialOfferingsContainer = specialOfferings.map(offering =>
-        renderOffering(offering));
-        renderedOfferings.push(
-            <div className="special-offering-container" key="special-container">
-                {specialOfferingsContainer}
-            </div>
-        );
+        // Render special offerings first using special-offering-stack
+        if (specialOfferings.length > 0) {
+            renderedOfferings.push(
+                <div className="special-offering-stack" key="special-stack">
+                    {specialOfferings.map((offering, index) => renderOffering(offering, index))}
+                </div>
+            );
+        }
     
-        // Now, calculate the gridLength used by these special offerings to avoid overlapping
-        specialOfferings.forEach(offering => {
-            gridLength += offering.OfferingDetails.HeightHint;
+        // Render larger non-special offerings
+        otherOfferings.forEach((offering, index) => {
+            renderedOfferings.push(renderOffering(offering, index));
         });
     
-        // Render the rest of the offerings
-        for (let i = 0; i < otherOfferings.length; i++) {
-            const offering = otherOfferings[i];
-    
-            if (gridLength + offering.OfferingDetails.HeightHint > maxGridLength) {
-                resetGridLength();
-            }
-    
-            if (is2x2Tile(offering) || is1x2Tile(offering)) {
-                if (i + 1 < otherOfferings.length && (is2x2Tile(otherOfferings[i + 1]) || is1x2Tile(otherOfferings[i + 1]))) {
-                    renderedOfferings.push(
-                        <div className="offering-row" key={i}>
-                            {renderOffering(offering, i)}
-                            {renderOffering(otherOfferings[i + 1], i + 1)}
-                        </div>
-                    );
-                    gridLength += offering.OfferingDetails.HeightHint;
-                    gridLength += otherOfferings[i + 1].OfferingDetails.HeightHint;
-                    i++;  // increment to skip the next offering
-                } else {
-                    renderedOfferings.push(renderOffering(offering, i));
-                    gridLength += offering.OfferingDetails.HeightHint;
-                }
-            } else {
-                renderedOfferings.push(renderOffering(offering, i));
-                gridLength += offering.OfferingDetails.HeightHint;
-            }
+        // Render 2x3 offerings using a similar stacking approach
+        if (twoByThreeOfferings.length > 0) {
+            renderedOfferings.push(
+                <div className="two-by-three-offering-stack" key="two-by-three-stack">
+                    {twoByThreeOfferings.map((offering, index) => renderOffering(offering, index))}
+                </div>
+            );
         }
+    
+        // Render 2x2 offerings
+        twoByTwoOfferings.forEach((offering, index) => {
+            if (!specialTitles.includes(offering.OfferingDetails.Title.value)){
+                renderedOfferings.push(renderOffering(offering, index));
+            }
+        });
+    
+        // Render 1x1 offerings last
+        oneByOneOfferings.forEach((offering, index) => {
+                renderedOfferings.push(renderOffering(offering, index));
+        });
     
         return renderedOfferings;
     };
+    
+    
+    
+    
     
     return (
         <div>

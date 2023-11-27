@@ -178,7 +178,6 @@
 .event-date-ops{
   font-family: 'Oswald', sans-serif;
   letter-spacing: 1px;
-  
 }
 
 .card-subheader-mini-ops {
@@ -190,73 +189,47 @@
   background-color: #4389BA;
   margin-bottom: 0px;
 }
-.item-data{
-    text-align: center;
-    background: rgba(255, 255, 255, 0.1);
-    font-style: italic;
-    white-space: nowrap;
-    
-}
 
-.item-type{
-    text-align: center;
-    background: rgba(255, 255, 255, 0.1);
-    font-style: italic;
-    transform: translateY(-66%);
 
-}
-.item-core{
-    text-align: center;
-    background: rgba(255, 255, 255, 0.1);
-    font-style: italic;
-    font-weight: 700;
-    transform: translateY(-130%);
-    border-radius: 0 0 10px 10px;
 
-}
+
 .scrollable-ranks {
     transform: scale(0.95);
     display: flex;
     overflow-x: auto;
     height: 450px;
   }
-  .season-rank-container{
-    border-radius: 10px;
 
-    background: rgba(7, 7, 7, 0.2);
-    backdrop-filter: blur(10px);
-    max-height: 400px;
-  }
   .season-rank-row {
     display: flex;
     flex-direction: row;
     margin: 10px;
+    gap:10px;
     height: 300px;
     align-items: center; /* Vertically centers the items, but depends on flex-direction */
   }
 
-  .track-label-div{
-    padding-top: 10px;
-    transform: translateY(20%);
-  }
-.track-label{
-    font-style: italic;
-    text-align: center;
-    font-weight: 900;
-    color: white;
-    border-radius: 5px;
-    transform: translateY(160%);
 
+.rank-number {
+  display: flex; /* Enable flexbox */
+  align-items: center; /* Center items vertically */
+  color: white;
+  margin-top: 20px;
+  margin-left:15px;
+  margin-right:9px;
+  font-style: italic;
+  font-weight: 900;
+  border-left: 5px solid #81CDE8; /* Example border, adjust as needed */
 }
-.rank-number{
-    color: white;
-    background: rgba(7, 7, 7, 0.431);
-    padding-bottom: 15px;
-    font-size: larger;
-    font-style: italic;
-    font-weight: 900;
-    padding-left: 10%;
+
+/* Child that contains the rank number */
+.rank-number > :first-child {
+  margin:auto;
+  padding-left:10px;
+  width:100%;
+  background-color: #273B44;
 }
+
 
 
 .season-rank-card:hover{
@@ -330,6 +303,15 @@
     font-style: italic;
     font-size: 14px;
 }
+
+.rewardType{
+  background: var(--rarity-color);
+  max-width: 50px;
+  margin-left:2.5px;
+  text-align: center;
+  font-family: 'Oswald', sans-serif;
+}
+
 .background-epic {
     background: linear-gradient(#6F4196, #6F4196);
   }
@@ -342,14 +324,18 @@
     background: linear-gradient(#2D597C, #2D597C);
   }
   
-  .completed-rank {
-    border: 2px solid green; /* or whatever color you like */
-  }
-  
   .completed-checkmark {
-    width: 20px;
-    height:20px;
-    margin-right: 10px;    
-    border-radius: 5px;
-    background-color: green;
+    background-color: #1D435D;
+    width: 24px;
+    height: 24px;
+    display: flex; /* Use flexbox to center the child SVG */
+    justify-content: center; /* Center horizontally */
+    align-items: center; /* Center vertically */
+    margin: auto;
+  }
+
+  .checkmark-svg {
+    /* Set the size of the SVG image */
+    width: 14px;
+    height: 14px;
   }

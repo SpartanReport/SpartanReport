@@ -7,12 +7,7 @@
     backdrop-filter: blur(10px);
 }
 
-.offering-row {
-    display: flex;
-    flex-direction: column; /* Stacking vertically */
-    flex-wrap: nowrap;
-    margin-bottom: 5px; /* Added this to give 5px margin at the bottom of each row */
-}
+
 
 .offering.active {
     transform: scale(1.2);
@@ -26,45 +21,57 @@
     z-index: 2; /* Make it above other elements */
 }
 
-.offering {
-    color: white;
-    box-sizing: border-box;
-    border-radius: 10px;
-    border: 1px solid black;
-    background: rgba(7, 7, 7, 0.2);
-    border-radius: 5px;
-    border: 1px solid #000000;
-    border-radius: 10px; /* bigger rounded corners */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* softer shadow */
-    transition: all 0.3s ease;
-    margin-bottom: 5px; /* Adding margin-bottom to every offering */
-}
 
-.offering:nth-child(2n) {
-    margin-bottom: 0; /* Remove margin-bottom from every second offering */
-}
-.offer-footer{
-    text-align: center;
-    font-size: small;
-    background: rgba(7, 7, 7, 0.64);
-}
-.offer-footer-2x2{
-    text-align: center;
-    font-size: small;
-    background: rgba(7, 7, 7, 0.64);
-    transform: translateY(-100%);
 
-}
-.offering-title {
-    text-align: center;
-    font-size: small;
-}
 
 .offering-img {
-    height: 88%;  /* Take up the full height of the container */
-    object-fit:contain;  /* Will cover the space without warping, but might clip some of the image off */
-    width: 100%; /* Take up the full width of the container */
-    max-height: 400px;  /* Adjust as needed */
-    max-width: 400px; /* Adjust as needed */
-    border-radius: 0px 0px 10px 10px;
+    display: block;
+    transform: translatey(-3%);
+    margin: auto; /* Center the image within the container */
+}
+
+.two-by-three-offering-pair {
+    display: flex;
+    flex-direction: column; /* Stack them vertically */
+    /* Add any additional styling as needed */
+}
+
+.special-offering-stack, .two-by-three-offering-stack {
+    display: flex;
+    flex-direction: column; /* Stack them vertically */
+    /* Add any additional styling as needed */
+}
+.card-subheader-mini-store {
+    font-family: 'Oswald', sans-serif;
+    text-align: center;
+    font-style: normal;
+    font-size: 15px;
+    margin-left:10px;
+    margin-right:10px;
+    margin-top:5px;
+    margin-bottom: -5px;
+    color: white;
+    background-color: #4389BA;
+
+}
+
+.cardWithGradient-store {
+    position: relative;
+    z-index: 0;
+  }
+  
+  .cardWithGradient-store::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left:10px;
+    right: 5px;
+    bottom: 5px;
+    background: linear-gradient(to bottom, transparent,transparent 15px, var(--rarity-color));
+    z-index: -1;
+  }
+  .stacked-offering-container {
+    display: flex;
+    flex-direction: column; /* Stack them vertically */
+    /* Add any additional styling as needed */
 }

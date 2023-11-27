@@ -450,7 +450,16 @@ func createArmoryRowElement(id int, item ItemsInInventory, itemType, equippedPat
 func GetInventoryItemImages(gamerInfo requests.GamerInfo, Items Items) Items {
 	// Create a channel to receive the results
 	results := make(chan RewardResult)
-
+	skipTitles := map[string]bool{
+		"Deep Ocean":       true,
+		"SOFTPOINT":        true,
+		"UA/Viator-2A3":    true,
+		"UA/VALENS":        true,
+		"Tarnished Scale":  true,
+		"Violent Darkness": true,
+		"Blue Pop":         true,
+		"Autumn Offensive": true,
+	}
 	// Function to make an API request and send the result to the channel
 	makeRequest := func(path string) {
 		// Determine the core based on InventoryItemPath
@@ -460,6 +469,12 @@ func GetInventoryItemImages(gamerInfo requests.GamerInfo, Items Items) Items {
 
 		// Make API Request to get item data
 		err := makeAPIRequest(gamerInfo.SpartanKey, url, nil, &currentItemResponse)
+		// Check if the title is in the skip list
+		title := currentItemResponse.CommonData.Title.Value
+		if _, found := skipTitles[title]; found {
+			fmt.Println("Skipping:", title)
+			results <- RewardResult{} // Send an empty result to ensure channel doesn't block
+		}
 		if err != nil {
 			fmt.Println("Error making request for item data: ", err)
 		}
@@ -471,7 +486,6 @@ func GetInventoryItemImages(gamerInfo requests.GamerInfo, Items Items) Items {
 		}
 		rawImageData, err = compressPNGWithImaging(rawImageData, true, 140, 140)
 		if err != nil {
-			// fmt.Println("Error getting item image: ", err)
 			results <- RewardResult{} // Send an empty result to ensure channel doesn't block
 		} else {
 			currentItemResponse.CommonData.CoreTitle = core // Assign Core
