@@ -12,6 +12,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
+	"github.com/mileusna/useragent"
 )
 
 var refreshTokenMap = make(map[string]RefreshTokenInfo)
@@ -200,6 +201,10 @@ func ProcessAuthCode(code string, w http.ResponseWriter, r *http.Request) {
 	SetGamerInfo(SpartanResp.SpartanToken, gamerInfo)
 	// Send the SpartanToken to the client
 	host := "localhost:3000"
+	userAgent := useragent.Parse(r.UserAgent())
+	if userAgent.OS == "iOS" {
+		host = "msauth.MiracKara.SpartanReport://auth"
+	}
 	redirectURL := fmt.Sprintf("%s/?token=%s", host, SpartanResp.SpartanToken)
 	fmt.Println("redircint to: ", redirectURL)
 	http.Redirect(w, r, redirectURL, http.StatusSeeOther)
