@@ -18,12 +18,13 @@ type Items struct {
 }
 
 type ItemsInInventory struct {
-	Amount        int    `json:"Amount"`
-	ItemId        string `json:"ItemId"`
-	ItemPath      string `json:"ItemPath"`
-	ItemType      string `json:"ItemType"`
-	ItemImageData string `json:"ItemImageData"`
-	ItemMetaData  Item   `json:"Item"`
+	Amount        int          `json:"Amount"`
+	ItemId        string       `json:"ItemId"`
+	ItemPath      string       `json:"ItemPath"`
+	ItemType      string       `json:"ItemType"`
+	ItemImageData string       `json:"ItemImageData"`
+	ItemMetaData  Item         `json:"Item"`
+	DetailedItem  ItemResponse `json:"DetailedItem"`
 }
 
 func HandleEquipArmor(c *gin.Context) {

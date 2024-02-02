@@ -23,12 +23,10 @@ import (
 )
 
 func main() {
-	REDIS_HOST := os.Getenv("REDIS_HOST")
-	mongodb_host := os.Getenv("MONGODB_HOST")
 
 	// Initialize a Redis client
 	db.RedisClient = redis.NewClient(&redis.Options{
-		Addr: REDIS_HOST, // Redis server address
+		Addr: "localhost:6379", // Redis server address
 	})
 
 	// Initialize New Relic
@@ -60,7 +58,7 @@ func main() {
 	client.Bucket("haloseasondata")
 
 	// Initialize MongoDB Client
-	db.MongoClient, err = mongo.NewClient(options.Client().ApplyURI(mongodb_host).SetMonitor(nrMon))
+	db.MongoClient, err = mongo.NewClient(options.Client().ApplyURI("mongodb://localhost:27017").SetMonitor(nrMon))
 	if err != nil {
 		fmt.Println("Error creating MongoDB client:", err)
 		return

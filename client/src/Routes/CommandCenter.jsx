@@ -124,6 +124,8 @@ function CommandCenter({ gamerInfo }) {
   ];
 
   if (coreDetails) {
+    console.log(coreDetails)
+
     const commonDataKeys = ["spartanKey", "xuid", "xbltoken", "clearanceCode", "gamertag", "data"];
     commonDataKeys.forEach((key) => {
       if (coreDetails.CommonData[key]) {

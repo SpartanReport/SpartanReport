@@ -121,23 +121,45 @@ type Track struct {
 }
 
 // Individual Item Data
-
+type ItemOptions struct {
+	ItemType          string   `json:"ItemType"`
+	IsRequired        bool     `json:"IsRequired"`
+	DefaultOptionPath string   `json:"DefaultOptionPath"`
+	OptionPaths       []string `json:"OptionPaths"`
+}
 type ItemResponse struct {
-	CommonData Item `json:"CommonData"`
+	CommonData        Item        `json:"CommonData"`
+	IsKit             bool        `json:"IsKit"`
+	KitBaseThemePath  string      `json:"KitBaseThemePath"`
+	Coatings          ItemOptions `json:"Coatings"`
+	Visors            ItemOptions `json:"Visors"`
+	Helmets           ItemOptions `json:"Helmets"`
+	LeftShoulderPads  ItemOptions `json:"LeftShoulderPads"`
+	RightShoulderPads ItemOptions `json:"RightShoulderPads"`
+	Gloves            ItemOptions `json:"Gloves"`
+	KneePads          ItemOptions `json:"KneePads"`
+	WristAttachments  ItemOptions `json:"WristAttachments"`
+	ChestAttachments  ItemOptions `json:"ChestAttachments"`
+	HipAttachments    ItemOptions `json:"HipAttachments"`
 }
 type Title struct {
 	Value string `json:"value"`
 }
 type Item struct {
-	Title             Title       `json:"Title"`
-	IsCrossCompatible bool        `json:"IsCrossCompatible"`
-	SeasonNumber      int         `json:"SeasonNumber"`
-	Quality           string      `json:"Quality"`
-	ManufacturerId    int         `json:"ManufacturerId"`
-	CoreTitle         string      `json:"CoreTitle"`
-	Media             DisplayPath `json:"DisplayPath"`
-	Description       Field       `json:"Description"`
-	Core              string      `json:"Core"`
+	Title             Title        `json:"Title"`
+	IsCrossCompatible bool         `json:"IsCrossCompatible"`
+	SeasonNumber      int          `json:"SeasonNumber"`
+	Quality           string       `json:"Quality"`
+	ManufacturerId    int          `json:"ManufacturerId"`
+	CoreTitle         string       `json:"CoreTitle"`
+	Media             DisplayPath  `json:"DisplayPath"`
+	ParentPaths       []ParentPath `json:"ParentPaths"`
+	Description       Field        `json:"Description"`
+	Core              string       `json:"Core"`
+}
+type ParentPath struct {
+	Path string `json:"Path"`
+	Type string `json:"Type"`
 }
 type DisplayPath struct {
 	Width  int       `json:"Width"`
@@ -171,9 +193,10 @@ type SpecificOpsData struct {
 
 // Struct to hold the path and the image data
 type RewardResult struct {
-	Path      string
-	ImageData string
-	Item      Item
+	Path         string
+	ImageData    string
+	Item         Item
+	DetailedItem ItemResponse
 }
 type StoredData struct {
 	SeasonOperationTrackPath string `bson:"season_operation_track_path"`
@@ -262,6 +285,8 @@ func getCoreFromInventoryItemPath(inventoryItemPath string) string {
 		return "Chimera Core"
 	} else if strings.Contains(inventoryItemPath, "haz") {
 		return "Hazmat Core"
+	} else if strings.Contains(inventoryItemPath, "hws") {
+		return "Mark IV Core"
 	}
 	// If none of the keywords match, return "Unknown Core"
 	return "Unknown Core"
@@ -284,6 +309,8 @@ func getCoreIDFromInventoryItemPath(inventoryItemPath string) string {
 		return "017-001-fwl-c13d0b38"
 	} else if strings.Contains(inventoryItemPath, "haz") {
 		return "017-001-haz-c13d0b38"
+	} else if strings.Contains(inventoryItemPath, "hws") {
+		return "017-001-hws-c13d0b38"
 	}
 	// If none of the keywords match, return "Unknown Core"
 	return "Unknown Core"

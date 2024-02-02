@@ -17,11 +17,12 @@ const RenderArmoryRow = ({toggleVisibility,visId,isLast, rowType, isVisible, obj
               <svg id="dropdown" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12.44 12.44"><g id="Layer_3"><g id="Login_Button"><polygon class="cls-1" points="12.44 0 12.44 12.44 0 12.44 12.44 0"/></g></g></svg>
         </svg></div>): (<div className='dropdown-arrow-container'><svg className="arrow-icon-collapsed" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                   <svg id="dropdown" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12.44 12.44"><g id="Layer_3"><g id="Profile"><polygon class="cls-1" points="12.44 12.44 12.44 0 0 0 12.44 12.44"/></g></g></svg>
-              </svg></div>)}</h1>
+              </svg></div>)}
+              </h1>
       </div>
       {isVisible ? (
-        <div className="armory-row">
-          <ArmoryRow objects={objects} resetHighlight={resetHighlight} fullObjects={fullObjects} gamerInfo={gamerInfo} onEquipItem={onEquipItem} currentlyEquipped={currentlyEquipped} setHighlightedItems={setHighlightedItems} highlightedItems={highlightedItems} />
+        <div id={visId} className="armory-row">
+          <ArmoryRow visId={visId} objects={objects} resetHighlight={resetHighlight} fullObjects={fullObjects} gamerInfo={gamerInfo} onEquipItem={onEquipItem} currentlyEquipped={currentlyEquipped} setHighlightedItems={setHighlightedItems} highlightedItems={highlightedItems} />
         </div>
       ) : <div style={{height:isLast ? 100:50}}></div>}
     </>
@@ -40,6 +41,7 @@ const Spartan = ({ gamerInfo }) => {
     kneepad: true,
     hipattachement: true,
     chestattachement: true,
+    armorkit: true,
   });
   const [highlightedItems, setHighlightedItems] = useState({
     armorcoreId: null,
@@ -53,6 +55,7 @@ const Spartan = ({ gamerInfo }) => {
     armorkneepadId: null,
     armorhipattachmentId: null,
     armorchestattachmentId: null,
+    armorthemeId: null,
 
 
   });
@@ -137,6 +140,7 @@ const Spartan = ({ gamerInfo }) => {
       "ArmorKneePad": "ArmoryRowKneePads",
       "ArmorHipAttachment": "ArmoryRowHipAttachments",
       "ArmorChestAttachment": "ArmoryRowChestAttachments",
+      "ArmorTheme": "ArmoryRowArmorKits",
     };
   
     // Update the appropriate armory row if the itemType matches
@@ -169,6 +173,7 @@ const Spartan = ({ gamerInfo }) => {
         CurrentlyEquippedKneePad: null,
         CurrentlyEquippedHipAttachment: null,
         CurrentlyEquippedChestAttachment: null,
+        CurrentlyEquippedArmorKit: null,
       });
       console.log("Armor Core equipped, other items reset.");
     } else {
@@ -205,12 +210,25 @@ const Spartan = ({ gamerInfo }) => {
         resetHighlight={resetHighlight}
         toggleVisibility={toggleVisibility}
       />
+      <RenderArmoryRow 
+        rowType="Armor Kits" 
+        visId = "armorkit"
+        isVisible={visibleRows.armorkit} 
+        objects={armoryRow.ArmoryRowKits} 
+        fullObjects={armoryRow}
+        gamerInfo={gamerInfo}
+        onEquipItem={handleEquipItem}
+        currentlyEquipped={currentlyEquipped}
+        setHighlightedItems={setHighlightedItems}
+        highlightedItems={highlightedItems}
+        resetHighlight={resetHighlight}
+        toggleVisibility={toggleVisibility}
+      />
 
 
       <RenderArmoryRow 
         rowType="Coatings" 
         visId = "coatings"
-
         isVisible={visibleRows.coatings} 
         objects={armoryRow.ArmoryRowCoatings} 
         fullObjects={armoryRow}

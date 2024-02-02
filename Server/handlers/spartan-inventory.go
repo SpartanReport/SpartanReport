@@ -181,6 +181,22 @@ type ArmoryRowElements struct {
 	Type          string `json:"Type"`
 	CorePath      string `json:"CorePath"`
 }
+type ArmoryKitRowElements struct {
+	ID                  int           `json:"id"`
+	Name                string        `json:"name"`
+	IsHighlighted       bool          `json:"isHighlighted"`
+	Image               string        `json:"Image,omitempty"`
+	CoreId              string        `json:"CoreId"`
+	BelongsToCore       string        `json:"BelongsToCore"`
+	Rarity              string        `json:"Rarity"`
+	ImagePath           string        `json:"ImagePath,omitempty"`
+	IsCrossCore         bool          `json:"IsCrossCore"`
+	Type                string        `json:"Type"`
+	CorePath            string        `json:"CorePath"`
+	KitName             string        `json:"KitName"`
+	KitEquippablePieces []ItemOptions `json:"KitEquippablePieces"`
+}
+
 type ArmoryRowItems struct {
 	ArmoryRowElements          []ArmoryRowElements `json:"Helmets"`
 	ArmoryRowGloves            []ArmoryRowElements `json:"Gloves"`
@@ -194,17 +210,18 @@ type ArmoryRowItems struct {
 }
 
 type CurrentlyEquipped struct {
-	Helmet            ArmoryRowElements `json:"CurrentlyEquippedHelmet"`
-	Core              ArmoryRowCore     `json:"CurrentlyEquippedCore"`
-	Visor             ArmoryRowElements `json:"CurrentlyEquippedVisor"`
-	Gloves            ArmoryRowElements `json:"CurrentlyEquippedGlove"`
-	Coatings          ArmoryRowElements `json:"CurrentlyEquippedCoating"`
-	LeftShoulderPads  ArmoryRowElements `json:"CurrentlyEquippedLeftShoulderPad"`
-	RightShoulderPads ArmoryRowElements `json:"CurrentlyEquippedRightShoulderPad"`
-	WristAttachments  ArmoryRowElements `json:"CurrentlyEquippedWristAttachment"`
-	HipAttachments    ArmoryRowElements `json:"CurrentlyEquippedHipAttachment"`
-	KneePads          ArmoryRowElements `json:"CurrentlyEquippedKneePad"`
-	ChestAttachments  ArmoryRowElements `json:"CurrentlyEquippedChestAttachment"`
+	Helmet            ArmoryRowElements    `json:"CurrentlyEquippedHelmet"`
+	Core              ArmoryRowCore        `json:"CurrentlyEquippedCore"`
+	Visor             ArmoryRowElements    `json:"CurrentlyEquippedVisor"`
+	Gloves            ArmoryRowElements    `json:"CurrentlyEquippedGlove"`
+	Coatings          ArmoryRowElements    `json:"CurrentlyEquippedCoating"`
+	LeftShoulderPads  ArmoryRowElements    `json:"CurrentlyEquippedLeftShoulderPad"`
+	RightShoulderPads ArmoryRowElements    `json:"CurrentlyEquippedRightShoulderPad"`
+	WristAttachments  ArmoryRowElements    `json:"CurrentlyEquippedWristAttachment"`
+	HipAttachments    ArmoryRowElements    `json:"CurrentlyEquippedHipAttachment"`
+	KneePads          ArmoryRowElements    `json:"CurrentlyEquippedKneePad"`
+	ChestAttachments  ArmoryRowElements    `json:"CurrentlyEquippedChestAttachment"`
+	Kit               ArmoryKitRowElements `json:"CurrentlyEquippedKit"`
 }
 
 type DataToReturn struct {
@@ -221,6 +238,7 @@ type DataToReturn struct {
 	ArmoryRowHipAttachments    []ArmoryRowElements
 	ArmoryRowKneePads          []ArmoryRowElements
 	ArmoryRowChestAttachments  []ArmoryRowElements
+	ArmoryRowKits              []ArmoryKitRowElements
 
 	CurrentlyEquipped CurrentlyEquipped
 	Items             Items
@@ -291,7 +309,7 @@ func HandleInventory(c *gin.Context) {
 				}
 			}
 		}
-		fetchedItems := GetInventoryItemImages(gamerInfo, missingItems)
+		fetchedItems := FetchInventoryItems(gamerInfo, missingItems)
 		var completeItems Items
 
 		completeItems.InventoryItems = append(existingItems.InventoryItems, fetchedItems.InventoryItems...)
@@ -330,6 +348,23 @@ func HandleInventory(c *gin.Context) {
 	c.JSON(http.StatusOK, data)
 }
 
+func StripKitDataFromItem(item ItemResponse) ItemResponse {
+	emptyItemOptions := ItemOptions{}
+	item.Coatings = emptyItemOptions
+	item.ChestAttachments = emptyItemOptions
+	item.Visors = emptyItemOptions
+	item.Helmets = emptyItemOptions
+	item.Gloves = emptyItemOptions
+	item.KneePads = emptyItemOptions
+	item.LeftShoulderPads = emptyItemOptions
+	item.RightShoulderPads = emptyItemOptions
+	item.WristAttachments = emptyItemOptions
+	item.HipAttachments = emptyItemOptions
+
+	return item
+
+}
+
 func loadArmoryRow(data DataToReturn, playerInventory []SpartanInventory) DataToReturn {
 	helmets := []ArmoryRowElements{}
 	gloves := []ArmoryRowElements{}
@@ -341,6 +376,7 @@ func loadArmoryRow(data DataToReturn, playerInventory []SpartanInventory) DataTo
 	hipattachments := []ArmoryRowElements{}
 	kneepads := []ArmoryRowElements{}
 	chestattachments := []ArmoryRowElements{}
+	armorkits := []ArmoryKitRowElements{}
 
 	for i, item := range data.Items.InventoryItems {
 		// Skip if the item path is empty
@@ -349,7 +385,16 @@ func loadArmoryRow(data DataToReturn, playerInventory []SpartanInventory) DataTo
 		}
 
 		switch item.ItemType {
+		case "ArmorTheme":
+			armorkit := createArmoryRowKit(i, item, "ArmorTheme", playerInventory[0].ArmorCores.ArmorCores[0].Themes[0].ThemePath)
+			armorkits = append(armorkits, armorkit)
+			if armorkit.IsHighlighted {
+				data.CurrentlyEquipped.Kit = armorkit
+			}
+			fmt.Println("Armor Kit Received")
+			fmt.Println("Kit Name: ", item.ItemMetaData.Title.Value)
 		case "ArmorHelmet":
+
 			helmet := createArmoryRowElement(i, item, "ArmorHelmet", playerInventory[0].ArmorCores.ArmorCores[0].Themes[0].HelmetPath)
 			helmets = append(helmets, helmet)
 			if helmet.IsHighlighted {
@@ -416,6 +461,19 @@ func loadArmoryRow(data DataToReturn, playerInventory []SpartanInventory) DataTo
 			continue
 		}
 	}
+	// if armorkit.name is in data.armoryrow.name (object) then remove it from armorkit
+	// if armorkit.name is in data.armoryrow.name (object) then remove it from armorkit
+	for i := len(armorkits) - 1; i >= 0; i-- {
+		kit := armorkits[i]
+		for _, core := range data.ArmoryRow {
+			fmt.Println("Kit Name: ", kit.Name)
+			if kit.Name == core.Name || kit.Name == "Mark VII" || kit.Name == "" {
+				armorkits = append(armorkits[:i], armorkits[i+1:]...)
+				break // Break out of the inner loop once you've removed an element
+			}
+		}
+	}
+
 	data.ArmoryRowHelmets = helmets
 	data.ArmoryRowGloves = gloves
 	data.ArmoryRowVisors = visors
@@ -426,6 +484,7 @@ func loadArmoryRow(data DataToReturn, playerInventory []SpartanInventory) DataTo
 	data.ArmoryRowHipAttachments = hipattachments
 	data.ArmoryRowKneePads = kneepads
 	data.ArmoryRowChestAttachments = chestattachments
+	data.ArmoryRowKits = armorkits
 	return data
 
 }
@@ -447,7 +506,64 @@ func createArmoryRowElement(id int, item ItemsInInventory, itemType, equippedPat
 	return element
 }
 
-func GetInventoryItemImages(gamerInfo requests.GamerInfo, Items Items) Items {
+// Add Labels to detailedItems
+func addLabelsToDetailedItems(details ItemResponse) ItemResponse {
+	details.Coatings.ItemType = "ArmorCoating"
+	details.ChestAttachments.ItemType = "ArmorChestAttachment"
+	details.Visors.ItemType = "ArmorVisor"
+	details.Helmets.ItemType = "ArmorHelmet"
+	details.Gloves.ItemType = "ArmorGlove"
+	details.KneePads.ItemType = "ArmorKneePad"
+	details.LeftShoulderPads.ItemType = "ArmorLeftShoulderPad"
+	details.RightShoulderPads.ItemType = "ArmorRightShoulderPad"
+	details.WristAttachments.ItemType = "ArmorWristAttachment"
+	details.HipAttachments.ItemType = "ArmorHipAttachment"
+	return details
+
+}
+
+func createArmoryRowKit(id int, item ItemsInInventory, itemType, equippedPath string) ArmoryKitRowElements {
+	KitEquippablePieces := []ItemOptions{}
+	item.DetailedItem = addLabelsToDetailedItems(item.DetailedItem)
+	KitEquippablePieces = append(KitEquippablePieces, item.DetailedItem.Coatings)
+	KitEquippablePieces = append(KitEquippablePieces, item.DetailedItem.ChestAttachments)
+	KitEquippablePieces = append(KitEquippablePieces, item.DetailedItem.Visors)
+	KitEquippablePieces = append(KitEquippablePieces, item.DetailedItem.Helmets)
+	KitEquippablePieces = append(KitEquippablePieces, item.DetailedItem.Gloves)
+	KitEquippablePieces = append(KitEquippablePieces, item.DetailedItem.KneePads)
+	KitEquippablePieces = append(KitEquippablePieces, item.DetailedItem.LeftShoulderPads)
+	KitEquippablePieces = append(KitEquippablePieces, item.DetailedItem.RightShoulderPads)
+	KitEquippablePieces = append(KitEquippablePieces, item.DetailedItem.WristAttachments)
+	KitEquippablePieces = append(KitEquippablePieces, item.DetailedItem.HipAttachments)
+	parentCorePath := ""
+	// Iterate over ParentPaths and check for "ArmorCore"
+	for _, parentPath := range item.ItemMetaData.ParentPaths {
+		if parentPath.Type == "ArmorCore" {
+			// remove the beginning Cores/ArmorCores/ from the string and trailing .json
+			parentCorePath = strings.Replace(parentPath.Path, "Cores/ArmorCores/", "", 1)
+			parentCorePath = strings.Replace(parentCorePath, ".json", "", 1)
+
+		}
+	}
+	element := ArmoryKitRowElements{
+		ID:                  id,
+		CorePath:            item.ItemPath,
+		Image:               item.ItemImageData,
+		ImagePath:           item.ItemMetaData.Media.Media.MediaUrl.Path,
+		Rarity:              item.ItemMetaData.Quality,
+		BelongsToCore:       parentCorePath,
+		CoreId:              item.ItemMetaData.Core,
+		Name:                item.ItemMetaData.Title.Value,
+		IsCrossCore:         item.ItemMetaData.IsCrossCompatible,
+		Type:                itemType,
+		IsHighlighted:       item.ItemPath == equippedPath,
+		KitName:             equippedPath,
+		KitEquippablePieces: KitEquippablePieces,
+	}
+
+	return element
+}
+func FetchInventoryItems(gamerInfo requests.GamerInfo, Items Items) Items {
 	// Create a channel to receive the results
 	results := make(chan RewardResult)
 	skipTitles := map[string]bool{
@@ -478,6 +594,11 @@ func GetInventoryItemImages(gamerInfo requests.GamerInfo, Items Items) Items {
 		if err != nil {
 			fmt.Println("Error making request for item data: ", err)
 		}
+
+		// Strip extraneous data if not armor kit
+		if !currentItemResponse.IsKit {
+			currentItemResponse = StripKitDataFromItem(currentItemResponse)
+		}
 		itemImagePath := currentItemResponse.CommonData.Media.Media.MediaUrl.Path
 		url = "https://gamecms-hacs.svc.halowaypoint.com/hi/images/file/" + itemImagePath
 		rawImageData, err := makeAPIRequestImage(gamerInfo.SpartanKey, url, nil)
@@ -485,11 +606,12 @@ func GetInventoryItemImages(gamerInfo requests.GamerInfo, Items Items) Items {
 			fmt.Println("Error getting image data: ", err)
 		}
 		rawImageData, err = compressPNGWithImaging(rawImageData, true, 140, 140)
+
 		if err != nil {
 			results <- RewardResult{} // Send an empty result to ensure channel doesn't block
 		} else {
 			currentItemResponse.CommonData.CoreTitle = core // Assign Core
-			results <- RewardResult{Path: path, ImageData: rawImageData, Item: currentItemResponse.CommonData}
+			results <- RewardResult{Path: path, ImageData: rawImageData, Item: currentItemResponse.CommonData, DetailedItem: currentItemResponse}
 		}
 	}
 
@@ -522,6 +644,7 @@ func GetInventoryItemImages(gamerInfo requests.GamerInfo, Items Items) Items {
 			if item.ItemPath == result.Path {
 				item.ItemImageData = result.ImageData
 				item.ItemMetaData = result.Item
+				item.DetailedItem = result.DetailedItem
 
 				ctx := context.Background()
 				itemPath := item.ItemPath
@@ -628,7 +751,6 @@ func GetInventory(c *gin.Context, gamerInfo requests.GamerInfo) ([]SpartanInvent
 	hdrs := map[string]string{}
 	hdrs["343-clearance"] = gamerInfo.ClearanceCode
 	hdrs["Accept"] = "application/json"
-
 	var inventoryResponse InventoryResponse
 	url := "https://economy.svc.halowaypoint.com/hi/customization?players=xuid(" + gamerInfo.XUID + ")"
 	fmt.Println("querying ", url)
@@ -642,8 +764,8 @@ func GetInventory(c *gin.Context, gamerInfo requests.GamerInfo) ([]SpartanInvent
 		HandleLogout(c)
 		return nil, err
 	}
-
 	spartanInventories := make([]SpartanInventory, 0, len(inventoryResponse.PlayerCustomizations))
+
 	fmt.Println("Spartan Customization Length: ", len(inventoryResponse.PlayerCustomizations))
 	for _, customization := range inventoryResponse.PlayerCustomizations {
 		FetchCoreDetails(&customization.Result, gamerInfo)
@@ -651,7 +773,6 @@ func GetInventory(c *gin.Context, gamerInfo requests.GamerInfo) ([]SpartanInvent
 		var rawResponse map[string]interface{}
 		if err := makeAPIRequest(gamerInfo.SpartanKey, "https://gamecms-hacs.svc.halowaypoint.com/hi/Waypoint/file/images/emblems/mapping.json", nil, &rawResponse); err != nil {
 			c.Error(err)
-
 			continue // Skip this iteration due to error
 		}
 

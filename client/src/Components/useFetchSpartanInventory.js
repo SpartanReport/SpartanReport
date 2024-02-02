@@ -17,6 +17,7 @@ const useFetchSpartanInventory = (gamerInfo, includeArmory = false, setHighlight
     CurrentlyEquippedWristAttachment: null,
     CurrentlyEquippedHipAttachment: null,
     CurrentlyEquippedChestAttachment : null,
+    CurrentlyEquippedArmorKit: null,
   }); // Added state for CurrentlyEquipped
   const fetchSpartanInventory = async (force = false) => {
     if (isFetched && !force) return;
@@ -52,6 +53,7 @@ const useFetchSpartanInventory = (gamerInfo, includeArmory = false, setHighlight
       setSpartanInventory(response.data.PlayerInventory[0]);
       if (includeArmory) {
         setArmoryRow(response.data);
+        console.log("Armory: ", response.data)
         const equippedData = response.data.CurrentlyEquipped;
         console.log("Setting current equip")
         setCurrentlyEquipped({
@@ -66,6 +68,7 @@ const useFetchSpartanInventory = (gamerInfo, includeArmory = false, setHighlight
           CurrentlyEquippedHipAttachment: equippedData.CurrentlyEquippedHipAttachment,
           CurrentlyEquippedChestAttachment: equippedData.CurrentlyEquippedChestAttachment,
           CurrentlyEquippedKneePad: equippedData.CurrentlyEquippedKneePad,
+          CurrentlyEquippedArmorKit: equippedData.CurrentlyEquippedKit,
 
         });
   
@@ -81,6 +84,7 @@ const useFetchSpartanInventory = (gamerInfo, includeArmory = false, setHighlight
         const initialHipAttachmentHighlight = response.data.ArmoryRowHipAttachments.find(obj => obj.isHighlighted);
         const initialChestAttachmentHighlight = response.data.ArmoryRowChestAttachments.find(obj => obj.isHighlighted);
         const initialKneePadHighlight = response.data.ArmoryRowKneePads.find(obj => obj.isHighlighted);
+        const initialArmorKitHighlight = response.data.ArmoryRowKits.find(obj => obj.isHighlighted);
 
 
         if (initialCoreHighlight) {
@@ -122,6 +126,10 @@ const useFetchSpartanInventory = (gamerInfo, includeArmory = false, setHighlight
           setHighlightedItems(items => ({ ...items, armorkneepadId: initialKneePadHighlight.id }));
 
         }
+        if (initialArmorKitHighlight){
+          setHighlightedItems(items => ({ ...items, armorthemeId: initialArmorKitHighlight.id }));
+
+        }
       }
   
       setIsLoading(false);
@@ -132,11 +140,12 @@ const useFetchSpartanInventory = (gamerInfo, includeArmory = false, setHighlight
         console.error("Forbidden: ", error.response.data);
         const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8080';
         const storedGamerInfo = localStorage.getItem('gamerInfo');
-        const parsedGamerInfo = JSON.parse(storedGamerInfo);
-        console.log("Got gamerinfo: ", parsedGamerInfo)
-        await axios.post(`${apiUrl}/logout`, parsedGamerInfo);
+        const gamerInfo = JSON.parse(storedGamerInfo);
+        console.log("Got gamerinfo: ", gamerInfo)
         localStorage.clear();
         window.location.href = `${apiUrl}/`;
+
+        await axios.get(`${apiUrl}/logout`, gamerInfo);
         return
 
       }

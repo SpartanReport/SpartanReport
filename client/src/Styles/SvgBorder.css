@@ -43,6 +43,13 @@
 .Legendary .cls-2 {
   fill: #b48d3a; /* Fill color for legendary rarity */
 }
+/* Legendary Custom Styles */
+.LegendaryCustom .cls-1 {
+  fill: #467dd5; /* Fill color for legendary rarity */
+}
+.LegendaryCustom .cls-2 {
+  fill: #467dd5; /* Fill color for legendary rarity */
+}
 .Highlight .cls-1{
   fill: #7ABE6C; /* Fill color for legendary rarity */
 }
