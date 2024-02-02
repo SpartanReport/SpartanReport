@@ -6,7 +6,6 @@ import (
 	"log"
 	"os"
 	"spartanreport/db"
-	spartanreport "spartanreport/handlers"
 	"time"
 
 	"cloud.google.com/go/storage"
@@ -101,32 +100,4 @@ func main() {
 
 		c.Next()
 	})
-	// Routes without middleware
-	r.GET("/", spartanreport.HandleWelcome)
-	// callback is the route that the OAuth server redirects to. Processes Auth Code and redirects
-	r.GET("/callback", func(c *gin.Context) {
-		spartanreport.HandleCallback(c.Writer, c.Request)
-	})
-
-	r.GET("/getGamerInfo", func(c *gin.Context) {
-		spartanreport.HandleGetGamerInfo(c.Writer, c.Request)
-	})
-
-	// startAuth is the route that redirects to the authentication page
-	r.GET("/startAuth", spartanreport.HandleAuth)
-	r.POST("/account", spartanreport.HandleAuthenticated)
-	r.POST("/spartan", spartanreport.HandleInventory)
-	r.POST("/stats", spartanreport.HandleStats)
-	r.POST("/progression", spartanreport.HandleProgression)
-	r.POST("/operations", spartanreport.HandleOperations)
-	r.POST("/operations/:id", spartanreport.HandleOperationDetails)
-	r.POST("/store", spartanreport.HandleStore)
-	r.POST("/ranking", spartanreport.SendRanks)
-	r.POST("/challengedeck", spartanreport.HandleChallengeDeck)
-	r.POST("/match/:id", spartanreport.HandleMatch)
-	r.POST("/armorcore", spartanreport.HandleEquipArmor)
-	r.GET("/home", spartanreport.HandleEventsHome)
-	r.GET("/logout", spartanreport.HandleLogout)
-	fmt.Println("Server started at :8080")
-	r.Run(":8080")
 }
