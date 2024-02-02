@@ -90,13 +90,19 @@ const Operations = ({ gamerInfo }) => {
         );
       }
     return (
-        <div>
+        <div className='ops-grid-container'>
             <div className="title-container-operations">
                 <h1 className="operations-title-operations">OPERATIONS</h1>
             </div>  
+        <p className="spartan-description-operations">
+        <span style={{ fontStyle: 'italic', fontSize: 'larger', padding:0}}><p style={{color:"#fffff"}}>Track past, present, and future operations</p></span> Each operation is meticulously documented, detailing objectives, key personnel, enemy forces, and outcomes. This is not just a debriefing tool; it's a strategic asset for planning future missions and understanding the broader scope of our conflict against the Banished.
+        </p>
+        <p className="spartan-subdescription-operations">
+         <p style={{color:"#D6A849"}}>ATTENTION</p> Future Operations that are not active may have missing information. In due time, all information will automatically be available to Spartans.
+        </p>
             <div className="operations-container">
                 {operationsData.map((season, index) => (
-                  <Link to={`${getSeasonLink(season)}`} key={index} className="season-card" style={{ textDecoration: 'none' }}                  >
+                  <Link to={`${getSeasonLink(season)}`} key={index} className="season-card" style={{ textDecoration: 'none' }}>
                       <DisplayEvent season={season} />
                   </Link>
               ))}

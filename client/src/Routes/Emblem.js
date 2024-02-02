@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import '../Styles/header.css';
 import useFetchSpartanInventory from "../Components/useFetchSpartanInventory";
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Link } from 'react-router-dom';
 function hexToRgb(hex) {
   // Remove the hash at the start if it's there
   hex = hex.charAt(0) === '#' ? hex.substr(1) : hex;
@@ -15,7 +14,7 @@ function hexToRgb(hex) {
 
   return `${r}, ${g}, ${b}`;
 }
-const Header = ({ gamerInfo }) => {
+const Emblem = ({ gamerInfo }) => {
   const { spartanInventory, armoryRow,helmetRow, isLoading, fetchSpartanInventory } = useFetchSpartanInventory(gamerInfo);
   const [forceFetch, setForceFetch] = useState(false);
   const navigate = useNavigate();
@@ -64,15 +63,14 @@ const Header = ({ gamerInfo }) => {
   const serviceTag = spartanInventory?.Appearance?.ServiceTag;
 
   return (
-    <div className="header-wrapper">
       <header>
-        <div className="bottom-left-element">
-          <Link to="/policy" className='bottom-left-items'>Privacy Policy </Link>
-          | VISR v1.93.0-preview
-          </div>
+        <div className="image-container">
+          {renderImages()}
+          <p className="gamertag">{gamerInfo ? gamerInfo.gamertag : 'Loading...'}</p>
+          <p className="servicetag">{gamerInfo ? serviceTag : 'Loading...' }</p>
+        </div>
       </header>
-    </div>
   );
 };
 
-export default Header;
+export default Emblem;

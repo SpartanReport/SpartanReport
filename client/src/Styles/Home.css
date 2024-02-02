@@ -159,7 +159,31 @@
  
 .description-container-home {
   padding: 20px;
+  margin-top:20px;
   text-align: center;
+}
+description-container-policy{
+  padding: 20px;
+  text-align: center;
+  margin-left:10;
+
+}
+.description-container-home h1,
+.description-container-home h2,
+.description-container-home p,
+.description-container-home a { /* This will also ensure links are white */
+  color: #ffffff; /* This sets the text color to white */
+}
+
+/* If you want all items in the container to be white, including list items */
+.description-container-home {
+  color: #ffffff;
+}
+
+/* If links need a different style when hovered upon */
+.description-container-home a:hover {
+  color: #cccccc; /* Light grey for hover effect, adjust if needed */
+  text-decoration: none; /* Removes underline on hover, optional */
 }
 
 .spartan-description-home {

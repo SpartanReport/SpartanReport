@@ -124,7 +124,6 @@ function App() {
         {/* Sidebar */}
         <Navbar isAuthenticated={isAuthenticated} startAuth={startAuth} />
         {/* Header */}
-        <Header gamerInfo={JSON.parse(localStorage.getItem('gamerInfo'))} />
         {/* Routes */}
         <div id="page-content-wrapper">
           <div className="container-fluid">
@@ -145,6 +144,8 @@ function App() {
           </div>
         </div>
         {/* /#page-content-wrapper */}
+        <Header gamerInfo={JSON.parse(localStorage.getItem('gamerInfo'))} />
+
       </div>
     </Router>
   );

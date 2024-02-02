@@ -1,7 +1,6 @@
 .image-container {
 	position: relative;
-	width: 288px;
-	right: 10%;
+	width: 300px;
 	overflow: hidden; 
   }
   
@@ -15,9 +14,8 @@
 	position: absolute;
 	width: 52.5px; 
 	height: 52.5px; 
-	top: 50%; 
-	left: 10%;
-	transform: translate(-50%, -50%);
+	top: 0%;
+	left: 0%;
   }
   .gamertag {
 	font-style: italic;
@@ -26,9 +24,7 @@
 	font-size:18px;
 	width: 100%; 
 	text-align: center; 
-	right: 4%;
-	top: 35%;  /* Position the top edge of the text element at the middle of the container */
-	transform: translateY(-50%); /* Vertically center the text within its container */
+	top: 15%;  /* Position the top edge of the text element at the middle of the container */
 	color: #ffffff; /* Set to white for now; adjust based on your design */
 }
 
@@ -38,19 +34,27 @@
 	font-size:10px;
 	width: 100%; 
 	text-align: center; 
-	right: 25%;
 	top: 60%;  /* Position the top edge of the text element at the middle of the container */
-	transform: translateY(-50%); /* Vertically center the text within its container */
 	color: #ffffff; /* Set to white for now; adjust based on your design */
 
 }
 .header-wrapper {
-    display: flex;              /* Make this a flex container */
-    align-items: flex-end;      /* Align children to the bottom */
-    justify-content: flex-end;  /* Align children to the right */
     width: 100%;                /* Take up full width */
-    position: relative;         /* Establishes a positioning context for absolutely positioned children */
 }
 
+.bottom-left-element {
+	position: absolute;
+	bottom: 0; /* Align to the bottom of the container */
+	left: 0; /* Align to the left of the container */
+	color: #ffffff; /* Set text color (white) */
+	font-size: 14px; /* Set text size */
+	padding: 5px; /* Add padding if needed */
+  }
 
 
+  .bottom-left-items {
+	color: #ffffff; /* Set text color (white) */
+	font-size: 14px; /* Set text size */
+  }
+
+  

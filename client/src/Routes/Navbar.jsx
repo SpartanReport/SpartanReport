@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import '../Styles/Navbar.css';
 import { useNavigate,useLocation } from 'react-router-dom';
 import axios from 'axios';
+import Emblem from './Emblem';
 
 const Navbar = ({ isAuthenticated, startAuth }) => {
   const [activeButton, setActiveButton] = useState('Command Center');
@@ -110,7 +111,9 @@ const Navbar = ({ isAuthenticated, startAuth }) => {
               </div>
             )}
           </div>
+          <Emblem gamerInfo={JSON.parse(localStorage.getItem('gamerInfo'))} />
         </nav>
+        
       </div>
     </div>
   );
