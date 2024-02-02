@@ -653,6 +653,7 @@ const sharedProps = {
   gamerInfo,
   currentlyEquipped,
   objects: currentObjects,
+  highlightedItems: highlightedItems,
   highlightedId: highlightedItems[`${objects[0].Type.toLowerCase()}Id`],
   editMode: editingObjectId,
 };
@@ -671,6 +672,16 @@ return (
 );
 };
 function renderEditingDetails(sharedProps,editingObject) {
+
+  console.log("clicked id: ", item.id)
+  let currentlyEquippedItem = sharedProps.highlightedItems[`${item.Type.toLowerCase()}Id`];
+  console.log("currently equipped: ", currentlyEquippedItem)
+
+  if(currentlyEquippedItem === item.id){
+    // finish this
+
+  }
+
   return (
     <div className="editing-details">
         <div className="subheader-container-edit">
@@ -696,9 +707,7 @@ function renderEquippedItem(item, sharedProps) {
     console.log("backclick item: ", item)
     const visId = visIdConversion[item.Type];
     if (visId) {
-      sharedProps.setTempHighlightId(item);
-      sharedProps.setIsTempHighlightMode(true);
-
+      console.log(visId)
       window.location.hash = visId;
     }
   };
@@ -719,7 +728,7 @@ function renderEquippedItem(item, sharedProps) {
         onRemove={sharedProps.onRemove}
       />
       <button className='change-custom-kit-btn' onClick={() => handleButtonClick(item)}>
-        <h4 className='change-text'>Change</h4>
+        <h4 className='change-text'>View</h4>
       </button>
     </SvgBorderWrapper>
   );

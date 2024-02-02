@@ -179,6 +179,7 @@
 .container-cores {
     display: flex;
     overflow: hidden;
+    padding-top:50px;
     height: 100%;
     width: 100%;
 }

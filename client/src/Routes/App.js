@@ -126,7 +126,7 @@ function App() {
         {/* Header */}
         {/* Routes */}
         <div id="page-content-wrapper">
-          <div className="container-fluid">
+          <div className="container-fluid p-0">
             <Routes>
               <Route path="/spartan" element={<Spartan gamerInfo={JSON.parse(localStorage.getItem('gamerInfo'))} spartanInventory={spartanInventory} setSpartanInventory={setSpartanInventory} />} />
               <Route path="/CommandCenter" element={isAuthenticated ? <CommandCenter gamerInfo={JSON.parse(localStorage.getItem('gamerInfo'))} spartanInventory={spartanInventory}/> : <UnauthenticatedContent startAuth={startAuth} />} />

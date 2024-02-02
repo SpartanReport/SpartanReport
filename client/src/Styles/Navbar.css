@@ -1,7 +1,6 @@
 .navbar-container {
   text-align: center;
   font-size: medium;
-  padding: 10px 20px;
   padding: 0; 
   margin-left: 50px;
   position: absolute;
@@ -224,8 +223,6 @@
 
 #page-content-wrapper {
   margin-top: 150px;
-  margin-left: 50px;
-  margin-right:50px;
 }
 
 .dropdown-menu button {
@@ -265,9 +262,6 @@
   }
 
 
-  .navbar-container {
-    position: relative;
-  }
 
   .hamburger {
     display: flex; /* Show the hamburger icon */
