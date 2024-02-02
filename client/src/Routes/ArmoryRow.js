@@ -673,14 +673,6 @@ return (
 };
 function renderEditingDetails(sharedProps,editingObject) {
 
-  console.log("clicked id: ", item.id)
-  let currentlyEquippedItem = sharedProps.highlightedItems[`${item.Type.toLowerCase()}Id`];
-  console.log("currently equipped: ", currentlyEquippedItem)
-
-  if(currentlyEquippedItem === item.id){
-    // finish this
-
-  }
 
   return (
     <div className="editing-details">
