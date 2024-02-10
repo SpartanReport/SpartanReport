@@ -3,6 +3,7 @@ import axios from 'axios';
 import "../Styles/styles.css"
 import "../Styles/store.css"
 import SvgBorderWrapper from '../Styles/Border';
+import LoadingScreen from '../Components/Loading';
 
 
 
@@ -30,7 +31,7 @@ const Store = ({ gamerInfo }) => {
     }, [gamerInfo]);
 
     if (isLoading) {
-        return <div>Loading...</div>;
+        return <LoadingScreen />;
     }
 
     const baseDimension = 100; // 100 pixels, or whatever base dimension you prefer

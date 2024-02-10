@@ -4,6 +4,7 @@ import { Routes, Route, Link, useLocation } from 'react-router-dom'; // Import u
 import MatchStats from './match-stats';
 import { useNavigate } from 'react-router-dom';
 import "../Styles/stats.css"
+import LoadingScreen from '../Components/Loading';
 
 const Stats = ({ gamerInfo ,HaloStats, setHaloStats, setSelectedMatch}) => {
     const [isLoading, setIsLoading] = useState(true);
@@ -39,7 +40,7 @@ const Stats = ({ gamerInfo ,HaloStats, setHaloStats, setSelectedMatch}) => {
     }, [location, setHaloStats]);
 
     if (isLoading) {
-      return <div>Loading...</div>;
+      return <LoadingScreen />;
     }
     if (!HaloStats) {
       return <div>No Spartan Stats Data</div>;

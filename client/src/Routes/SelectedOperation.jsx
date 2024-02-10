@@ -9,6 +9,7 @@ import challengeSwap from '../challengeswap.png';
 import checkmark from "../checkmark.svg"
 import { Routes, Route,useParams } from 'react-router-dom';
 import SvgBorderWrapper from '../Styles/Border';
+import LoadingScreen from '../Components/Loading';
 
 
 function SeasonImage(base64ImageData) {
@@ -239,7 +240,7 @@ const navigate = useNavigate();
   const handleBackClick = () => {
     navigate(-1); // Navigate back
   };
-  if (isLoading || !selectedSeason) return <div>Loading...</div>;
+  if (isLoading || !selectedSeason)       return <LoadingScreen />  ;
   return (
     <div>
         <div className="title-container-singleoperations">

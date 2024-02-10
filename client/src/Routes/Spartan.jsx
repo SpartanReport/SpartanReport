@@ -3,6 +3,7 @@ import useFetchSpartanInventory from '../Components/useFetchSpartanInventory';
 import ArmoryRow from "./ArmoryRow"
 import "../Styles/styles.css";
 import "../Styles/spartan.css";
+import LoadingScreen from '../Components/Loading';
 
 const RenderArmoryRow = ({toggleVisibility,visId,isLast, rowType, isVisible, objects, fullObjects, gamerInfo, onEquipItem, currentlyEquipped, setHighlightedItems, highlightedItems, resetHighlight }) => {
   return (
@@ -105,7 +106,7 @@ const Spartan = ({ gamerInfo }) => {
   }, []);
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <LoadingScreen />;
   }
 
   if (!spartanInventory) {
@@ -193,7 +194,7 @@ const Spartan = ({ gamerInfo }) => {
   return (
     <div className="main-grid-container-spartan">
       <div className="title-container-home">
-        <h1 className="spartan-title-home">ARMORY</h1>
+        <h1 className="spartan-title-ops">ARMORY</h1>
       </div>
 
       <RenderArmoryRow 

@@ -4,6 +4,7 @@ import '../Styles/operations.css';
 import GoogleAd from '../Components/GoogleAds';
 import SelectedOperation from './SelectedOperation';
 import { useNavigate, Link } from 'react-router-dom';
+import LoadingScreen from '../Components/Loading';
 
 
 const Operations = ({ gamerInfo }) => {
@@ -28,13 +29,13 @@ const Operations = ({ gamerInfo }) => {
     }, [gamerInfo]);
 
     if (isLoading) {
-        return <div>Loading...</div>;
+      return <LoadingScreen />;
     }
 
 
 
     function SeasonImage(base64ImageData) {
-        return `data:image/png;base64,${base64ImageData}`;
+      return `data:image/png;base64,${base64ImageData}`;
     }
     const getSeasonLink = (season) => {
       let seasonMetadata = season.OperationTrackPath;

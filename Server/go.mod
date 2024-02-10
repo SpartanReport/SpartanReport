@@ -8,13 +8,11 @@ require (
 	github.com/gin-gonic/gin v1.9.1
 	github.com/go-resty/resty/v2 v2.10.0
 	github.com/joho/godotenv v1.5.1
+	github.com/mileusna/useragent v1.3.4
 	go.mongodb.org/mongo-driver v1.12.1
 )
 
-require (
-	github.com/mileusna/useragent v1.3.4 // indirect
-	google.golang.org/api v0.148.0 // indirect
-)
+require google.golang.org/api v0.148.0 // indirect
 
 require (
 	cloud.google.com/go v0.110.9 // indirect

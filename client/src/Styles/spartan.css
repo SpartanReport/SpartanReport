@@ -85,18 +85,24 @@
     overflow-x: auto; /* Enables horizontal scrolling within the row */
     max-width: calc(4 * (200px + 10px)); /* Adjust for 4 cards and 10px gap */
   }
+  .spartan-title-ops {
+    font-family: 'Oswald', sans-serif;
+    font-size: 24px;
+    padding-left: 15px;
+    color: white;
+    margin-bottom: 0px;
+  }
   .main-grid-container-spartan{
     flex-wrap: nowrap;
     gap: 5px;
-    margin-bottom: 50px;
     border-radius: 10px;
     background: rgba(0, 0, 0, 0.3);
     backdrop-filter: blur(10px);
   }
   .armory-row{
-    margin-top:56px;
+    padding-top:20px;
     margin-left:25px;
-    transform:scale(0.9);
+    transform:scale(0.8);
   }
   .armory-row-cores{
     margin-top:56px;

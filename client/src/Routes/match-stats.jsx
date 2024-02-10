@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
 import { Link } from 'react-router-dom';
+import LoadingScreen from '../Components/Loading';
 
 const MatchStats = ({gamerInfo, HaloStats,selectedMatch}) => {
   const [isLoading, setIsLoading] = useState(true);
@@ -31,7 +32,7 @@ const MatchStats = ({gamerInfo, HaloStats,selectedMatch}) => {
   }, [gamerInfo, HaloStats, matchId]);
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <LoadingScreen />;
   }
 
   if (!MatchStats) {

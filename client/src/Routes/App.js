@@ -17,6 +17,7 @@ import ItemDetailsPage from '../Components/itemdetails';
 import CommandCenter from './CommandCenter';
 import Policy from './policy';
 import SelectedOperation from './SelectedOperation';
+import MicrosoftIdentityAssociation from './MicrosoftIdentityAssociation'
 
 function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -140,6 +141,7 @@ function App() {
               <Route path="/store" element={<Store gamerInfo={JSON.parse(localStorage.getItem('gamerInfo'))} />} />
               <Route path="/item-details" element={<ItemDetailsPage />} />
               <Route path="/logout" />
+              <Route path="/.well-known/microsoft-identity-association.json" element={<MicrosoftIdentityAssociation/>}/>
             </Routes>
           </div>
         </div>

@@ -147,7 +147,8 @@
   overflow-y: auto;
 }
 .editing-details{
-  flex: 0 0 50%; /* Takes up 50% of the space, but doesn't grow or shrink */
+  flex: 0 0 60%; /* Takes up 50% of the space, but doesn't grow or shrink */
+  margin-left:10px;
   overflow-x: auto; /* Enable horizontal scrolling */
   white-space: nowrap; /* Prevent line breaks */
   margin-top:30px; 
@@ -179,7 +180,6 @@
 .container-cores {
     display: flex;
     overflow: hidden;
-    padding-top:50px;
     height: 100%;
     width: 100%;
 }

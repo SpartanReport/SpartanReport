@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useLocation } from 'react-router-dom'; // Import useLocation
 import "../Styles/progression.css"
 import RankTable from './RankTable';
+import LoadingScreen from '../Components/Loading';
 
 const Progression = ({ gamerInfo ,HaloStats, setHaloStats, setSelectedMatch}) => {
     const [isLoading, setIsLoading] = useState(true);
@@ -56,7 +57,7 @@ const Progression = ({ gamerInfo ,HaloStats, setHaloStats, setSelectedMatch}) =>
     }, []);
 
     if (isLoading) {
-      return <div>Loading...</div>;
+      return <LoadingScreen />;
     }
     if (!HaloStats) {
       return <div>No Spartan Stats Data</div>;

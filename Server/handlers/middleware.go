@@ -48,3 +48,17 @@ func GetStats(gamerInfo requests.GamerInfo, c *gin.Context) (HaloData, error) {
 
 	return data, nil
 }
+
+func HandleMSIdentity(c *gin.Context) {
+	IdentityPayload := map[string]interface{}{
+		"associatedApplications": []map[string]string{
+			{
+				"applicationId": "4267a656-30e6-4027-a973-edf079a6b52b",
+			},
+		},
+	}
+
+
+	
+	c.JSON(http.StatusOK, IdentityPayload)
+}
