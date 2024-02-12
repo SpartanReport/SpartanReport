@@ -129,7 +129,6 @@ func main() {
 	r.GET("/home", spartanreport.HandleEventsHome)
 	r.GET("/logout", spartanreport.HandleLogout)
 	r.GET("/.well-known/microsoft-identity-association.json", spartanreport.HandleMSIdentity)
-
 	fmt.Println("Server started at :8080")
 	r.Run(":8080")
 }

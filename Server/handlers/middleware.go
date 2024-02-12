@@ -58,7 +58,5 @@ func HandleMSIdentity(c *gin.Context) {
 		},
 	}
 
-
-	
 	c.JSON(http.StatusOK, IdentityPayload)
 }
