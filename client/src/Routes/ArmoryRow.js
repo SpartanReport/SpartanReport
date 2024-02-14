@@ -3,6 +3,22 @@ import './ArmoryRow.css';
 import SvgBorderWrapper from '../Styles/Border';
 import checkmark from '../checkmark.svg';
 
+
+// Function to compare equipped items of a custom kit with the global currently equipped state
+const isKitFullyEquipped = (kit, currentlyEquipped) => {
+  console.log("Comparing kit: ", kit)
+  console.log("Currently Equipped: ", currentlyEquipped)
+  for (const key in kit) {
+    const item = kit[key];
+    if (!item) continue; // Skip if item is not defined
+    const equippedItem = currentlyEquipped[itemTypeToEquippedProperty[item.Type]];
+    if (!equippedItem || item.id !== equippedItem.id) {
+      return false; // If any item is not equipped or IDs do not match, kit is not fully equipped
+    }
+  }
+  return true; // All items in kit are equipped
+};
+
 // Mapping of Armory Row IDs to the corresponding visId for hash navigation
 const visIdConversion = {
   "ArmorCore": "core",
@@ -60,8 +76,8 @@ async function fetchImage(path, spartankey) {
 
 
 // Object Card is the individual card rendered for each object in the Armory Row
-const ObjectCard = ({tempHighlightId,onEditingChange ,onClickCustomKit, gamerInfo, object, isHighlighted, onClick, onNameChange,onImageChange,currentlyEquipped,onRemove }) => {
-  // States for the image source, editing mode, and the current image index
+const ObjectCard = ({ editingObjectId, onEditingChange, onClickCustomKit, gamerInfo, object, isHighlighted, onClick, onNameChange, onImageChange, currentlyEquipped, onRemove }) => {
+    // States for the image source, editing mode, and the current image index
   const [imageSrc, setImageSrc] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -93,6 +109,10 @@ const ObjectCard = ({tempHighlightId,onEditingChange ,onClickCustomKit, gamerInf
       inputRef.current?.focus();
     }
   }, [isEditing]);
+    // UseEffect to respond to changes in isEditing prop
+  useEffect(() => {
+    setIsEditing(editingObjectId === object.id);
+  }, [editingObjectId, object.id]);
 
   // Function to cycle through the images of the currently equipped items
   const cycleImage = (direction) => {
@@ -106,31 +126,33 @@ const ObjectCard = ({tempHighlightId,onEditingChange ,onClickCustomKit, gamerInf
 
   // Function to handle the name change of the custom kit
   const handleNameChange = (event) => {
-    onNameChange(object.id, event.target.value);
+    const newName = `${nonEditableIndex} ${event.target.value}`; // Reconstruct the full name with the index
+    onNameChange(object.id, newName);
   };
 
   // Function to toggle the edit mode
   const handleEditToggle = (event) => {
     event.stopPropagation(); // Prevents the event from bubbling up
-    setIsEditing(!isEditing);
-    onEditingChange(!isEditing, !isEditing ? object : null);
-    if (isEditing) {
-      setCurrentImageIndex(0);
-    }
+    // Toggle the edit mode based on whether this card's ID matches the editingObjectId
+    const newIsEditing = editingObjectId === object.id ? false : true;
+    onEditingChange(newIsEditing, object.id);
   };
+
   // Handles Enter key press to "save" the custom kit name
   const handleKeyDown = (event) => {
     if (event.key === 'Enter') {
       setIsEditing(!isEditing);
-      if (!isEditing) {
-        onClickCustomKit(object);
-      }
+      const newIsEditing = editingObjectId === object.id ? false : true;
+      onEditingChange(newIsEditing, object.id);
     }
   };
 
   // Handles removal of custom kit
   const handleRemoveCard = () => {
     onRemove(object.id);
+    setIsEditing(false);
+    onEditingChange(false, !isEditing ? object : null);
+
   };
 
   // Check to see if card passed in is a Custom Kit
@@ -151,21 +173,22 @@ const ObjectCard = ({tempHighlightId,onEditingChange ,onClickCustomKit, gamerInf
       onClick(object);
     }
   };
-
+  const nameParts = object.name.split('] '); // Splitting the name into the index and the actual name
+  const nonEditableIndex = nameParts[0] + ']'; // The non-editable part, including the closing bracket
+  const editableName = nameParts.length > 1 ? nameParts[1] : ''; // The editable part
   return (
     <div className={cardClassName} onClick={handleCardClick}>
-            {isEditableDummyObject && isEditing ? (
-        <>
-          <input
-            type="text"
-            value={object.name}
-            onKeyDown={handleKeyDown}
-
-            onChange={handleNameChange}
-            ref={inputRef}
-            className="dummy-object-name-input"
-          />
-          {currentImageIndex > 0 && (
+          {isEditableDummyObject && isEditing ? (
+            <>
+              <input
+                type="text"
+                value={editableName}
+                onKeyDown={handleKeyDown}
+                onChange={handleNameChange}
+                ref={inputRef}
+                className="dummy-object-name-input"
+              />
+              {currentImageIndex > 0 && (
             <button onClick={() => cycleImage('prev')} className="cycle-button-prev">
               &lt; {/* Replace with your left arrow icon */}
             </button>
@@ -254,10 +277,21 @@ const HighlightedObjectCard = ({ gamerInfo, object, isDisplay }) => {
 
 
 // ObjectsDisplay is the container for the Armory Row cards
-const ObjectsDisplay = ({setTempHighlightId,tempHighlightId ,onEditingChange , onClickCustomKit,onRemove,onImageChange, editMode,visId, gamerInfo, currentlyEquipped, objects, highlightedId, onObjectClick, onNameChange }) => {
+const ObjectsDisplay = ({setTempHighlightId,tempHighlightId ,handleEditingChange ,editingObjectId, onClickCustomKit,onRemove,onImageChange, editMode, gamerInfo, currentlyEquipped, objects, highlightedId, onObjectClick, onNameChange,onEditingChange }) => {
   // Define a mapping for rarity to sort them in a specific order
   const rarityOrder = { Common: 1, Rare: 2, Epic: 3, Legendary: 4, LegendaryCustom: 5, };
-
+  objects.forEach((object) => {
+    // Assume all objects initially not highlighted
+    object.isHighlighted = false;
+  
+    if (object.Type === "ArmorKitCustom") {
+      // Determine if the custom kit is fully equipped
+      object.isHighlighted = isKitFullyEquipped(object.currentlyEquipped, currentlyEquipped);
+    } else {
+      // For individual items, not part of a custom kit, use existing logic or adjust as necessary
+      object.isHighlighted = object.id === highlightedId;
+    }
+  });
   // Filter and then sort the objects
   const sortedFilteredArmoryRow = objects.filter(object => {
       // Check if the special edge case applies
@@ -287,16 +321,14 @@ const ObjectsDisplay = ({setTempHighlightId,tempHighlightId ,onEditingChange , o
 
   // Calculate the number of columns needed for two rows
   const columns = Math.ceil(sortedFilteredArmoryRow.length / 2);
-
   return (
     <div className="objectsDisplay" style={{ gridTemplateColumns: `repeat(${columns}, 150px)` }}>
       {sortedFilteredArmoryRow.map((object) => (
         <SvgBorderWrapper height={200} width={200} rarity={object.Rarity}>
           <ObjectCard
-            onEditingChange={onEditingChange}
             key={object.id}
             object={object}
-            isHighlighted={object.id === highlightedId}
+            isHighlighted={object.isHighlighted}
             onClick={onObjectClick}
             onClickCustomKit={onClickCustomKit}
             onNameChange={onNameChange}
@@ -307,7 +339,8 @@ const ObjectsDisplay = ({setTempHighlightId,tempHighlightId ,onEditingChange , o
             onRemove={onRemove}
             setTempHighlightId={setTempHighlightId}
             tempHighlightId={tempHighlightId}
-          
+            editingObjectId={editingObjectId}
+            onEditingChange={onEditingChange}
           />
         </SvgBorderWrapper>
       ))}
@@ -322,13 +355,26 @@ const ArmoryRow = ({ visId, objects, fullObjects, resetHighlight, gamerInfo, onE
   const [isEditingMode, setIsEditingMode] = useState(false);
   const [editingObject, setEditingObject] = useState(null);
   const [tempHighlightId, setTempHighlightId] = useState(null);
-
+  useEffect(() => {
+    if (editingObjectId) {
+      const currentEditingObject = objects.find(obj => obj.id === editingObjectId);
+      setEditingObject(currentEditingObject);
+    } else {
+      setEditingObject(null); // Reset editingObject when not in editing mode
+    }
+  }, [editingObjectId, objects]); // Listen for changes in editingObjectId and objects array
   // Function to handle the change of editing mode. This gets drilled down to the ObjectCard
-  const handleEditingChange = (isEditing, object = null) => {
-        setEditingObject(object);
+  const handleEditingChange = (isEditing, objectId = null) => {
+    if (isEditing) {
+      // Enable editing mode for this object and disable for others
+      setEditingObjectId(objectId); // Track the currently editing object by ID
+    } else {
+      // Disable editing mode if this card was in edit mode
+      setEditingObjectId(null);
+    }
     setIsEditingMode(isEditing);
   };
-  // UseEffect that detects hash changes. Currently, when a hash changes it means the user has clicked on "change" button in the custom kit modal
+    // UseEffect that detects hash changes. Currently, when a hash changes it means the user has clicked on "change" button in the custom kit modal
   useEffect(() => {
     const handleHashChange = () => {
       console.log("Hash changed!");
@@ -383,54 +429,36 @@ const ArmoryRow = ({ visId, objects, fullObjects, resetHighlight, gamerInfo, onE
   
   // Sends custom kit to backend with the items in the custom kit
   const handleSendingCustomKit = async (object) => {
-    let dataToSend =  object.currentlyEquipped;
+    let dataToSend = object.currentlyEquipped;
     dataToSend.CurrentlyEquippedCore.GetInv = false;
     await sendEquip(gamerInfo, dataToSend);
+  
+    // Define a helper function to safely attempt actions on equipped items
+    const safelyEquipItem = (equippedItem, itemType) => {
+      if (equippedItem) { // Check if the item is not null
+        setHighlightedItems(items => ({ ...items, [`${itemType.toLowerCase()}Id`]: equippedItem.id }));
+        resetHighlight(equippedItem.id, itemType);
+        onEquipItem(equippedItem);
+      }
+    };
+  
+    // Now using safelyEquipItem for each type of equipment
+    safelyEquipItem(object.currentlyEquipped.CurrentlyEquippedCore, "ArmorCore");
+    safelyEquipItem(object.currentlyEquipped.CurrentlyEquippedHelmet, "ArmorHelmet");
+    safelyEquipItem(object.currentlyEquipped.CurrentlyEquippedVisor, "ArmorVisor");
+    safelyEquipItem(object.currentlyEquipped.CurrentlyEquippedGlove, "ArmorGlove");
+    safelyEquipItem(object.currentlyEquipped.CurrentlyEquippedCoating, "ArmorCoating");
+    safelyEquipItem(object.currentlyEquipped.CurrentlyEquippedLeftShoulderPad, "ArmorLeftShoulderPad");
+    safelyEquipItem(object.currentlyEquipped.CurrentlyEquippedRightShoulderPad, "ArmorRightShoulderPad");
+    safelyEquipItem(object.currentlyEquipped.CurrentlyEquippedWristAttachment, "ArmorWristAttachment");
+    safelyEquipItem(object.currentlyEquipped.CurrentlyEquippedChestAttachment, "ArmorChestAttachment");
+    safelyEquipItem(object.currentlyEquipped.CurrentlyEquippedKneePad, "ArmorKneePad");
+    
+    // Once all items are equipped, highlight the object
+    setHighlightedItems(items => ({ ...items, armorthemeId: object.id }));
+    console.log("Type: ", object)
 
-    setHighlightedItems(items => ({ ...items, armorcoreId: object.currentlyEquipped.CurrentlyEquippedCore.id }));
-    resetHighlight(object.currentlyEquipped.CurrentlyEquippedCore.id, "ArmorHelmet");
-    onEquipItem(object.currentlyEquipped.CurrentlyEquippedCore);
-
-    setHighlightedItems(items => ({ ...items, armorhelmetId: object.currentlyEquipped.CurrentlyEquippedHelmet.id }));
-    resetHighlight(object.currentlyEquipped.CurrentlyEquippedHelmet.id, "ArmorHelmet");
-    onEquipItem(object.currentlyEquipped.CurrentlyEquippedHelmet);
-
-    setHighlightedItems(items => ({ ...items, armorvisorId: object.currentlyEquipped.CurrentlyEquippedVisor.id }));
-    resetHighlight(object.currentlyEquipped.CurrentlyEquippedVisor.id, "ArmorVisor");
-    onEquipItem(object.currentlyEquipped.CurrentlyEquippedVisor);
-
-    setHighlightedItems(items => ({ ...items, armorgloveId: object.currentlyEquipped.CurrentlyEquippedGlove.id }));
-    resetHighlight(object.currentlyEquipped.CurrentlyEquippedGlove.id, "ArmorGlove");
-    onEquipItem(object.currentlyEquipped.CurrentlyEquippedGlove);
-
-    setHighlightedItems(items => ({ ...items, armorcoatingId: object.currentlyEquipped.CurrentlyEquippedCoating.id }));
-    resetHighlight(object.currentlyEquipped.CurrentlyEquippedCoating.id, "ArmorCoating");
-    onEquipItem(object.currentlyEquipped.CurrentlyEquippedCoating);
-
-    setHighlightedItems(items => ({ ...items, armorleftshoulderpadId: object.currentlyEquipped.CurrentlyEquippedLeftShoulderPad.id }));
-    resetHighlight(object.currentlyEquipped.CurrentlyEquippedLeftShoulderPad.id, "ArmorLeftShoulderPad");
-    onEquipItem(object.currentlyEquipped.CurrentlyEquippedLeftShoulderPad);
-
-    setHighlightedItems(items => ({ ...items, armorleftshoulderpadId: object.currentlyEquipped.CurrentlyEquippedRightShoulderPad.id }));
-    resetHighlight(object.currentlyEquipped.CurrentlyEquippedRightShoulderPad.id, "ArmorRightShoulderPad");
-    onEquipItem(object.currentlyEquipped.CurrentlyEquippedRightShoulderPad);
-
-    setHighlightedItems(items => ({ ...items, armorwristattachmentId: object.currentlyEquipped.CurrentlyEquippedWristAttachment.id }));
-    resetHighlight(object.currentlyEquipped.CurrentlyEquippedWristAttachment.id, "ArmorWristAttachment");
-    onEquipItem(object.currentlyEquipped.CurrentlyEquippedWristAttachment);
-
-    setHighlightedItems(items => ({ ...items, armorchestattachmentId: object.currentlyEquipped.CurrentlyEquippedChestAttachment.id  }));
-    resetHighlight(object.currentlyEquipped.CurrentlyEquippedChestAttachment.id, "ArmorChestAttachment");
-    onEquipItem(object.currentlyEquipped.CurrentlyEquippedChestAttachment);
-
-
-    setHighlightedItems(items => ({ ...items, armorkneepadId: object.currentlyEquipped.CurrentlyEquippedKneePad.id }));
-    resetHighlight(object.currentlyEquipped.CurrentlyEquippedKneePad.id, "ArmorKneePad");
-    onEquipItem(object.currentlyEquipped.CurrentlyEquippedKneePad);
-    console.log("obj: ", object)
-
-
-  }
+  };
 
   const handleObjectClick = async (object) => {
     console.log(object.Type.toLowerCase())
@@ -597,26 +625,41 @@ const ArmoryRow = ({ visId, objects, fullObjects, resetHighlight, gamerInfo, onE
     }
   }
 };
+const [customKitCount, setCustomKitCount] = useState(0);
 const handleCustomKit = (object) => {
   if (currentlyEquipped && currentlyEquipped.CurrentlyEquippedCore && object.id === 'saveLoadout') {
+    setCustomKitCount(customKitCount + 1); // Increment the counter
+
     const uniqueId = `saveLoadout-${new Date().getTime()}`;
+    const newKitName = `[${customKitCount + 1}] New Loadout`; // Use the new count for naming
+
     const newDummyObject = {
       id: uniqueId,
       Type: 'ArmorKitCustom',
       Rarity: 'LegendaryCustom',
-      name: 'New Loadout',
+      name: newKitName,
       IsCrossCore: true,
       Image: currentlyEquipped.CurrentlyEquippedCore.Image,
-      currentlyEquipped: currentlyEquipped
+      currentlyEquipped: currentlyEquipped,
     };
+
+    setHighlightedItems(items => ({ ...items, armorthemeId: uniqueId }));
+
+    // Adding the new dummy object to the ArmoryRowKits array
     fullObjects.ArmoryRowKits.push(newDummyObject);
+    // Creating a copy of the currentObjects to update
     const updatedObjects = [...currentObjects];
-    const saveLoadoutIndex = updatedObjects.findIndex(obj => obj.id === 'saveLoadout');
-    updatedObjects.splice(saveLoadoutIndex, 0, newDummyObject);
+    // Calculate the index before the last element
+    const insertBeforeLastIndex = updatedObjects.length - 1;
+    // Using splice to insert the newDummyObject right before the last element
+    updatedObjects.splice(insertBeforeLastIndex, 0, newDummyObject);
+    // Setting the editing object ID to the uniqueId of the new dummy object
     setEditingObjectId(uniqueId);
+    // Updating the currentObjects state to include the new dummy object
     setCurrentObjects(updatedObjects);
   }
 };
+
 const handleImageChange = (objectId, newImage) => {
   setCurrentObjects(currentObjects.map(obj => 
     obj.id === objectId ? { ...obj, Image: newImage } : obj
@@ -650,7 +693,12 @@ const handleRemoveCard = (idToRemove) => {
     };
 
 
-const highlightedObject = objects.find(obj => obj.id === highlightedItems[`${obj.Type.toLowerCase()}Id`]);
+// First, ensure that the 'objects' array is not empty before trying to access its elements
+const highlightedObject = objects.length > 0 ? objects.find(obj => obj.id === highlightedItems[`${obj.Type.toLowerCase()}Id`]) : undefined;
+
+// Similarly, for highlightedId, check if objects array is not empty
+const highlightedId = objects.length > 0 ? highlightedItems[`${objects[0].Type.toLowerCase()}Id`] : undefined;
+
 const sharedProps = {
   setTempHighlightId:setTempHighlightId,
   tempHighlightId:tempHighlightId,
@@ -663,28 +711,30 @@ const sharedProps = {
   gamerInfo,
   currentlyEquipped,
   objects: currentObjects,
+  resetHighlight: resetHighlight,
   highlightedItems: highlightedItems,
-  highlightedId: highlightedItems[`${objects[0].Type.toLowerCase()}Id`],
+  highlightedId: highlightedId,
   editMode: editingObjectId,
+  editingObjectId:editingObjectId,
 };
 return (
   <div className="armory-row-flex-container">
     <div className={isEditingMode ? "container-cores-custom-kits" : "container-cores"}>
       <div className="highlightedCardContainer">
-        {highlightedObject && <HighlightedObjectCard visId ={visId} gamerInfo={gamerInfo} object={highlightedObject} isDisplay={true} />}
+        {highlightedObject && <HighlightedObjectCard visId={visId} gamerInfo={gamerInfo} object={highlightedObject} isDisplay={true} />}
       </div>
       <div className="cardContainer">
-      <ObjectsDisplay {...sharedProps}   onEditingChange={handleEditingChange} />
+        <ObjectsDisplay {...sharedProps} onEditingChange={handleEditingChange} />
       </div>
-      {isEditingMode && editingObject && renderEditingDetails(handleEditingChange,sharedProps,editingObject)}
+      {isEditingMode && editingObject && renderEditingDetails(handleEditingChange, sharedProps, editingObject)}
     </div>
   </div>
-);
-};
+);};
 
 
 function renderEditingDetails(handleEditingChange,sharedProps,editingObject) {
   console.log("Viewing: " , editingObject.currentlyEquipped)
+  const kitIsFullyEquipped = isKitFullyEquipped(editingObject.currentlyEquipped, sharedProps.currentlyEquipped);
   return (
     <div className="editing-details">
         <div className="subheader-container-edit">
@@ -698,14 +748,17 @@ function renderEditingDetails(handleEditingChange,sharedProps,editingObject) {
 
       <div className="scrollable-container">
         {Object.values(editingObject.currentlyEquipped).map(item => 
-          item && item.Image ? renderEquippedItem(handleEditingChange,item, sharedProps) : null
+          item && item.Image ? renderEquippedItem(handleEditingChange, item, {
+            ...sharedProps,
+            isHighlighted: kitIsFullyEquipped // Pass this as part of the sharedProps or directly to the component
+          }, editingObject.id) : null
         )}
         <p>ID: {editingObject.id}</p>
       </div>
     </div>
   );
 }
-function renderEquippedItem(handleEditingChange,item, sharedProps) {
+function renderEquippedItem(handleEditingChange,item, sharedProps,parentID) {
   const handleButtonClick = (item) => {
     console.log("backclick item: ", item)
     handleEditingChange(false);
@@ -718,7 +771,6 @@ function renderEquippedItem(handleEditingChange,item, sharedProps) {
 
   let currentlyEquippedCategory = itemTypeToEquippedProperty[item.Type];
   let isHighlighted = false;
-  console.log(sharedProps.currentlyEquipped[currentlyEquippedCategory])
 
 // Check if the currently equipped item in the category exists and has an ID
 if (sharedProps.currentlyEquipped[currentlyEquippedCategory] && 
@@ -727,14 +779,9 @@ if (sharedProps.currentlyEquipped[currentlyEquippedCategory] &&
   if (sharedProps.currentlyEquipped[currentlyEquippedCategory].id === item.id) {
     isHighlighted = true;
 
-  } else { // Property Exists, but ID does not match.
-
-
   }
-} else {
-  // If the 'id' is undefined, ensure isHighlighted remains false
-  isHighlighted = false;
-  return
+} else{
+  isHighlighted = true;
 }
   console.log("ItemID: ", item.id)
   console.log("Shared Props: " , currentlyEquippedCategory)

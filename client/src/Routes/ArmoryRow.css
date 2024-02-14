@@ -163,6 +163,7 @@
 }
 
 .container-cores, .container-cores-custom-kits {
+  padding-top:50px;
   flex: 1; /* Takes up remaining space */
   transition: flex 0.3s ease; /* Smooth transition for resizing */
 }

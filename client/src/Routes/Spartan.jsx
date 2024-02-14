@@ -113,7 +113,14 @@ const Spartan = ({ gamerInfo }) => {
     return <div>No Spartan Inventory Data</div>;
   }
   const resetHighlight = (newHighlightedId, itemType) => {
+    console.log("Resetting : ", newHighlightedId, itemType)
     // Update the highlightedItems state
+    if (itemType === "ArmorKitCustom") {
+      setHighlightedItems(prev => ({
+        ...prev,
+        armorthemeId: newHighlightedId
+      }));
+    }
     setHighlightedItems(prev => ({
       ...prev,
       [`${itemType.toLowerCase()}Id`]: newHighlightedId
@@ -142,6 +149,7 @@ const Spartan = ({ gamerInfo }) => {
       "ArmorHipAttachment": "ArmoryRowHipAttachments",
       "ArmorChestAttachment": "ArmoryRowChestAttachments",
       "ArmorTheme": "ArmoryRowArmorKits",
+      "ArmorKitCustom": "ArmoryRowArmorKits"
     };
   
     // Update the appropriate armory row if the itemType matches
@@ -196,6 +204,29 @@ const Spartan = ({ gamerInfo }) => {
       <div className="title-container-home">
         <h1 className="spartan-title-ops">ARMORY</h1>
       </div>
+      <br></br>
+      <div className="spartan-description-operations">
+        <span style={{ fontStyle: 'italic', fontSize: 'larger' }}>
+          Save custom loadouts, individual pieces, and change cores
+        </span>
+      </div>
+
+      <p className="spartan-subdescription-operations">
+        <p style={{color:"#4389BA", paddingTop: '5px'}}> CROSS CORE ITEMS </p> 
+        If in the future, the UNSC High Command allows Spartans to use items from different cores, the Armory will automatically reflect the changes.
+      </p>
+        <p className="spartan-subdescription-operations">
+        <p style={{color:"#4389BA", paddingTop: '5px'}}>CUSTOM ARMOR KIT LOADOUTS (BETA) </p> 
+         Spartans have the ability to save custom armor kit loadouts on SPARTAN REPORT. Custom Kit Loadouts allow for you to save your favorite armor pieces and quickly equip them in the game. The custom loadouts are saved to your profile and can be accessed at any time.
+          <br></br> <br></br>
+          Once a spartan press the Save Loadout button, they will be prompted to enter a name for the custom kit. 
+          <br></br> <br></br>
+          No matter what core is equipped, the custom loadouts will always be available to equip across all cores. If a chosen loadout doesn't correspond to that core, we will automatically equip that core for you
+
+        <p style={{color:"#D6A849", paddingTop: '5px'}}>ATTENTION</p> All changes made here will be reflected in the game ONLY after rebooting. 
+
+        </p>
+
 
       <RenderArmoryRow 
         rowType="Armor Core" 
