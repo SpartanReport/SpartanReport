@@ -15,9 +15,9 @@ const RenderArmoryRow = ({toggleVisibility,visId,isLast, rowType, isVisible, obj
         </svg>
 
         <h1 className="spartan-subheader-home">{rowType} {isVisible ? (<div className='dropdown-arrow-container'><svg className="arrow-icon-open" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-              <svg id="dropdown" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12.44 12.44"><g id="Layer_3"><g id="Login_Button"><polygon class="cls-1" points="12.44 0 12.44 12.44 0 12.44 12.44 0"/></g></g></svg>
+              <svg id="dropdown" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12.44 12.44"><g id="Layer_3"><g id="Login_Button"><polygon className="cls-1" points="12.44 0 12.44 12.44 0 12.44 12.44 0"/></g></g></svg>
         </svg></div>): (<div className='dropdown-arrow-container'><svg className="arrow-icon-collapsed" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                  <svg id="dropdown" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12.44 12.44"><g id="Layer_3"><g id="Profile"><polygon class="cls-1" points="12.44 12.44 12.44 0 0 0 12.44 12.44"/></g></g></svg>
+                  <svg id="dropdown" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12.44 12.44"><g id="Layer_3"><g id="Profile"><polygon className="cls-1" points="12.44 12.44 12.44 0 0 0 12.44 12.44"/></g></g></svg>
               </svg></div>)}
               </h1>
       </div>
@@ -113,9 +113,13 @@ const Spartan = ({ gamerInfo }) => {
     return <div>No Spartan Inventory Data</div>;
   }
   const resetHighlight = (newHighlightedId, itemType) => {
-    console.log("Resetting : ", newHighlightedId, itemType)
+    if (newHighlightedId === 0){
+      return
+    }
     // Update the highlightedItems state
-    if (itemType === "ArmorKitCustom") {
+
+    if (itemType === "ArmorTheme" || itemType === "ArmorKitCustom") {
+      console.log("Custom Kit Equipped")
       setHighlightedItems(prev => ({
         ...prev,
         armorthemeId: newHighlightedId
@@ -125,7 +129,6 @@ const Spartan = ({ gamerInfo }) => {
       ...prev,
       [`${itemType.toLowerCase()}Id`]: newHighlightedId
     }));
-  
     // Function to update ArmoryRow based on itemType
     const updateArmoryRow = (armoryType, armoryRowKey) => {
       const updatedArmoryRow = armoryRow[armoryRowKey].map(obj => ({
@@ -148,12 +151,13 @@ const Spartan = ({ gamerInfo }) => {
       "ArmorKneePad": "ArmoryRowKneePads",
       "ArmorHipAttachment": "ArmoryRowHipAttachments",
       "ArmorChestAttachment": "ArmoryRowChestAttachments",
-      "ArmorTheme": "ArmoryRowArmorKits",
-      "ArmorKitCustom": "ArmoryRowArmorKits"
+      "ArmorTheme": "ArmoryRowKits",
+      "ArmorKitCustom": "ArmoryRowKits"
     };
   
     // Update the appropriate armory row if the itemType matches
     if (armoryRowKeys[itemType]) {
+      console.log("Armory Row selected:", armoryRowKeys[itemType])
       updateArmoryRow(itemType, armoryRowKeys[itemType]);
     }
   };
@@ -161,7 +165,9 @@ const Spartan = ({ gamerInfo }) => {
   
   
   const handleEquipItem = (item) => {
-    console.log("handle Equip: ", item.Type);
+    if (item.Type === ""){
+      return
+    }
   
     // Function to update the currently equipped item based on its type
     const updateCurrentlyEquipped = (itemType, item) => {
@@ -200,32 +206,30 @@ const Spartan = ({ gamerInfo }) => {
 
 
   return (
-    <div className="main-grid-container-spartan">
-      <div className="title-container-home">
-        <h1 className="spartan-title-ops">ARMORY</h1>
-      </div>
-      <br></br>
-      <div className="spartan-description-operations">
-        <span style={{ fontStyle: 'italic', fontSize: 'larger' }}>
-          Save custom loadouts, individual pieces, and change cores
-        </span>
-      </div>
-
-      <p className="spartan-subdescription-operations">
-        <p style={{color:"#4389BA", paddingTop: '5px'}}> CROSS CORE ITEMS </p> 
-        If in the future, the UNSC High Command allows Spartans to use items from different cores, the Armory will automatically reflect the changes.
-      </p>
-        <p className="spartan-subdescription-operations">
-        <p style={{color:"#4389BA", paddingTop: '5px'}}>CUSTOM ARMOR KIT LOADOUTS (BETA) </p> 
-         Spartans have the ability to save custom armor kit loadouts on SPARTAN REPORT. Custom Kit Loadouts allow for you to save your favorite armor pieces and quickly equip them in the game. The custom loadouts are saved to your profile and can be accessed at any time.
-          <br></br> <br></br>
-          Once a spartan press the Save Loadout button, they will be prompted to enter a name for the custom kit. 
-          <br></br> <br></br>
-          No matter what core is equipped, the custom loadouts will always be available to equip across all cores. If a chosen loadout doesn't correspond to that core, we will automatically equip that core for you
-
-        <p style={{color:"#D6A849", paddingTop: '5px'}}>ATTENTION</p> All changes made here will be reflected in the game ONLY after rebooting. 
-
-        </p>
+  <div className="main-grid-container-spartan">
+    <div className="title-container-home">
+      <h1 className="spartan-title-ops">ARMORY</h1>
+    </div>
+    <br />
+    <div className="spartan-description-operations">
+      <span style={{ fontStyle: 'italic', fontSize: 'larger' }}>
+        Save custom loadouts, individual pieces, and change cores
+      </span>
+    </div>
+    <div className="spartan-subdescription-operations">
+      <div style={{ color: "#4389BA", paddingTop: '5px' }}>CROSS CORE ITEMS</div>
+      If in the future, the UNSC High Command allows Spartans to use items from different cores, the Armory will automatically reflect the changes.
+    </div>
+    <div className="spartan-subdescription-operations">
+      <div style={{ color: "#4389BA", paddingTop: '5px' }}>CUSTOM ARMOR KIT LOADOUTS (BETA)</div>
+      Spartans have the ability to save custom armor kit loadouts on SPARTAN REPORT. Custom Kit Loadouts allow for you to save your favorite armor pieces and quickly equip them in the game. The custom loadouts are saved to your profile and can be accessed at any time.
+      <br /><br />
+      Once a spartan presses the Save Loadout button, they will be prompted to enter a name for the custom kit. 
+      <br /><br />
+      No matter what core is equipped, the custom loadouts will always be available to equip across all cores. If a chosen loadout doesn't correspond to that core, we will automatically equip that core for you.
+      <div style={{ color: "#D6A849", paddingTop: '5px' }}>ATTENTION</div>
+      All changes made here will be reflected in the game ONLY after rebooting. 
+    </div>
 
 
       <RenderArmoryRow 

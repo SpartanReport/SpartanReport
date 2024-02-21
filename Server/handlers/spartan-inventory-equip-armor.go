@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	requests "spartanreport/requests"
+	. "spartanreport/structures"
 
 	"github.com/gin-gonic/gin"
 )

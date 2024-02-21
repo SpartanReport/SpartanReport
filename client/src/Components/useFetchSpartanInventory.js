@@ -1,5 +1,20 @@
 import { useState } from 'react';
 import axios from 'axios';
+const customConversion = {
+  "ArmorChestAttachment": "ArmoryRowChestAttachments",
+  "ArmorCoating": "ArmoryRowCoatings",
+  "ArmorCore": "ArmoryRow",
+  "ArmorHelmet": "ArmoryRowHelmets",
+  "ArmorKit": "ArmoryRowKits",
+  "ArmorVisor": "ArmoryRowVisors",
+  "ArmorGlove": "ArmoryRowGloves",
+  "ArmorLeftShoulderPad": "ArmoryRowLeftShoulderPads",
+  "ArmorRightShoulderPad": "ArmoryRowRightShoulderPads",
+  "ArmorWristAttachment": "ArmoryRowWristAttachments",
+  "ArmorHipAttachment": "ArmoryRowHipAttachments",
+  "ArmorKneePad": "ArmoryRowKneePads",
+};
+
 
 const useFetchSpartanInventory = (gamerInfo, includeArmory = false, setHighlightedItems = null) => {
   const [isLoading, setIsLoading] = useState(true);
@@ -52,8 +67,6 @@ const useFetchSpartanInventory = (gamerInfo, includeArmory = false, setHighlight
       }
       setSpartanInventory(response.data.PlayerInventory[0]);
       if (includeArmory) {
-        setArmoryRow(response.data);
-        console.log("Armory: ", response.data)
         const equippedData = response.data.CurrentlyEquipped;
         console.log("Setting current equip")
         setCurrentlyEquipped({
@@ -130,6 +143,53 @@ const useFetchSpartanInventory = (gamerInfo, includeArmory = false, setHighlight
           setHighlightedItems(items => ({ ...items, armorthemeId: initialArmorKitHighlight.id }));
 
         }
+        const customKits = await fetchCustomKit();
+        console.log("Got custom kits: ", customKits);
+        customKits.forEach((kit) => {
+          // Check currentlyEquipped, and for each item in there, grab the image from the response.data.CorrespondingArmoryRow
+          let KitItems = kit.currentlyEquipped;
+          // Loop through each kit item
+          console.log(KitItems)
+          // Kit Items is an Object arary, loop through and print out each item
+          Object.keys(KitItems).forEach((key) => {
+            console.log("item type: ", KitItems[key].Type)
+            let row = customConversion[KitItems[key].Type]
+            // row is now a string. search for response.data.row for the item with the id of key.Id, when found, set the image of the item to the image of the item in the response.data.row
+            console.log("Row: ", row)
+            if (row === undefined){
+              return
+            }
+            if (response.data.hasOwnProperty(row)) {
+              // Access the specific object using the row key and find the item
+              let items = response.data[row]; // Access the array of items within the specified object
+              console.log("Items: ", items)
+              // loop through items
+              items.forEach((item) => {
+                if (item.id === KitItems[key].id) {
+                  console.log("Found item: ", item)
+                  KitItems[key].Image = item.Image;
+                  if (kit.ImageType == item.Type){
+
+                    kit.Image = item.Image;
+                  
+                  }
+                }
+              });
+            }
+          });
+        });
+
+        // Ensure ArmoryRowKits is an array and append customKits to it
+        if (Array.isArray(response.data.ArmoryRowKits) || customKits.length > 0) {
+          response.data.ArmoryRowKits = [...response.data.ArmoryRowKits, ...customKits];
+        } else {
+          // Handle the case where ArmoryRowKits is not an array or undefined
+          response.data.ArmoryRowKits = customKits;
+        }
+    
+        // Now, the response.data includes the updated ArmoryRowKits
+        console.log(response.data.ArmoryRowKits);
+        setArmoryRow(response.data);
       }
   
       setIsLoading(false);
@@ -153,6 +213,20 @@ const useFetchSpartanInventory = (gamerInfo, includeArmory = false, setHighlight
       setIsLoading(false);
     }
   };
+
+  const fetchCustomKit = async () => {
+    const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8080';
+    try {
+      const storedGamerInfo = localStorage.getItem('gamerInfo');
+
+      const response = await axios.post(`${apiUrl}/getCustomKit`, storedGamerInfo );
+      return response.data[0].loadouts || [];
+    } catch (error) {
+      console.error("Error fetching custom kits:", error);
+      return [];
+    }
+  };
+
   
   return { spartanInventory, armoryRow, setArmoryRow, isLoading, fetchSpartanInventory, currentlyEquipped, setCurrentlyEquipped };
 };

@@ -14,6 +14,7 @@ import (
 	"os/exec"
 	"spartanreport/db"
 	requests "spartanreport/requests"
+	. "spartanreport/structures"
 	"strings"
 
 	"github.com/disintegration/imaging"
@@ -155,47 +156,6 @@ type CoreDetails struct {
 		} `json:"DisplayPath"`
 	} `json:"CommonData"`
 }
-type ArmoryRowCore struct {
-	ID            int    `json:"id"`
-	Name          string `json:"name"`
-	IsHighlighted bool   `json:"isHighlighted"`
-	Image         string `json:"Image,omitempty"`
-	Description   string `json:"Description,omitempty"`
-	CoreId        string `json:"CoreId"`
-	Type          string `json:"Type"`
-	GetInv        bool   `json:"GetInv"`
-	CoreTitle     string `json:"CoreTitle"`
-	Rarity        string `json:"Rarity"`
-}
-
-type ArmoryRowElements struct {
-	ID            int    `json:"id"`
-	Name          string `json:"name"`
-	IsHighlighted bool   `json:"isHighlighted"`
-	Image         string `json:"Image,omitempty"`
-	CoreId        string `json:"CoreId"`
-	BelongsToCore string `json:"BelongsToCore"`
-	Rarity        string `json:"Rarity"`
-	ImagePath     string `json:"ImagePath,omitempty"`
-	IsCrossCore   bool   `json:"IsCrossCore"`
-	Type          string `json:"Type"`
-	CorePath      string `json:"CorePath"`
-}
-type ArmoryKitRowElements struct {
-	ID                  int           `json:"id"`
-	Name                string        `json:"name"`
-	IsHighlighted       bool          `json:"isHighlighted"`
-	Image               string        `json:"Image,omitempty"`
-	CoreId              string        `json:"CoreId"`
-	BelongsToCore       string        `json:"BelongsToCore"`
-	Rarity              string        `json:"Rarity"`
-	ImagePath           string        `json:"ImagePath,omitempty"`
-	IsCrossCore         bool          `json:"IsCrossCore"`
-	Type                string        `json:"Type"`
-	CorePath            string        `json:"CorePath"`
-	KitName             string        `json:"KitName"`
-	KitEquippablePieces []ItemOptions `json:"KitEquippablePieces"`
-}
 
 type ArmoryRowItems struct {
 	ArmoryRowElements          []ArmoryRowElements `json:"Helmets"`
@@ -207,21 +167,6 @@ type ArmoryRowItems struct {
 	ArmoryRowHipAttachments    []ArmoryRowElements `json:"HipAttachments"`
 	ArmoryRowKneePads          []ArmoryRowElements `json:"KneePads"`
 	ArmoryRowChestAttachments  []ArmoryRowElements `json:"ChestAttachments"`
-}
-
-type CurrentlyEquipped struct {
-	Helmet            ArmoryRowElements    `json:"CurrentlyEquippedHelmet"`
-	Core              ArmoryRowCore        `json:"CurrentlyEquippedCore"`
-	Visor             ArmoryRowElements    `json:"CurrentlyEquippedVisor"`
-	Gloves            ArmoryRowElements    `json:"CurrentlyEquippedGlove"`
-	Coatings          ArmoryRowElements    `json:"CurrentlyEquippedCoating"`
-	LeftShoulderPads  ArmoryRowElements    `json:"CurrentlyEquippedLeftShoulderPad"`
-	RightShoulderPads ArmoryRowElements    `json:"CurrentlyEquippedRightShoulderPad"`
-	WristAttachments  ArmoryRowElements    `json:"CurrentlyEquippedWristAttachment"`
-	HipAttachments    ArmoryRowElements    `json:"CurrentlyEquippedHipAttachment"`
-	KneePads          ArmoryRowElements    `json:"CurrentlyEquippedKneePad"`
-	ChestAttachments  ArmoryRowElements    `json:"CurrentlyEquippedChestAttachment"`
-	Kit               ArmoryKitRowElements `json:"CurrentlyEquippedKit"`
 }
 
 type DataToReturn struct {

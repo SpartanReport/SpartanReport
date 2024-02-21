@@ -3,7 +3,9 @@ package db
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	spartanreport "spartanreport/structures"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -14,6 +16,119 @@ var MongoClient *mongo.Client
 
 func GetCollection(name string) *mongo.Collection {
 	return MongoClient.Database("halo_stats_db").Collection(name) // Ensure the database name is correct
+}
+
+func AddKit(collectionName string, gamerXUID string, loadoutData spartanreport.CustomKit) error {
+	collection := GetCollection(collectionName)
+
+	filter := bson.M{"gamerinfo.xuid": gamerXUID}
+	update := bson.M{
+		"$push": bson.M{
+			"loadouts": loadoutData,
+		},
+	}
+
+	_, err := collection.UpdateOne(context.TODO(), filter, update, options.Update().SetUpsert(true))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// UpdateKit updates the specified custom kit in the database
+func UpdateKit(collectionName string, gamerXUID string, kitId string, newKitData spartanreport.CustomKit) error {
+	collection := GetCollection(collectionName)
+	fmt.Println("Updating Kit: ", kitId)
+	fmt.Println("new Data: ", newKitData)
+	// marshal newkitdata into pretty json for printing
+	prettyJSON, _ := json.MarshalIndent(newKitData, "", "    ")
+
+	fmt.Println("Pretty JSON of newKitData:")
+	fmt.Println(string(prettyJSON))
+
+	// Define the filter to match the document
+	filter := bson.M{"gamerinfo.xuid": gamerXUID, "loadouts.id": kitId}
+
+	// Define the update operation to update the kit details
+	update := bson.M{
+		"$set": bson.M{
+			"loadouts.$": newKitData, // Updates the matching element in the loadouts array
+		},
+	}
+
+	// Perform the update operation
+	_, err := collection.UpdateOne(context.TODO(), filter, update)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func DeleteKit(collectionName string, gamerXUID string, kitId string) error {
+	collection := GetCollection(collectionName)
+	fmt.Println("Deleting Kit: ", kitId)
+	// Define the filter to match the document
+	filter := bson.M{"gamerinfo.xuid": gamerXUID}
+
+	// Define the update operation to pull the kit from the loadouts array
+	update := bson.M{
+		"$pull": bson.M{
+			"loadouts": bson.M{"id": kitId}, // Assumes kits have an "Id" field to identify them
+		},
+	}
+
+	// Perform the update operation
+	_, err := collection.UpdateOne(context.TODO(), filter, update)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// GetKit fetches kits based on a filter and returns them as JSON
+func GetKit(collectionName string, gamerXUID string) ([]byte, error) {
+	collection := GetCollection(collectionName)
+	filter := bson.M{"gamerinfo.xuid": gamerXUID}
+
+	// This projection is optional, it's here to only include the loadouts in the result
+	projection := bson.M{
+		"loadouts": 1,
+		"_id":      0,
+	}
+
+	// FindOptions to include projection
+	findOptions := options.Find().SetProjection(projection)
+
+	// Querying the collection
+	cur, err := collection.Find(context.TODO(), filter, findOptions)
+	if err != nil {
+		return nil, err
+	}
+	defer cur.Close(context.Background())
+
+	var kits []bson.M
+	for cur.Next(context.Background()) {
+		var kit bson.M
+		err := cur.Decode(&kit)
+		if err != nil {
+			return nil, err
+		}
+		kits = append(kits, kit)
+	}
+	if err := cur.Err(); err != nil {
+		return nil, err
+	}
+
+	// Convert the result to JSON
+	jsonData, err := json.Marshal(kits)
+	if err != nil {
+		return nil, err
+	}
+
+	return jsonData, nil
 }
 
 func StoreDataMatch(collectionName string, data interface{}, uniqueFieldValue string) error {

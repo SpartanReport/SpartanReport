@@ -8,6 +8,7 @@ import (
 	"sort"
 	"spartanreport/db"
 	requests "spartanreport/requests"
+	. "spartanreport/structures"
 	"strings"
 	"sync"
 	"time"
@@ -120,13 +121,6 @@ type Track struct {
 	BackgroundImagePath string         `json:"BackgroundImagePath"`
 }
 
-// Individual Item Data
-type ItemOptions struct {
-	ItemType          string   `json:"ItemType"`
-	IsRequired        bool     `json:"IsRequired"`
-	DefaultOptionPath string   `json:"DefaultOptionPath"`
-	OptionPaths       []string `json:"OptionPaths"`
-}
 type ItemResponse struct {
 	CommonData        Item        `json:"CommonData"`
 	IsKit             bool        `json:"IsKit"`
