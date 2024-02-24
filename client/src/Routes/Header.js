@@ -68,7 +68,7 @@ const Header = ({ gamerInfo }) => {
       <header>
         <div className="bottom-left-element">
           <Link to="/policy" className='bottom-left-items'>Privacy Policy </Link>
-          | VISR v0.101.0-preview
+          | VISR v0.101.1-preview
           </div>
       </header>
     </div>

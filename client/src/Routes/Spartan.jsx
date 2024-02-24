@@ -117,27 +117,38 @@ const Spartan = ({ gamerInfo }) => {
       return
     }
     // Update the highlightedItems state
-
     if (itemType === "ArmorTheme" || itemType === "ArmorKitCustom") {
       console.log("Custom Kit Equipped")
-      setHighlightedItems(prev => ({
-        ...prev,
-        armorthemeId: newHighlightedId
-      }));
+      setHighlightedItems(prev => {
+        return {
+          ...prev,
+          armorthemeId: newHighlightedId
+        };
+      });
     }
+
     setHighlightedItems(prev => ({
       ...prev,
       [`${itemType.toLowerCase()}Id`]: newHighlightedId
     }));
     // Function to update ArmoryRow based on itemType
     const updateArmoryRow = (armoryType, armoryRowKey) => {
-      const updatedArmoryRow = armoryRow[armoryRowKey].map(obj => ({
-        ...obj,
-        isHighlighted: obj.Type === itemType && obj.id === newHighlightedId
-      }));
+      const updatedArmoryRow = armoryRow[armoryRowKey].map(obj => {
+        // Check if the current object's type is either ArmorTheme or ArmorKitCustom
+        // and treat them as equivalent for highlighting purposes
+        const isTypeMatch = (obj.Type === "ArmorTheme" || obj.Type === "ArmorKitCustom") &&
+                            (itemType === "ArmorTheme" || itemType === "ArmorKitCustom");
+        
+        return {
+          ...obj,
+          // Use the isTypeMatch condition for highlighting, also check for id match
+          isHighlighted: isTypeMatch && obj.id === newHighlightedId
+        };
+      });
+    
+    
       setArmoryRow({ ...armoryRow, [armoryRowKey]: updatedArmoryRow });
     };
-  
     // Mapping of item types to armory row keys
     const armoryRowKeys = {
       "ArmorCore": "ArmoryRow",
@@ -157,7 +168,6 @@ const Spartan = ({ gamerInfo }) => {
   
     // Update the appropriate armory row if the itemType matches
     if (armoryRowKeys[itemType]) {
-      console.log("Armory Row selected:", armoryRowKeys[itemType])
       updateArmoryRow(itemType, armoryRowKeys[itemType]);
     }
   };
@@ -195,7 +205,6 @@ const Spartan = ({ gamerInfo }) => {
       // For other item types, update the currently equipped item
       const currentlyEquippedKey = `CurrentlyEquipped${item.Type.replace('Armor', '')}`;
       updateCurrentlyEquipped(currentlyEquippedKey, item);
-      console.log(`Setting ${item.Type}`);
     }
   };
   

@@ -7,10 +7,22 @@ import axios from 'axios';
 // Function to compare equipped items of a custom kit with the global currently equipped state
 const isKitFullyEquipped = (kit, currentlyEquipped) => {
   for (const key in kit) {
+    if (key === "CurrentlyEquippedArmorKit"){
+      continue
+    }
+    
     const item = kit[key];
+       // Assuming `itemTypeToEquippedProperty` maps item types to their corresponding properties in `currentlyEquipped`
+       const equippedItemProperty = itemTypeToEquippedProperty[item.Type];
+       if (!equippedItemProperty) {
+         continue; // Skip if there's no mapping for this item type
+       }
     if (!item) continue; // Skip if item is not defined
     const equippedItem = currentlyEquipped[itemTypeToEquippedProperty[item.Type]];
-    if (!equippedItem || item.id !== equippedItem.id) {
+    if (!equippedItem) {
+      continue; // Skip this item if it's not equipped
+    }
+    if (item.id !== equippedItem.id) {
       return false; // If any item is not equipped or IDs do not match, kit is not fully equipped
     }
   }
@@ -300,7 +312,9 @@ const HighlightedObjectCard = ({ gamerInfo, object, isDisplay }) => {
 
     loadImage();
   }, [object.id, object.ImagePath, object.Image, gamerInfo.spartankey, isDisplay]);
-
+  if (object.Type === "ArmorKitCustom"){
+    return
+  }
   const rarityClass = object.Rarity;
   const cardClassName = `highlightedObjectCard cardWithGradient ${rarityClass}`;
   return (
@@ -594,6 +608,7 @@ const ArmoryRow = ({ visId, objects, fullObjects, resetHighlight, gamerInfo, onE
   };
 
   const handleObjectClick = async (object) => {
+    console.log("clicked object!!!!")
     // If the object is not highlighted
     if (object.id !== highlightedItems[`${object.Type.toLowerCase()}Id`]) {
       object.isHighlighted = true;
@@ -756,6 +771,10 @@ const ArmoryRow = ({ visId, objects, fullObjects, resetHighlight, gamerInfo, onE
   const handleCustomKit = async (object) => {
     if (currentlyEquipped && currentlyEquipped.CurrentlyEquippedCore && object.id === 'saveLoadout') {
       setCustomKitCount(customKitCount + 1); // Increment the counter
+      object.isHighlighted = true;
+
+      // Sends newly equipped item back to parent Component
+      onEquipItem(object);
 
       const uniqueId = `saveLoadout-${new Date().getTime()}`;
       const newKitName = `[${customKitCount + 1}] New Loadout`; // Use the new count for naming
@@ -847,9 +866,13 @@ const ArmoryRow = ({ visId, objects, fullObjects, resetHighlight, gamerInfo, onE
   };
 
   const onClickCustomKit = (object) => {
+    console.log("Click custom kit")
     currentlyEquipped = object.currentlyEquipped;
     handleSendingCustomKit(object);
+    resetHighlight(object.id, "ArmorKitCustom");
+    setHighlightedItems(items => ({ ...items, armorthemeId: object.id }));
 
+    console.log("Set highlight: ", fullObjects)
   }
   const handleObjectNameChange = (objectId, newName) => {
     setCurrentObjects(currentObjects.map(obj =>
