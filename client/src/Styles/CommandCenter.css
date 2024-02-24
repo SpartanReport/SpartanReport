@@ -50,16 +50,7 @@
   background-color: #4389BA;
 }
 
-.title-container-home {
-  margin-top: 10px;
-  margin-left: 50px;
-  text-align: center;
-  width: 95%;
-  position: absolute;
-  background-color: #273b44;
-  border-left: 5px solid #80cde9;
-  border-right: 40px solid #1D435D;
-}
+
 
 .title-container-cc {
   margin-top: 10px;
@@ -333,9 +324,7 @@
   }
 
 
-  .title-container-home{
-    margin-left: 5px;
-  }
+  
   .subheader-container-home{
     margin-left:5px;
     

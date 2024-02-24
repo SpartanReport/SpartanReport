@@ -5,7 +5,7 @@ import "../Styles/progression.css"
 import RankTable from './RankTable';
 import LoadingScreen from '../Components/Loading';
 
-const Progression = ({ gamerInfo ,HaloStats, setHaloStats, setSelectedMatch}) => {
+const Progression = ({ gamerInfo }) => {
     const [isLoading, setIsLoading] = useState(true);
     const location = useLocation(); // Get the current location
     const [careerTrack, setCareerTrack] = useState()
@@ -13,7 +13,8 @@ const Progression = ({ gamerInfo ,HaloStats, setHaloStats, setSelectedMatch}) =>
     const [playlistMultipliers, setPlaylistMultipliers] = useState()
     const [playlistTimes, setPlaylistTimes] = useState()
     const [rankImages, setRankImages] = useState([]); // New state variable for rank images
-
+    const [currentRank, setCurrentRank] = useState();
+    const [nextRank, setNextRank] = useState();
     
     useEffect(() => {
       const fetchSpartanInventory = async () => {
@@ -22,11 +23,12 @@ const Progression = ({ gamerInfo ,HaloStats, setHaloStats, setSelectedMatch}) =>
           const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8080'; // Fallback URL if the env variable is not set
           const response = await axios.post(`${apiUrl}/progression`, gamerInfo);
           console.log(response.data.AverageDurations)
-          console.log("Halo Stats" , response.data.HaloStats)
           console.log(response.data.careerLadder)
           console.log(response.data.RankImages)
 
           setRankImages(response.data.RankImages);
+          setNextRank(response.data.RankImageNext)
+          setCurrentRank(response.data.RankImageCurrent)
           console.log(response.data); // Log the rank images
 
 
@@ -34,7 +36,6 @@ const Progression = ({ gamerInfo ,HaloStats, setHaloStats, setSelectedMatch}) =>
           setCareerLadder(response.data.CareerLadder)
           setPlaylistMultipliers(response.data.AdjustedAverages)
           setPlaylistTimes(response.data.AverageDurations)
-          setHaloStats(response.data.HaloStats);
           
         } catch (error) {
           console.error("Error fetching Spartan inventory:", error);
@@ -43,25 +44,16 @@ const Progression = ({ gamerInfo ,HaloStats, setHaloStats, setSelectedMatch}) =>
         
       };
     
-      // Only fetch Spartan inventory if HaloStats is not already populated
-      if (!HaloStats) {
+      if (!careerLadder) {
         fetchSpartanInventory();
       }
     }, []);
 
-    // Reset HaloStats state when navigating back to /stats
-    useEffect(() => {
-      if (location.pathname === '/progression') {
-        setHaloStats(null);
-      }
-    }, []);
 
     if (isLoading) {
       return <LoadingScreen />;
     }
-    if (!HaloStats) {
-      return <div>No Spartan Stats Data</div>;
-    }
+
     const xpRequiredForNextRank = careerLadder.Ranks[careerTrack.CurrentProgress.Rank].XpRequiredForRank;
     const partialProgress = careerTrack.CurrentProgress.PartialProgress;
     const xpRemaining = xpRequiredForNextRank - partialProgress;
@@ -73,6 +65,7 @@ const Progression = ({ gamerInfo ,HaloStats, setHaloStats, setSelectedMatch}) =>
   console.log(careerLadder)
 
   const getRankImageData = (rankIndex) => {
+    console.log("Rank Index: ", rankIndex)
     const rankImage = rankImages[rankIndex].Image
     console.log("Rank Image: ", rankImage)
     return rankImage
@@ -80,11 +73,11 @@ const Progression = ({ gamerInfo ,HaloStats, setHaloStats, setSelectedMatch}) =>
     
     
     const getRankContainer = (rankIndex, isSpotlight) => {
-        const rankIconData = getRankImageData(rankIndex);
+        const rankIconData = isSpotlight ? currentRank.Image : nextRank.Image;
         const rankTitle = careerLadder.Ranks[rankIndex].RankTitle.value;
         const rankGrade = careerLadder.Ranks[rankIndex].RankGrade;
         const containerClass = isSpotlight ? 'rank-spotlight' : 'rank-regular';
-    
+
         let headerText;
         if (isSpotlight) {
             headerText = "Current Rank";
@@ -138,7 +131,7 @@ const Progression = ({ gamerInfo ,HaloStats, setHaloStats, setSelectedMatch}) =>
                 <h1>Rank</h1>
               </div>
               <div className="rank-row">
-                {getRankContainer(careerTrack.CurrentProgress.Rank, true)}
+              {getRankContainer(careerTrack.CurrentProgress.Rank, true)}
                 {careerTrack.CurrentProgress.Rank+1 < careerLadder.Ranks.length && getRankContainer(careerTrack.CurrentProgress.Rank+1, false)}
               </div>
               <p className='HeroProgress'>Road to Hero is {(Math.floor((careerTrack.CurrentProgress.TotalXPEarned / 9319351) * 10000) / 100).toFixed(2)}% complete!</p>

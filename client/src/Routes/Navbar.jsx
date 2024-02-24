@@ -63,17 +63,26 @@ const Navbar = ({ isAuthenticated, startAuth }) => {
     setShowMobileNav(!showMobileNav);
     setShowDropdown(false);
   };
+  const HamburgerIcon = () => (
+      <svg  viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M4 6H20M4 12H20M4 18H20" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+  );
 
+ const CancelIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M6 6L18 18M6 18L18 6" stroke="#ffffff" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+   );
+  
   const dropdownRoutes = ['PROGRESSION', 'BATTLE LOG', 'ARMORY'];
   const isHomeRoute = location.pathname === '/'; // Check if the current route is HOME
   return (
     <div>
       <div className={`title-container `}>    
          <h1 className="spartan-title">SPARTAN REPORT</h1>
-        <button className="hamburger" onClick={toggleMobileNav}>
-          <div></div>
-          <div></div>
-          <div></div>
+         <button className={`hamburger ${showMobileNav ? 'full-width' : ''}`} onClick={toggleMobileNav}>
+         {showMobileNav ? <CancelIcon /> : <HamburgerIcon />}
         </button>
       </div>
       <div className="navbar-container">

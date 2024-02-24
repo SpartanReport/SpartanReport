@@ -1,103 +1,52 @@
-import React, { useState } from 'react';
-import { Tooltip } from 'react-tippy';
-import 'tippy.js/dist/tippy.css'; // don't forget the CSS
+import React from 'react';
+import 'tippy.js/dist/tippy.css'; // This can be removed if tooltips are no longer used anywhere else
 import "../Styles/RankTable.css";
 
-const RankTable = ({ rankImages, careerLadder, currentRank }) => {
-        if (!careerLadder || !careerLadder.Ranks) {
+const RankTable = ({ rankImages, careerLadder }) => {
+    if (!careerLadder || !careerLadder.Ranks) {
         return null;
     }
 
-    const rankColors = ['Bronze', 'Silver', 'Gold', 'Platinum', 'Diamond', 'Onyx'];
+    // Convert rankImages to an array and filter out the first two ranks
+    const filteredRankImages = Object.entries(rankImages)
+        .filter(([rankIndex, rankObj]) => rankObj.Rank > 0)
+        .sort(([rankIndexA, rankObjA], [rankIndexB, rankObjB]) => rankObjA.Rank - rankObjB.Rank); // Ensure it's sorted by Rank if necessary
 
-    const getRankImageData = (rankIndex) => {
-        return rankImages[rankIndex]?.Image;
-    };
-    const getRankImagesForTooltip = (rankIndex) => {
-        const indices = [rankIndex - 1, rankIndex, rankIndex + 1];
-        return indices.map(index => getRankImageData(index));
-    };
-    
-    const renderTooltipContent = (rankIndex, rank, color) => {
-        const imagesForTooltip = getRankImagesForTooltip(rankIndex);
-        return (
-            <div className="card-tooltip">
-                <div className="tooltip-header">
-                    {color} {careerLadder.Ranks[rankIndex]?.RankTitle.value}
-                </div>
-                <div className="skipped-ranks-container">
-                    {imagesForTooltip.map((imageData, idx) => {
-                        const currentRankIndex = rankIndex + (idx - 1); // Adjusts to get the correct rank index for the Before, Current, and After images
+    // Define a new method to render all ranks in a grid layout
+    const renderRankImagesGrid = () => {
+        const ranksPerRow = 15; // Number of images per row
+        const totalRanks = filteredRankImages.length; // Total number of ranks after filtering
+        const numberOfRows = Math.ceil(totalRanks / ranksPerRow); // Calculate the number of rows needed
+
+        return Array.from({ length: numberOfRows }, (_, rowIndex) => {
+            const startRankIndex = rowIndex * ranksPerRow;
+            const endRankIndex = Math.min(startRankIndex + ranksPerRow, totalRanks);
+
+            return (
+                <tr key={`row-${rowIndex}`}>
+                    {filteredRankImages.slice(startRankIndex, endRankIndex).map(([rankIndex, rankObj], index) => {
                         return (
-                            <div className="tooltip-rank-slice" key={idx}>
+                            <td key={`rank-${rankIndex}`} className="rank-cell">
                                 <img
-                                    className="skipped-rank-image"
-                                    src={`data:image/jpeg;base64,${imageData}`}
-                                    alt={`Rank ${currentRankIndex} Icon`}
+                                    className="rank-image"
+                                    src={`data:image/jpeg;base64,${rankObj.Image}`}
+                                    alt={`Rank ${rankObj.Rank} Icon`}
                                 />
-                                <div className="text-container">
-                                    Grade {careerLadder.Ranks[currentRankIndex]?.RankTier.value}
-                                </div>
-                            </div>
+                            </td>
                         );
                     })}
-                </div>
-            </div>
-        );
+                </tr>
+            );
+        });
     };
 
     return (
         <table className="rank-images-table">
-            <tbody className='rank-images-body'>
-                {rankColors.map((color, colorIndex) => (
-                    <>
-                        <tr key={`${colorIndex}-title`}>
-                            <td colSpan="15" className="row-title-header">{color}</td>
-                        </tr>
-                        <tr key={colorIndex} className="rank-row">
-                            {Array.from({ length: 15 }, (_, rankIndexWithinColor) => {
-                                const isFirstColumn = rankIndexWithinColor === 0;
-                                const isLastColumn = rankIndexWithinColor === 14; // assuming you have 15 columns
-    
-                                // Dynamically determine the class for the tooltip
-                                let tooltipClass = "hover-content";
-                                if (isFirstColumn) tooltipClass += " first-column-content";
-                                if (isLastColumn) tooltipClass += " last-column-content";
-                                const rankIndex = colorIndex * 45 + rankIndexWithinColor * 3 + 2;
-                                if(rankIndex === 0) return null;
-                                const rank = careerLadder.Ranks[rankIndex];
-                                const imageData = getRankImageData(rankIndex);
-                                const ranksForTooltip = getRankImagesForTooltip(rankIndex).map((_, idx) => rankIndex + (idx - 1));
-                                const isCurrentRank = ranksForTooltip.includes(currentRank);
-        
-                                return (
-                                    <td key={rankIndex} className={`rank-cell ${isCurrentRank ? "current-rank" : ""}`}> 
-                                        <Tooltip position="bottom" trigger="mouseenter" arrow>
-                                            <div className="tooltip-container">  
-                                                <div className={tooltipClass}>
-                                                    {renderTooltipContent(rankIndex, rank, color)}
-                                                </div>
-                                                <div className="static-content">
-                                                    <div className="text-container"></div>
-                                                    <img
-                                                        className={`rank-image-tooltip ${isCurrentRank ? "pulse-animation" : ""}`}
-                                                        src={`data:image/jpeg;base64,${imageData}`}
-                                                        alt={`Rank ${rankIndex} Icon`}
-                                                    />
-                                                </div>
-                                            </div>
-                                        </Tooltip>
-                                    </td>
-                                );
-                            })}
-                        </tr>
-                    </>
-                ))}
+            <tbody>
+                {renderRankImagesGrid()}
             </tbody>
         </table>
     );
-    
-    
 };
 
 export default RankTable;

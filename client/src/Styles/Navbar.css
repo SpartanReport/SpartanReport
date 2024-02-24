@@ -26,6 +26,7 @@
   height: 25px;
   background: transparent;
   border: none;
+  position:fixed;
   cursor: pointer;
   padding: 0;
 }
@@ -233,23 +234,22 @@
 @media screen and (max-width: 590px) {
   .App-nav {
     flex-direction: column;
-    margin-bottom: -70px;
-    transform: translateX(-25px);
-    
   }
-.title-container-home, .spartan-title{
-  width:80%;
-  
-}
-.subheader-container-home{
-  width:80%;
-  
-}
-.title-container {
-  width: 100%;
-  margin-left: 0px;
+  #page-content-wrapper {
+    margin-top: 75px;
+  }
+  .title-container-home, .spartan-title{
+    width:80%;
+  }
+  .subheader-container-home{
+    width:80%;
+  }
 
-}
+  .title-container {
+    width: 110%;
+    margin-left: 0px;
+  }
+
   .nav-button, .nav-button-wrapper {
     width: 100%; /* Make each button take the full width */
     min-width: 100%;
@@ -265,6 +265,18 @@
 
   .hamburger {
     display: flex; /* Show the hamburger icon */
+    z-index: 1000;
+    background-color: #273B44;
+    top:0;
+    left:0;
+  }
+  .hamburger.full-width {
+    top: 0; /* Align to the top */
+    left: 0; /* Stretch from the left edge */
+    right: 0; /* Stretch to the right edge */
+    width: 100%; /* Full width */
+    background-color: #273B44; /* Or any color you prefer */
+    z-index: 1000; /* Ensure it's above other content */
   }
   .App-nav {
     display: none; /* Hide the normal navigation initially */
@@ -272,13 +284,14 @@
 
   .App-nav.show {
     display: flex; /* Show the nav when the hamburger is clicked */
-    margin-left: auto;
-    z-index: 100;
-    width: 90%;
-    background-color: #273b44; /* Match the background of the title container */
-    align-items: center;
+    width: 80%;
+    margin-top:0px;
     
-
+    margin-left:0px;
+    background-color: #273b44; /* Match the background of the title container */
+    align-items: center;    
+    position: fixed;
+    z-index: 10000;
   }
 
 

@@ -163,6 +163,27 @@ func StoreData(collectionName string, data interface{}) error {
 	return err
 }
 
+func StoreOrUpdateData(collectionName string, data interface{}, uniqueValue interface{}) error {
+	collection := GetCollection(collectionName)
+
+	// Create a filter for the document to update based on a unique field.
+	filter := bson.M{"gamerinfo": uniqueValue}
+
+	// Prepare the update document using $set to ensure only specified fields are updated.
+	update := bson.M{"$set": data}
+
+	// Set the options to upsert - this creates a new document if no document matches the filter.
+	opts := options.Update().SetUpsert(true)
+
+	// Attempt to update the document.
+	_, err := collection.UpdateOne(context.TODO(), filter, update, opts)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func GetData(collectionName string, filter bson.M, result interface{}) error {
 	collection := GetCollection(collectionName)
 

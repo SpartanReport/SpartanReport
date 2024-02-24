@@ -263,6 +263,16 @@ description-container-policy{
 
 
 }
+.title-container-home {
+  margin-top: 10px;
+  margin-left: 50px;
+  text-align: center;
+  width: 95%;
+  position: absolute;
+  background-color: #273b44;
+  border-left: 5px solid #80cde9;
+  border-right: 40px solid #1D435D;
+}
 .event-date{
   text-align: center;
   font-size: small;
@@ -292,25 +302,31 @@ description-container-policy{
 
   .event-card {
     flex-basis: 100%; /* Stack cards in a single column on small screens */
+    padding-right : 0px;
+    margin-top:0px;
   }
   .home-grid-container{
     margin: -50px;
   }
-
+ 
   .title-container-events-home{
-    margin-left: 10px;
-  }
-  .title-container-home{
-    margin-left: 10px;
+    width: 75%;
   }
 
   .title-container-event-home-active{
-    margin-left: 10px;
-    margin-right:50px;
+    margin-left: 60px;
   }
   .title-container-event-home-past{
-    margin-left: 10px;
+    margin-left: 60px;
   }
+  .spartan-title-home{
+    width:100%;
+  }
+  .title-container-home{
+    margin-left: 50px;
+    margin-top:0px;
+  }
+
   .subheader-container-home{
     margin-left: 10px;
   }
@@ -318,14 +334,14 @@ description-container-policy{
     margin-left: 10px;
   }
   .event-card img{
-    max-width: 88%;
     max-height: 100%;
     padding-bottom: 50px;
-    padding-left:10px;
+    padding-left:60px;
   }
   .event-subheader{
-    margin-left:10px;
-    margin-right:150px;
+    width:85%;
+    margin-left:15%;
+    padding-top:0px;
   }
   .event-days{
     margin-left:10px;
@@ -352,5 +368,5 @@ description-container-policy{
     padding-left: 10px;
     padding-right: 10px;
   }
-  
+
 }

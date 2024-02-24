@@ -234,7 +234,7 @@ const ObjectCard = ({ customKitCount, setCustomKitCount, editingObjectId, onEdit
       {imageSrc !== null ? (
         <img src={imageSrc} alt={object.name} className={`${imageClassName} ImageCard`} />
       ) : (
-        object.id.startsWith('saveLoadout') && (
+        typeof object.id === 'string' && object.id.startsWith('saveLoadout') && (
           <div style={svgContainerStyle}>
             <svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" fill="#4389BA" viewBox="0 0 16 16">
               <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4" />
@@ -839,7 +839,7 @@ const ArmoryRow = ({ visId, objects, fullObjects, resetHighlight, gamerInfo, onE
 
   // Decide which function to use on object click
   const onObjectClick = (object) => {
-    if (object.Type === 'ArmorKit' && object.id.startsWith('saveLoadout')) {
+    if (object.Type === 'ArmorKit' && (typeof object.id === 'string' &&  object.id.startsWith('saveLoadout'))) {
       handleCustomKit(object);
     } else {
       handleObjectClick(object);

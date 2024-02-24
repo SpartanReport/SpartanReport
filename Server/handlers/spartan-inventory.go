@@ -407,7 +407,6 @@ func loadArmoryRow(data DataToReturn, playerInventory []SpartanInventory) DataTo
 		}
 	}
 	// if armorkit.name is in data.armoryrow.name (object) then remove it from armorkit
-	// if armorkit.name is in data.armoryrow.name (object) then remove it from armorkit
 	for i := len(armorkits) - 1; i >= 0; i-- {
 		kit := armorkits[i]
 		for _, core := range data.ArmoryRow {
@@ -532,6 +531,7 @@ func FetchInventoryItems(gamerInfo requests.GamerInfo, Items Items) Items {
 		err := makeAPIRequest(gamerInfo.SpartanKey, url, nil, &currentItemResponse)
 		// Check if the title is in the skip list
 		title := currentItemResponse.CommonData.Title.Value
+
 		if _, found := skipTitles[title]; found {
 			fmt.Println("Skipping:", title)
 			results <- RewardResult{} // Send an empty result to ensure channel doesn't block
@@ -619,6 +619,8 @@ func compressPNGWithImaging(base64PNG string, resize bool, width, height int) (s
 	// Decode PNG data
 	img, _, err := image.Decode(bytes.NewReader(pngData))
 	if err != nil {
+		fmt.Println("Error decoding png")
+
 		return "", err
 	}
 
@@ -630,12 +632,15 @@ func compressPNGWithImaging(base64PNG string, resize bool, width, height int) (s
 	// Encode the image to PNG
 	var buf bytes.Buffer
 	if err := png.Encode(&buf, img); err != nil {
+		fmt.Println("Error encoding to png")
 		return "", err
 	}
 
 	optimizedImage, err := optimizePNGWithPngquant(buf.Bytes())
 	if err != nil {
 		return "", err
+		fmt.Println("Error optimizing png")
+
 	}
 
 	// Convert back to base64

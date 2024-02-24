@@ -218,15 +218,28 @@ const useFetchSpartanInventory = (gamerInfo, includeArmory = false, setHighlight
     const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8080';
     try {
       const storedGamerInfo = localStorage.getItem('gamerInfo');
-
-      const response = await axios.post(`${apiUrl}/getCustomKit`, storedGamerInfo );
-      return response.data[0].loadouts || [];
+      const gamerInfo = JSON.parse(storedGamerInfo || '{}'); // Ensure this is an object
+  
+      const response = await axios.post(`${apiUrl}/getCustomKit`, gamerInfo, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+  
+      // Safely access .data ensuring it exists and defaults to an empty object if not
+      const data = response.data || [];
+  
+      // Check if data is an array and has at least one element
+      if (Array.isArray(data) && data.length > 0) {
+        return data[0].loadouts || [];
+      }
+      return [];
     } catch (error) {
       console.error("Error fetching custom kits:", error);
       return [];
     }
   };
-
+  
   
   return { spartanInventory, armoryRow, setArmoryRow, isLoading, fetchSpartanInventory, currentlyEquipped, setCurrentlyEquipped };
 };

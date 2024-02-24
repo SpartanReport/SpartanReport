@@ -59,6 +59,20 @@ func HandleSaveCustomKit(c *gin.Context) {
 	sizeInBytes := len(rawJSON)
 	sizeInKB := float64(sizeInBytes) / 1024.0
 	fmt.Printf("Size of customKitData: %.2f KB\n", sizeInKB)
+	// First, add the gamerInfo to progression_data, if it already exists, nothing happens.
+	// Remove sensitive information from storing
+	truncatedGamerInfo := newGamerInfo
+	truncatedGamerInfo.XBLToken = ""
+	truncatedGamerInfo.SpartanKey = ""
+	dataToStore := struct {
+		GamerInfo requests.GamerInfo
+	}{
+		GamerInfo: truncatedGamerInfo,
+	}
+	err = db.StoreData("progression_data", dataToStore)
+	if err != nil {
+		fmt.Println("Error adding gamerinfo to db")
+	}
 	db.AddKit("progression_data", newGamerInfo.XUID, customKitData.CustomKit)
 
 }
