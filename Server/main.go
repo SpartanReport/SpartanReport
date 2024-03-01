@@ -132,6 +132,7 @@ func main() {
 	r.POST("/deleteCustomKit", spartanreport.HandleRemoveCustomKit)
 	r.POST("/updateCustomKit", spartanreport.HandleUpdateCustomKit)
 	r.POST("/getCustomKit", spartanreport.HandleGetCustomKit)
+	r.POST("/getItemImage", spartanreport.HandleGetItemImage)
 	r.GET("/.well-known/microsoft-identity-association.json", spartanreport.HandleMSIdentity)
 	fmt.Println("Server started at :8080")
 	r.Run(":8080")

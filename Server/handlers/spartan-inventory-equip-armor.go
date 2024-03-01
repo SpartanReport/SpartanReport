@@ -27,6 +27,9 @@ type ItemsInInventory struct {
 	ItemMetaData  Item         `json:"Item"`
 	DetailedItem  ItemResponse `json:"DetailedItem"`
 }
+type ItemJustImage struct {
+	ItemImageData string `json:"ItemImageData"`
+}
 
 func HandleEquipArmor(c *gin.Context) {
 	var ArmorCoreData ArmorCoreEquip

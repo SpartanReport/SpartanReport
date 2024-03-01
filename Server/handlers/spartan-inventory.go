@@ -248,6 +248,9 @@ func HandleInventory(c *gin.Context) {
 				if err := json.Unmarshal([]byte(val), &existingItem); err != nil {
 					fmt.Printf("Error unmarshalling item from Redis: %v", err)
 				} else {
+					if existingItem.ItemType != "ArmorKitCustom" || existingItem.ItemType != "ArmorKit" {
+						existingItem.ItemImageData = ""
+					}
 					// Item found, add to existing items
 					existingItems.InventoryItems = append(existingItems.InventoryItems, existingItem)
 
@@ -587,7 +590,6 @@ func FetchInventoryItems(gamerInfo requests.GamerInfo, Items Items) Items {
 		for _, item := range Items.InventoryItems {
 			// Update Free Rewards
 			if item.ItemPath == result.Path {
-				item.ItemImageData = result.ImageData
 				item.ItemMetaData = result.Item
 				item.DetailedItem = result.DetailedItem
 
@@ -596,6 +598,18 @@ func FetchInventoryItems(gamerInfo requests.GamerInfo, Items Items) Items {
 				itemBytes, err := json.Marshal(item)
 				if err != nil {
 					fmt.Printf("Error marshalling item: %v", err)
+				}
+
+				itemJustImageData := ItemJustImage{
+					ItemImageData: result.ImageData,
+				}
+				itemBytesJustImageData, err := json.Marshal(itemJustImageData)
+				if err != nil {
+					fmt.Printf("Error marshalling item: %v", err)
+				}
+
+				if err := db.RedisClient.HSet(ctx, "items_images", itemPath, itemBytesJustImageData).Err(); err != nil {
+					fmt.Printf("error setting value in Redis: %v", err)
 				}
 
 				if err := db.RedisClient.HSet(ctx, "items", itemPath, itemBytes).Err(); err != nil {
@@ -874,4 +888,36 @@ func LoadArmorCores(gamerInfo requests.GamerInfo, armorcore string) {
 	reward.ItemMetaData.Core = armorcore
 	db.StoreData("item_data", reward)
 
+}
+
+type ItemRequest struct {
+	ImagePath string `json:"ImagePath"`
+}
+
+func HandleGetItemImage(c *gin.Context) {
+	fmt.Println("in item image!")
+	var item ItemRequest
+	var existingItem ItemsInInventory
+
+	if err := c.ShouldBindJSON(&item); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	fmt.Println("Getting Image!", item.ImagePath)
+
+	// Retrieve the item from Redis
+	ctx := context.Background()
+	val, err := db.RedisClient.HGet(ctx, "items_images", item.ImagePath).Result()
+
+	if err != nil {
+		fmt.Println("Error getting from Redis: ", err)
+	}
+
+	if err := json.Unmarshal([]byte(val), &existingItem); err != nil {
+		fmt.Printf("Error unmarshalling item from Redis: %v", err)
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"imageData": existingItem.ItemImageData,
+	})
 }

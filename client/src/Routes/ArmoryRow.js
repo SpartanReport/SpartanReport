@@ -85,6 +85,24 @@ async function fetchImage(path, spartankey) {
 }
 
 
+async function fetchImageFromDB(path) {
+  try {
+    const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8080'; // Fallback URL if the env variable is not set
+    console.log("Fetching image from DB: ", path)
+    let payload = {
+      ImagePath: path
+    }
+
+    const response = await axios.post(`${apiUrl}/getItemImage`, payload);
+    return response.data
+
+  } catch (error) {
+    console.error('Fetching image failed:', error);
+    return null;
+  }
+}
+
+
 // Object Card is the individual card rendered for each armor piece in the Armory Row
 /**
  * Renders a card component for an armor piece.
@@ -114,7 +132,42 @@ const ObjectCard = ({ customKitCount, setCustomKitCount, editingObjectId, onEdit
   const [kitName, setKitName] = useState("");
   const [equippedImages, setEquippedImages] = useState([]);
   const [equippedTypes, setEquippedTypes] = useState([]);
+  const [isInView, setIsInView] = useState(false);
+  const cardRef = useRef(null);
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            if (object.Image == undefined){
+              console.log("Image is empty, call backend API to get image")
+              fetchImageFromDB(object.CorePath).then((response) => {
+                console.log("Image response", response)
+                object.Image = response.imageData;
+                setImageSrc(response.imageData);
+              });
 
+            }
+            setIsInView(true); // Set state to indicate the object is in view
+          } else {
+            setIsInView(false); // Set state to indicate the object is not in view
+          }
+        });
+      },
+      { threshold: 0.1 } // Adjust threshold as needed to trigger when the object is in view
+    );
+
+    if (cardRef.current) {
+      observer.observe(cardRef.current);
+    }
+
+    return () => {
+      if (cardRef.current) {
+        observer.unobserve(cardRef.current);
+      }
+    };
+  }, [object]); // Depend on `object` to re-attach observer if the object changes
+  
   const inputRef = useRef(null);
   // If the object is a custom kit, get the images of the currently equipped items so we can cycle through them on the card in edit mode
   useEffect(() => {
@@ -218,7 +271,7 @@ const ObjectCard = ({ customKitCount, setCustomKitCount, editingObjectId, onEdit
   const nonEditableIndex = nameParts[0] + ']'; // The non-editable part, including the closing bracket
   const editableName = nameParts.length > 1 ? nameParts[1] : ''; // The editable part
   return (
-    <div className={cardClassName} onClick={handleCardClick}>
+    <div ref={cardRef} className={cardClassName} onClick={handleCardClick}>
       {isEditableDummyObject && isEditing ? (
         <>
           <input
@@ -934,6 +987,7 @@ const ArmoryRow = ({ visId, objects, fullObjects, resetHighlight, gamerInfo, onE
 
 function renderEditingDetails(handleEditingChange, sharedProps, editingObject) {
   const kitIsFullyEquipped = isKitFullyEquipped(editingObject.currentlyEquipped, sharedProps.currentlyEquipped);
+  console.log(editingObject.currentlyEquipped)
   return (
     <div className="editing-details">
       <div className="subheader-container-edit">
@@ -946,8 +1000,9 @@ function renderEditingDetails(handleEditingChange, sharedProps, editingObject) {
       </div>
 
       <div className="scrollable-container">
+
         {Object.values(editingObject.currentlyEquipped).map(item =>
-          item && item.Image ? renderEquippedItem(handleEditingChange, item, {
+          item && item.CorePath ? renderEquippedItem(handleEditingChange, item, {
             ...sharedProps,
             isHighlighted: kitIsFullyEquipped // Pass this as part of the sharedProps or directly to the component
           }, editingObject.id) : null
