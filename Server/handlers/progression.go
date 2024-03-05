@@ -98,38 +98,26 @@ func SendRanks(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	start := time.Now()
 	careerTrack := GetCareerStats(gamerInfo, c)
-	duration := time.Since(start)
-	fmt.Printf("GetCareerStats took %s\n", duration)
 
-	start = time.Now()
 	careerLadder := GetCareerLadder(gamerInfo, c)
-	duration = time.Since(start)
-	fmt.Printf("GetCareerLadder took %s\n", duration)
 
-	start = time.Now()
 	careerTrack.CurrentProgress.TotalXPEarned = CalculateTotalXPGainedSoFar(careerLadder, careerTrack.CurrentProgress.Rank) + careerTrack.CurrentProgress.PartialProgress
-	duration = time.Since(start)
-	fmt.Printf("CalculateTotalXPGainedSoFar took %s\n", duration)
 
-	start = time.Now()
-	rankImages, err := GetRankImagesFromDB()
+	rankImages, err := GetRankImageByRank(careerTrack.CurrentProgress.Rank)
 	if err != nil {
 		// Handle error
 		fmt.Printf("GetRankImagesFromDB encountered an error: %s\n", err)
 		return
 	}
-	duration = time.Since(start)
-	fmt.Printf("GetRankImagesFromDB took %s\n", duration)
 	if err != nil {
 		fmt.Println("Error getting rank images from database ", err)
 	}
 	data := ProgressionDataToSend{
-		GamerInfo:    gamerInfo,
-		CareerTrack:  careerTrack,
-		CareerLadder: careerLadder,
-		RankImages:   rankImages,
+		GamerInfo:        gamerInfo,
+		CareerTrack:      careerTrack,
+		CareerLadder:     careerLadder,
+		RankImageCurrent: rankImages,
 	}
 	// Print size of all elements in kbs
 	fmt.Println("Size of rankImages: ", len(fmt.Sprintf("%#v", rankImages))/1024)

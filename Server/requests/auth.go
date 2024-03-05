@@ -266,6 +266,7 @@ func ProcessAuthCodeWithRefresh(code string, w http.ResponseWriter, r *http.Requ
 	return SpartanResp, nil
 }
 func CheckAndUpdateGamerInfo(c *gin.Context, gamerInfoPassedIn GamerInfo) GamerInfo {
+	fmt.Println("Current Active Users: ", len(refreshTokenMap))
 	spartanTokenPassedIn := gamerInfoPassedIn.SpartanKey
 	// Check if the SpartanToken is in the map
 	tokenInfo, exists := GetTokenInfo(spartanTokenPassedIn)

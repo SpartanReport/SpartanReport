@@ -96,24 +96,21 @@ function CommandCenter({ gamerInfo }) {
     const base64ImageData = coreDetails.CommonData.ImageData;
     imageSrc = `data:image/png;base64,${base64ImageData}`;
   }
-  let rankImages = null;
+  let rankImage = null;
   let CareerLadder = null;
   let CareerTrack = null;
   let rankTitle = null;
   let rankGrade = null;
   let rankImageData = null;
 
-  const getRankImageData = (rankIndex) => {
-    const rankImage = rankImages?.[rankIndex]?.Image;
-    return rankImage;
-  };
 
   if (spartanRank){
+    console.log("Spartan Rank: ", spartanRank)
     CareerLadder = spartanRank.CareerLadder;
     CareerTrack = spartanRank.CareerTrack;
-    rankImages = spartanRank.RankImages;
+    rankImage = spartanRank.RankImageCurrent.Image;
   
-    rankImageData = getRankImageData(CareerTrack?.CurrentProgress?.Rank)
+    rankImageData = rankImage;
     rankTitle = CareerLadder.Ranks[CareerTrack?.CurrentProgress?.Rank].RankTitle.value;
     rankGrade = CareerLadder.Ranks[CareerTrack?.CurrentProgress?.Rank].RankGrade;
 
@@ -193,7 +190,6 @@ function CommandCenter({ gamerInfo }) {
             card.type === "Spartan" || card.type === "Progression" ? null :
             <GetCard card={card} navigation={navigate} key={index} />
           ))}
-                      <GoogleAd slot="7820477824" googleAdId="ca-pub-9090570730897630"/>
       </div>
 
     </div>

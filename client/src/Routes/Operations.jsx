@@ -26,7 +26,7 @@ const Operations = ({ gamerInfo }) => {
         };
 
         fetchOperations();
-    }, [gamerInfo]);
+    }, []);
 
     if (isLoading) {
       return <LoadingScreen />;
