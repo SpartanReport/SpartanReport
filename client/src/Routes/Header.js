@@ -69,7 +69,7 @@ const Header = ({ gamerInfo }) => {
         <div className="bottom-left-element">         
           <Link to="/donate" className='bottom-left-items'> Donate to help Spartan Report running </Link>
 
-          | VISR v0.105.0-preview
+          | VISR v0.105.1-preview
 
           </div>
           

@@ -238,7 +238,7 @@ description-container-policy{
 .spartan-description-home {
   font-size: 18px;
   font-family: 'Oswald', sans-serif;
-  width: 80%;
+  width: 100%;
   box-sizing: border-box; /* ensures padding does not add to the total width */
   padding-top: 20px; /* adjust padding as needed */
   margin: 0; /* removes any default margin */
