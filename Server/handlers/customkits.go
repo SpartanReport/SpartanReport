@@ -69,7 +69,7 @@ func HandleSaveCustomKit(c *gin.Context) {
 	}{
 		GamerInfo: truncatedGamerInfo,
 	}
-	err = db.StoreData("progression_data", dataToStore)
+	err = db.CheckAndAddProgression("progression_data", dataToStore, "gamerinfo.xuid", newGamerInfo.XUID)
 	if err != nil {
 		fmt.Println("Error adding gamerinfo to db")
 	}

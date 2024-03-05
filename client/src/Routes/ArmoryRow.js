@@ -3,6 +3,7 @@ import './ArmoryRow.css';
 import SvgBorderWrapper from '../Styles/Border';
 import checkmark from '../checkmark.svg';
 import axios from 'axios';
+import { useCurrentlyEquipped } from '../Components/GlobalStateContext';
 
 // Function to compare equipped items of a custom kit with the global currently equipped state
 const isKitFullyEquipped = (kit, currentlyEquipped) => {
@@ -13,12 +14,12 @@ const isKitFullyEquipped = (kit, currentlyEquipped) => {
     
     const item = kit[key];
        // Assuming `itemTypeToEquippedProperty` maps item types to their corresponding properties in `currentlyEquipped`
+       if (!item) continue; // Skip if item is not defined
        const equippedItemProperty = itemTypeToEquippedProperty[item.Type];
        if (!equippedItemProperty) {
          continue; // Skip if there's no mapping for this item type
        }
-    if (!item) continue; // Skip if item is not defined
-    const equippedItem = currentlyEquipped[itemTypeToEquippedProperty[item.Type]];
+       const equippedItem = currentlyEquipped[itemTypeToEquippedProperty[item.Type]];
     if (!equippedItem) {
       continue; // Skip this item if it's not equipped
     }
@@ -119,11 +120,10 @@ async function fetchImageFromDB(path) {
  * @param {function} props.onClick - The function to handle click on the armor piece.
  * @param {function} props.onNameChange - The function to handle name change.
  * @param {function} props.onImageChange - The function to handle image change.
- * @param {boolean} props.currentlyEquipped - Indicates if the armor piece is currently equipped.
  * @param {function} props.onRemove - The function to handle removal of the armor piece.
  * @returns {JSX.Element} The rendered ObjectCard component.
  */
-const ObjectCard = ({ customKitCount, setCustomKitCount, editingObjectId, onEditingChange, onClickCustomKit, gamerInfo, object, isHighlighted, onClick, onNameChange, onImageChange, currentlyEquipped, onRemove }) => {
+const ObjectCard = ({ customKitCount, setCustomKitCount, editingObjectId, onEditingChange, onClickCustomKit, gamerInfo, object, isHighlighted, onClick, onNameChange, onImageChange, onRemove }) => {
   // States for the image source, editing mode, and the current image index
   const [imageSrc, setImageSrc] = useState('');
   const [isEditing, setIsEditing] = useState(false);
@@ -139,14 +139,26 @@ const ObjectCard = ({ customKitCount, setCustomKitCount, editingObjectId, onEdit
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            if (object.Image == undefined){
-              console.log("Image is empty, call backend API to get image")
+            if (object.Image === undefined && object.Type === "ArmorKitCustom"){
+              let imgType = object.ImageType;
+              // For each object in object.currentlyEquipped, fetch the image from the database if the type matches the img Type and set object.Image to it
+              for (const [key, value] of Object.entries(object.currentlyEquipped)) {
+                console.log("Checking custom kit: ", value.Type, " vs ", imgType)
+                if (value.Type === imgType){
+                  fetchImageFromDB(value.CorePath).then((response) => {
+                    object.Image = response.imageData;
+                    setImageSrc(object.Image ? `data:image/png;base64,${response.imageData}` : null);
+
+                    setImageSrc(response.imageData);
+                  });
+                }
+              }
+            }
+            else if (object.Image === undefined){
               fetchImageFromDB(object.CorePath).then((response) => {
-                console.log("Image response", response)
                 object.Image = response.imageData;
                 setImageSrc(response.imageData);
               });
-
             }
             setIsInView(true); // Set state to indicate the object is in view
           } else {
@@ -172,19 +184,44 @@ const ObjectCard = ({ customKitCount, setCustomKitCount, editingObjectId, onEdit
   // If the object is a custom kit, get the images of the currently equipped items so we can cycle through them on the card in edit mode
   useEffect(() => {
     if (object.Type === "ArmorKitCustom") {
-       setEquippedImages(Object.values(object.currentlyEquipped).filter(eq => eq && eq.Image).map(eq => eq.Image));
-       setEquippedTypes(Object.values(object.currentlyEquipped).filter(eq => eq && eq.Type).map(eq => eq.Type));
-      setKitName(object.name);
-      // If you need to use equippedImages and equippedTypes for setting state or other side effects,
-      // ensure that those actions are also performed inside this useEffect or another appropriate useEffect.
+      console.log("Object is custom kit!", object.currentlyEquipped);
+  
+      // Initialize arrays to store the images and types
+      const newEquippedImages = [];
+      const newEquippedTypes = [];
+  
+      // Process each item in the currently equipped items of the custom kit
+      const processEquippedItems = async () => {
+        const equippedItems = Object.values(object.currentlyEquipped).filter(eq => eq);
+  
+        for (const eq of equippedItems) {
+          if (eq.Image === undefined) {
+            // If Image is undefined, fetch it from the database
+            const response = await fetchImageFromDB(eq.CorePath);
+            eq.Image = response.imageData; // Update the item's Image with the fetched data
+          }
+          // Push the updated image and type to the arrays
+          newEquippedImages.push(eq.Image);
+          newEquippedTypes.push(eq.Type);
+        }
+  
+        // After processing all items, update the state
+        setEquippedImages(newEquippedImages);
+        setEquippedTypes(newEquippedTypes);
+        setKitName(object.name);
+      };
+  
+      // Execute the asynchronous function to process the equipped items
+      processEquippedItems();
     }
   }, [object]); // Depend on `object`, so this runs only when `object` changes
-
   // Fetch Higher Resolution Image if the object is highlighted
   useEffect(() => {
     async function loadImage() {
       if (typeof object.id === 'string' && object.id.startsWith('saveLoadout')) {
-        setImageSrc(object.Image ? `data:image/png;base64,${object.Image}` : null);
+        console.log(object)
+        console.log("Loading image: ", object.Image ? `data:image/png;base64,${object.Image}` : null)
+          setImageSrc(object.Image ? `data:image/png;base64,${object.Image}` : null);
       } else if (object.ImagePath && gamerInfo.spartankey && object.isHighlighted && object.Type !== "ArmorCore") {
         const imgSrc = await fetchImage("hi/images/file/" + object.ImagePath, gamerInfo.spartankey);
         setImageSrc(imgSrc);
@@ -405,20 +442,26 @@ const HighlightedObjectCard = ({ gamerInfo, object, isDisplay }) => {
  * @param {function} props.onEditingChange - The function to handle editing change.
  * @returns {JSX.Element} The rendered ObjectsDisplay component.
  */
-const ObjectsDisplay = ({ customKitCount, setCustomKitCount, setTempHighlightId, tempHighlightId, handleEditingChange, editingObjectId, onClickCustomKit, onRemove, onImageChange, editMode, gamerInfo, currentlyEquipped, objects, highlightedId, onObjectClick, onNameChange, onEditingChange }) => {
+const ObjectsDisplay = ({ customKitCount, setCustomKitCount, setTempHighlightId, tempHighlightId, editingObjectId, onClickCustomKit, onRemove, onImageChange, editMode, gamerInfo, objects, highlightedId, onObjectClick, onNameChange, onEditingChange }) => {
   // Define a mapping for rarity to sort them in a specific order
+  const { currentlyEquipped } = useCurrentlyEquipped();
+
   const rarityOrder = { Common: 1, Rare: 2, Epic: 3, Legendary: 4, LegendaryCustom: 5, };
   objects.forEach((object) => {
-    // Assume all objects initially not highlighted
-    object.isHighlighted = false;
-
-    if (object.Type === "ArmorKitCustom") {
-      // Determine if the custom kit is fully equipped
-      object.isHighlighted = isKitFullyEquipped(object.currentlyEquipped, currentlyEquipped);
-    } else {
-      // For individual items, not part of a custom kit, use existing logic or adjust as necessary
-      object.isHighlighted = object.id === highlightedId;
+    if (object !== null){
+      // Assume all objects initially not highlighted
+      object.isHighlighted = false;
+  
+      if (object.Type === "ArmorKitCustom" && object !== null) {
+        // Determine if the custom kit is fully equipped
+        object.isHighlighted = isKitFullyEquipped(object.currentlyEquipped, currentlyEquipped);
+      } else {
+        // For individual items, not part of a custom kit, use existing logic or adjust as necessary
+        object.isHighlighted = object.id === highlightedId;
+      }
+    
     }
+
   });
   // Filter and then sort the objects
   const sortedFilteredArmoryRow = objects.filter(object => {
@@ -495,8 +538,9 @@ const ObjectsDisplay = ({ customKitCount, setCustomKitCount, setTempHighlightId,
  * @param {Function} props.setHighlightedItems - The function to set the highlighted items.
  * @returns {JSX.Element} The ArmoryRow component.
  */
-const ArmoryRow = ({ visId, objects, fullObjects, resetHighlight, gamerInfo, onEquipItem, setCurrentlyEquipped, currentlyEquipped, highlightedItems, setHighlightedItems }) => {
+const ArmoryRow = ({ visId, objects, fullObjects, resetHighlight, gamerInfo, onEquipItem, highlightedItems, setHighlightedItems }) => {
   // States
+  const { currentlyEquipped, setCurrentlyEquipped } = useCurrentlyEquipped();
   const [customKitCount, setCustomKitCount] = useState(0);
   const [editingObjectId, setEditingObjectId] = useState(null);
   const [isEditingMode, setIsEditingMode] = useState(false);
@@ -538,12 +582,7 @@ const ArmoryRow = ({ visId, objects, fullObjects, resetHighlight, gamerInfo, onE
           newDummyObject: {
             ...editingObject,
             currentlyEquipped: Object.entries(editingObject.currentlyEquipped).reduce((acc, [key, value]) => {
-              if (value) { // Ensure value exists before attempting to destructure
-                const { Image, ...rest } = value; // Exclude the Image property
-                acc[key] = rest; // Add the rest of the properties to the accumulator
-              } else {
                 acc[key] = value; // If value is null or undefined, just copy it as is
-              }
               return acc;
             }, {}),
           },
@@ -597,11 +636,26 @@ const ArmoryRow = ({ visId, objects, fullObjects, resetHighlight, gamerInfo, onE
 
   // Sends equip payload to the backend with the currently equipped items
   const sendEquip = async (gamerInfo, currentlyEquipped) => {
+    if (currentlyEquipped.CurrentlyEquippedCore.GetInv === true) {
+      currentlyEquipped.CurrentlyEquippedHelmet = null;
+      currentlyEquipped.CurrentlyEquippedVisor = null;
+      currentlyEquipped.CurrentlyEquippedGlove = null;
+      currentlyEquipped.CurrentlyEquippedCoating = null;
+      currentlyEquipped.CurrentlyEquippedLeftShoulderPad = null;
+      currentlyEquipped.CurrentlyEquippedRightShoulderPad = null;
+      currentlyEquipped.CurrentlyEquippedWristAttachment = null;
+      currentlyEquipped.CurrentlyEquippedChestAttachment = null;
+      currentlyEquipped.CurrentlyEquippedKneePad = null;
+      currentlyEquipped.CurrentlyEquippedHipAttachment = null;
+      currentlyEquipped.CurrentlyEquippedKit = null;
+      currentlyEquipped.CurrentlyEquippedKitCustom = null;
+
+    }
     const payload = {
       GamerInfo: gamerInfo,
       CurrentlyEquipped: currentlyEquipped
     };
-
+    console.log("Sending equip payload to backend", payload)
     try {
       const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8080';
 
@@ -665,7 +719,6 @@ const ArmoryRow = ({ visId, objects, fullObjects, resetHighlight, gamerInfo, onE
     // If the object is not highlighted
     if (object.id !== highlightedItems[`${object.Type.toLowerCase()}Id`]) {
       object.isHighlighted = true;
-
       // Sends newly equipped item back to parent Component
       onEquipItem(object);
       let dataToSend = { ...currentlyEquipped };
@@ -685,7 +738,7 @@ const ArmoryRow = ({ visId, objects, fullObjects, resetHighlight, gamerInfo, onE
         setHighlightedItems(items => ({ ...items, armorcoreId: object.id }));
         // Backend request
         const response = await sendEquip(gamerInfo, dataToSend);
-
+        console.log("Received response from backend", response)
         if (response && response.Themes[0].HelmetPath) {
           // Find the new highlighted helmet
           const newHighlightedCore = fullObjects.ArmoryRow.find(core => core.CorePath === response.Themes[0].CoreId);
@@ -701,61 +754,61 @@ const ArmoryRow = ({ visId, objects, fullObjects, resetHighlight, gamerInfo, onE
           const newHighlightedKneePad = fullObjects.ArmoryRowKneePads.find(kneepad => kneepad.CorePath === response.Themes[0].KneePadPath);
           if (newHighlightedCore) {
             setHighlightedItems(items => ({ ...items, armorcoreId: object.id }));
-            resetHighlight(newHighlightedCore.id, "ArmorHelmet");
-            onEquipItem(newHighlightedCore); // Call the handler when an item is clicked
+            resetHighlight(newHighlightedCore.id, "ArmorCore");
+            await onEquipItem(newHighlightedCore); // Call the handler when an item is clicked
 
           }
           if (newHighlightedHelmet) {
             setHighlightedItems(items => ({ ...items, armorhelmetId: object.id }));
             resetHighlight(newHighlightedHelmet.id, "ArmorHelmet");
-            onEquipItem(newHighlightedHelmet); // Call the handler when an item is clicked
+            await onEquipItem(newHighlightedHelmet); // Call the handler when an item is clicked
 
           }
           if (newHighlightedVisor) {
             setHighlightedItems(items => ({ ...items, armorvisorId: object.id }));
             resetHighlight(newHighlightedVisor.id, "ArmorVisor");
-            onEquipItem(newHighlightedVisor);
+            await onEquipItem(newHighlightedVisor);
 
           }
           if (newHighlightedGlove) {
             setHighlightedItems(items => ({ ...items, armorgloveId: object.id }));
             resetHighlight(newHighlightedGlove.id, "ArmorGlove");
-            onEquipItem(newHighlightedGlove);
+            await onEquipItem(newHighlightedGlove);
           }
           if (newHighlightedCoating) {
             setHighlightedItems(items => ({ ...items, armorcoatingId: object.id }));
             resetHighlight(newHighlightedCoating.id, "ArmorCoating");
-            onEquipItem(newHighlightedCoating);
+            await onEquipItem(newHighlightedCoating);
           }
           if (newHighlightedLeftShoulderPad) {
             setHighlightedItems(items => ({ ...items, armorleftshoulderpadId: object.id }));
             resetHighlight(newHighlightedLeftShoulderPad.id, "ArmorLeftShoulderPad");
-            onEquipItem(newHighlightedLeftShoulderPad);
+            await onEquipItem(newHighlightedLeftShoulderPad);
           }
           if (newHighlightedRightShoulderPad) {
             setHighlightedItems(items => ({ ...items, armorrightshoulderpadId: object.id }));
             resetHighlight(newHighlightedRightShoulderPad.id, "ArmorRightShoulderPad");
-            onEquipItem(newHighlightedRightShoulderPad);
+            await onEquipItem(newHighlightedRightShoulderPad);
           }
           if (newHighlightedWristAttachment) {
             setHighlightedItems(items => ({ ...items, armorwristattachmentId: object.id }));
             resetHighlight(newHighlightedWristAttachment.id, "ArmorWristAttachment");
-            onEquipItem(newHighlightedWristAttachment);
+            await onEquipItem(newHighlightedWristAttachment);
           }
           if (newHighlightedHipAttachment) {
             setHighlightedItems(items => ({ ...items, armorhipattachmentId: object.id }));
             resetHighlight(newHighlightedHipAttachment.id, "ArmorHipAttachment");
-            onEquipItem(newHighlightedHipAttachment);
+            await onEquipItem(newHighlightedHipAttachment);
           }
           if (newHighlightedChestAttachment) {
             setHighlightedItems(items => ({ ...items, armorchestattachmentId: object.id }));
             resetHighlight(newHighlightedChestAttachment.id, "ArmorChestAttachment");
-            onEquipItem(newHighlightedChestAttachment);
+            await onEquipItem(newHighlightedChestAttachment);
           }
           if (newHighlightedKneePad) {
             setHighlightedItems(items => ({ ...items, armorkneepadId: object.id }));
             resetHighlight(newHighlightedKneePad.id, "ArmorKneePad");
-            onEquipItem(newHighlightedKneePad);
+            await onEquipItem(newHighlightedKneePad);
           }
         }
 
@@ -860,6 +913,8 @@ const ArmoryRow = ({ visId, objects, fullObjects, resetHighlight, gamerInfo, onE
       newDummyObject.currentlyEquipped = currentlyEquipped;
       // Send API Request
       // Use gamerInfo in the Axios POST request
+      console.log("currently equipped is: ", currentlyEquipped)
+      console.log("Sending dummy object: ", newDummyObject, " to backend")
       try {
         const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8080'; // Fallback URL if the env variable is not set
 
@@ -869,13 +924,20 @@ const ArmoryRow = ({ visId, objects, fullObjects, resetHighlight, gamerInfo, onE
           newDummyObject: {
             ...newDummyObject,
             currentlyEquipped: Object.entries(currentlyEquipped).reduce((acc, [key, value]) => {
+              if (value === null) {
+                // Handle the case when the value is null
+                // For example, you might want to skip adding this entry
+                // or set it to a default value
+                acc[key] = {}; // Example: setting to an empty object as a default case
+                return acc;
+              }
               const { Image, ...rest } = value; // Exclude the Image property
               acc[key] = rest; // Add the rest of the properties to the accumulator
               return acc;
             }, {}),
           },
         };
-        const response = await axios.post(`${apiUrl}/saveCustomKit`, payload);
+        await axios.post(`${apiUrl}/saveCustomKit`, payload);
 
       } catch (error) {
         // Handle error here (e.g., error notifications, logging)
@@ -900,7 +962,7 @@ const ArmoryRow = ({ visId, objects, fullObjects, resetHighlight, gamerInfo, onE
         gamerInfo,
         idToRemove
       };
-      const response = await axios.post(`${apiUrl}/deleteCustomKit`, payload);
+      await axios.post(`${apiUrl}/deleteCustomKit`, payload);
 
     } catch (error) {
       // Handle error here (e.g., error notifications, logging)
@@ -920,7 +982,7 @@ const ArmoryRow = ({ visId, objects, fullObjects, resetHighlight, gamerInfo, onE
 
   const onClickCustomKit = (object) => {
     console.log("Click custom kit")
-    currentlyEquipped = object.currentlyEquipped;
+    setCurrentlyEquipped(object.currentlyEquipped);
     handleSendingCustomKit(object);
     resetHighlight(object.id, "ArmorKitCustom");
     setHighlightedItems(items => ({ ...items, armorthemeId: object.id }));

@@ -20,6 +20,7 @@ import (
 	"github.com/disintegration/imaging"
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 type ISO8601Date struct {
@@ -748,12 +749,24 @@ func GetInventory(c *gin.Context, gamerInfo requests.GamerInfo) ([]SpartanInvent
 
 		emblemData, found := rawResponse[targetPart].(map[string]interface{})
 		if !found {
-			c.Error(fmt.Errorf("Emblem data for %s not found", targetPart))
-			continue // Skip this iteration due to error
+			fmt.Println("Emblem data for not found", targetPart)
+			fmt.Println("Setting to default emblem")
+
+			db.GetData("default_emblem_info", bson.M{}, &customization.Result.EmblemInfo)
+			db.GetData("default_emblem_colors", bson.M{}, &customization.Result.EmblemColors)
+			// Add the customized SpartanInventory to the slice.
+			spartanInventories = append(spartanInventories, customization.Result)
+			continue
+
 		}
 		configData, found := emblemData[fmt.Sprint(configID)]
 		if !found {
-			c.Error(fmt.Errorf("Config data for ID %v not found", configID))
+			err = db.GetData("default_emblem_config", bson.M{}, &configData)
+			if err != nil {
+				c.Error(err)
+				fmt.Println("Error getting default emblem config")
+			}
+
 			continue // Skip this iteration due to error
 		}
 

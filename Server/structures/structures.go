@@ -3,6 +3,7 @@ package structures
 type CustomKit struct {
 	ImageIndex int    `bson:"ImageIndex"`
 	ImageType  string `bson:"ImageType"`
+	Image      string `bson:"Image"`
 
 	IsCrossCore       bool              `bson:"IsCrossCore"`
 	Rarity            string            `bson:"Rarity"`

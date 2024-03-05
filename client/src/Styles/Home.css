@@ -8,6 +8,58 @@
   font-size: large;
 
 }
+.donate-buttons{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  padding-top: 20px;
+  backdrop-filter: blur(10px);
+}
+.btn.patreon-btn {
+  margin-right: 10px;
+  margin-left: 10px;
+  padding: 10px;
+  border-radius: 5px;
+  background-color: #F96854;
+  color: white;
+  font-family: 'Oswald', sans-serif;
+  font-size: 18px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.31);
+  backdrop-filter: blur(10px);
+}
+.btn.patreon-btn:hover {
+  background-color: #F96854;
+  color: white;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.31);
+  transform: scale(1.05);
+}
+.btn.paypal-btn {
+  margin-right: 10px;
+  margin-left: 10px;
+  padding: 10px;
+  border-radius: 5px;
+  background-color: #0070BA;
+  color: white;
+  font-family: 'Oswald', sans-serif;
+  font-size: 18px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.31);
+  backdrop-filter: blur(10px);
+}
+.btn.paypal-btn:hover {
+  background-color: #0070BA;
+  color: white;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.31);
+  transform: scale(1.05);
+}
 
 .home-grid-container {
   display: grid;
@@ -29,7 +81,16 @@
   padding-left: 15px;
   color: white;
   margin-bottom: 0px;
+
 }
+.spartan-title-donate {
+  font-family: 'Oswald', sans-serif;
+  font-size: 24px;
+  padding-left: 15px;
+  color: white;
+  margin-bottom: 0px;
+}
+
 .event-title-home {
   font-family: 'Oswald', sans-serif;
   font-size: large;
@@ -177,7 +238,7 @@ description-container-policy{
 .spartan-description-home {
   font-size: 18px;
   font-family: 'Oswald', sans-serif;
-  width: 100%;
+  width: 80%;
   box-sizing: border-box; /* ensures padding does not add to the total width */
   padding-top: 20px; /* adjust padding as needed */
   margin: 0; /* removes any default margin */
@@ -186,6 +247,19 @@ description-container-policy{
   padding-right: 20%;
 
 }
+
+.spartan-description-donate {
+  font-size: 16px;
+  font-family: 'Oswald', sans-serif;
+  width: 100%;
+  box-sizing: border-box; /* ensures padding does not add to the total width */
+  margin: 0; /* removes any default margin */
+  color: white;
+  padding-left: 10%;
+  padding-right: 10%;
+
+}
+
 
 
 .event-card:hover {
@@ -273,6 +347,17 @@ description-container-policy{
   border-left: 5px solid #80cde9;
   border-right: 40px solid #1D435D;
 }
+.title-container-donate {
+  margin-left: 50px;
+  text-align: center;
+  width: 95%;
+  position: absolute;
+  background-color: #273b44;
+  border-left: 5px solid #80cde9;
+  border-right: 40px solid #1D435D;
+  border-radius: 5px 5px 0 0;
+}
+
 .event-date{
   text-align: center;
   font-size: small;
@@ -296,6 +381,29 @@ description-container-policy{
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
+  .title-container-donate {
+    margin-left: 50px;
+    text-align: center;
+    width: 90%;
+    position: absolute;
+    background-color: #273b44;
+    border-left: 5px solid #80cde9;
+    border-right: 40px solid #1D435D;
+  }
+  
+  
+  .donate-buttons {
+    flex-direction: column; /* Stack buttons vertically */
+    align-items: center; /* Center buttons horizontally */
+}
+.btn.patreon-btn{
+  margin-bottom: 10px;
+  width : 300px;
+}
+.btn.paypal-btn{
+  margin-bottom: 10px;
+  width : 300px;
+}
   .events-container-home {
     width: 100%; /* Full width on smaller screens */
   }
@@ -306,7 +414,7 @@ description-container-policy{
     margin-top:0px;
   }
   .home-grid-container{
-    margin: -50px;
+    margin: -56px;
   }
  
   .title-container-events-home{

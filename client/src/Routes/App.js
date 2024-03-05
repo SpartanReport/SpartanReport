@@ -17,6 +17,7 @@ import ItemDetailsPage from '../Components/itemdetails';
 import CommandCenter from './CommandCenter';
 import Policy from './policy';
 import SelectedOperation from './SelectedOperation';
+import Donate from './donate';
 
 function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -131,6 +132,7 @@ function App() {
               <Route path="/spartan" element={<Spartan gamerInfo={JSON.parse(localStorage.getItem('gamerInfo'))} spartanInventory={spartanInventory} setSpartanInventory={setSpartanInventory} />} />
               <Route path="/CommandCenter" element={isAuthenticated ? <CommandCenter gamerInfo={JSON.parse(localStorage.getItem('gamerInfo'))} spartanInventory={spartanInventory}/> : <UnauthenticatedContent startAuth={startAuth} />} />
               <Route path="/policy" element={<Policy />} />
+              <Route path="/donate" element={<Donate />} />
               <Route path="/" element={<Home />} />
               <Route path="/match/:matchId" element={<MatchStats gamerInfo={JSON.parse(localStorage.getItem('gamerInfo'))} HaloStats={HaloStats} selectedMatch={selectedMatch} />} />
               <Route path="/stats" element={<Stats gamerInfo={JSON.parse(localStorage.getItem('gamerInfo'))} HaloStats={HaloStats} setHaloStats={setHaloStats} setSelectedMatch={setSelectedMatch} />} />

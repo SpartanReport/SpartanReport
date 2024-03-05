@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import axios from 'axios';
+import { useCurrentlyEquipped } from './GlobalStateContext';
 const customConversion = {
   "ArmorChestAttachment": "ArmoryRowChestAttachments",
   "ArmorCoating": "ArmoryRowCoatings",
@@ -21,19 +22,7 @@ const useFetchSpartanInventory = (gamerInfo, includeArmory = false, setHighlight
   const [spartanInventory, setSpartanInventory] = useState(null);
   const [isFetched, setIsFetched] = useState(false);
   const [armoryRow, setArmoryRow] = useState(null); // State for ArmoryRow data
-  const [currentlyEquipped, setCurrentlyEquipped] = useState({
-    CurrentlyEquippedCore: null,
-    CurrentlyEquippedHelmet: null,
-    CurrentlyEquippedVisor: null,
-    CurrentlyEquippedGlove: null,
-    CurrentlyEquippedCoating: null,
-    CurrentlyEquippedLeftShoulderPad: null,
-    CurrentlyEquippedRightShoulderPad: null,
-    CurrentlyEquippedWristAttachment: null,
-    CurrentlyEquippedHipAttachment: null,
-    CurrentlyEquippedChestAttachment : null,
-    CurrentlyEquippedArmorKit: null,
-  }); // Added state for CurrentlyEquipped
+  const { currentlyEquipped, setCurrentlyEquipped } = useCurrentlyEquipped();
   const fetchSpartanInventory = async (force = false) => {
     if (isFetched && !force) return;
   
@@ -241,7 +230,7 @@ const useFetchSpartanInventory = (gamerInfo, includeArmory = false, setHighlight
   };
   
   
-  return { spartanInventory, armoryRow, setArmoryRow, isLoading, fetchSpartanInventory, currentlyEquipped, setCurrentlyEquipped };
+  return { spartanInventory, armoryRow, setArmoryRow, isLoading, fetchSpartanInventory };
 };
 
 export default useFetchSpartanInventory;

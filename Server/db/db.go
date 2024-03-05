@@ -163,6 +163,34 @@ func StoreData(collectionName string, data interface{}) error {
 	return err
 }
 
+func CheckAndAddProgression(collectionName string, data interface{}, uniqueField string, uniqueValue interface{}) error {
+	collection := GetCollection(collectionName)
+
+	// Create a filter to check for the existence of the document with the unique field.
+	filter := bson.M{uniqueField: uniqueValue}
+
+	// Use the FindOne method to check for the document's existence.
+	var result bson.M
+	err := collection.FindOne(context.TODO(), filter).Decode(&result)
+
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			// If no document exists, insert the new document.
+			_, err := collection.InsertOne(context.TODO(), data)
+			if err != nil {
+				return fmt.Errorf("failed to insert document: %v", err)
+			}
+			return nil // Success
+		}
+		// Handle other potential errors from FindOne.
+		return fmt.Errorf("failed to check document existence: %v", err)
+	}
+
+	// If the document already exists, you can choose to update it, do nothing, or handle as needed.
+	// For this example, we'll simply return an error indicating the document already exists.
+	return fmt.Errorf("document with %s '%v' already exists", uniqueField, uniqueValue)
+}
+
 func StoreOrUpdateData(collectionName string, data interface{}, uniqueValue interface{}) error {
 	collection := GetCollection(collectionName)
 

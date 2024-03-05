@@ -4,8 +4,9 @@ import ArmoryRow from "./ArmoryRow"
 import "../Styles/styles.css";
 import "../Styles/spartan.css";
 import LoadingScreen from '../Components/Loading';
+import { useCurrentlyEquipped } from '../Components/GlobalStateContext'
 
-const RenderArmoryRow = ({toggleVisibility,visId,isLast, rowType, isVisible, objects, fullObjects, gamerInfo, onEquipItem, currentlyEquipped, setHighlightedItems, highlightedItems, resetHighlight }) => {
+const RenderArmoryRow = ({toggleVisibility,visId,isLast, rowType, isVisible, objects, fullObjects, gamerInfo, onEquipItem, setHighlightedItems, highlightedItems, resetHighlight }) => {
   return (
     <>
       <div className="subheader-container-spartan" onClick={() => toggleVisibility(visId)}>
@@ -23,7 +24,7 @@ const RenderArmoryRow = ({toggleVisibility,visId,isLast, rowType, isVisible, obj
       </div>
       {isVisible ? (
         <div id={visId} className="armory-row">
-          <ArmoryRow visId={visId} objects={objects} resetHighlight={resetHighlight} fullObjects={fullObjects} gamerInfo={gamerInfo} onEquipItem={onEquipItem} currentlyEquipped={currentlyEquipped} setHighlightedItems={setHighlightedItems} highlightedItems={highlightedItems} />
+          <ArmoryRow visId={visId} objects={objects} resetHighlight={resetHighlight} fullObjects={fullObjects} gamerInfo={gamerInfo} onEquipItem={onEquipItem} setHighlightedItems={setHighlightedItems} highlightedItems={highlightedItems} />
         </div>
       ) : <div style={{height:isLast ? 100:50}}></div>}
     </>
@@ -60,7 +61,8 @@ const Spartan = ({ gamerInfo }) => {
 
 
   });
-  const { spartanInventory, armoryRow,setArmoryRow, isLoading, fetchSpartanInventory, currentlyEquipped, setCurrentlyEquipped} = useFetchSpartanInventory(gamerInfo, true,setHighlightedItems);
+  const { spartanInventory, armoryRow,setArmoryRow, isLoading, fetchSpartanInventory} = useFetchSpartanInventory(gamerInfo, true,setHighlightedItems);
+  let { currentlyEquipped, setCurrentlyEquipped } = useCurrentlyEquipped();
   // Refs for both scrollable rows
   const topRowRef = useRef(null);
   const bottomRowRef = useRef(null);

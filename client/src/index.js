@@ -2,12 +2,12 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './Styles/index.css';
 import App from './Routes/App';
-import { GlobalStateProvider } from './Components/GlobalStateContext';
+import { CurrentlyEquippedProvider } from './Components/GlobalStateContext';
 
 ReactDOM.render(
-  <GlobalStateProvider>
+  <CurrentlyEquippedProvider>
     <App />
-  </GlobalStateProvider>,
+  </CurrentlyEquippedProvider>,
   document.getElementById('root')
 );
 
