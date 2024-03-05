@@ -3,7 +3,9 @@
     flex-wrap: wrap;
     gap: 5px;
     margin-bottom: 100px;
-    background: rgba(0, 0, 0, 0.3);
+    margin-top : 100px;
+    margin-left:50px;
+    padding-left:50px;
     backdrop-filter: blur(10px);
 }
 

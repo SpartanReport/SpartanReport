@@ -340,7 +340,7 @@ func HandleProgression(c *gin.Context) {
 	err := db.GetData("progression_data", bson.M{"gamerinfo.xuid": gamerInfo.XUID}, &progressionData)
 	// Match Data from Database found!
 	fmt.Println("Match Data found!: ", progressionData.AverageDurations)
-	if err == nil {
+	if err == nil && len(fmt.Sprintf("%#v", progressionData.AverageDurations))/1024 != 0 {
 		PopulatePlayerProgressionData(&progressionData, gamerInfo, c)
 		c.JSON(http.StatusOK, progressionData)
 

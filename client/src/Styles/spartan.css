@@ -1,3 +1,18 @@
+.tour-popup {
+  position: fixed;
+  top: 10vh; /* 10% from the top of the viewport */
+  left: 10vw; /* 10% from the left of the viewport */
+  padding: 20px;
+  width: 80vw; /* Adjust as necessary */
+  max-width: 400px; /* Adjust as necessary */
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(10px);
+
+  color: white;
+  z-index: 1000;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  border-radius: 8px;
+}
 
 
 
@@ -97,7 +112,6 @@
     gap: 5px;
     border-radius: 10px;
     background: rgba(0, 0, 0, 0.3);
-    backdrop-filter: blur(10px);
   }
   .armory-row{
     padding-top:20px;

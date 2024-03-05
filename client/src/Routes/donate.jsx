@@ -12,12 +12,12 @@ function Donate() {
                     <span style={{ fontSize: 'larger', padding: 0 }}>
                         <p style={{ color: "#ffffff" }}>Donate to Spartan Report</p>
                     </span>
-                    Spartan Report is ran and hosted by one sole developer. This service will remain free to use as long as I can keep up with server costs. Please consider donating to help keep this project going!
+                    This service will remain free to use as long as we can keep up with server costs. Please consider donating to help keep this project going!
                 </p>
                 {/* New section about the $5 donation */}
                 <div className="donation-impact">
                     <p className="spartan-description-donate">
-                        A <strong>$5 donation</strong> will help Spartan Report run smoother and will let me expand on the current feature offerings!
+                        A <strong>$5 donation</strong> will help Spartan Report run smoother and will let us expand on the current feature offerings!
                     </p>
                 </div>
             </div>

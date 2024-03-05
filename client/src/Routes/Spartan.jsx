@@ -107,6 +107,64 @@ const Spartan = ({ gamerInfo }) => {
     };
   }, []);
 
+  const [tourStep, setTourStep] = useState(null);
+
+  useEffect(() => {
+    // Check if it's the user's first time
+    const isFirstVisit = sessionStorage.getItem('isFirstVisit') !== 'false';
+    if (isFirstVisit) {
+      // Start the tour
+      setTourStep(0);
+      sessionStorage.setItem('isFirstVisit', 'false');
+    }
+  }, []);
+
+  const tourSteps = [
+    { section: 'core', text: 'Start By Picking Out the Armor Core you want to change' },
+    { section: 'coatings', text: 'Change any coating or alternative armor pieces' },
+    { section: 'armorkit', text: 'Once you complete the changes you want, click "Save Loadout" and we will save that loadout for any visit you make!' },
+
+    // Add more steps as needed
+  ];
+
+  const handleNextTourStep = () => {
+    if (tourStep < tourSteps.length - 1) {
+      setTourStep(tourStep + 1);
+      // Ensure the next section is visible
+      setVisibleRows({ ...visibleRows, [tourSteps[tourStep + 1].section]: true });
+    } else {
+      // End of tour
+      setTourStep(null);
+    }
+  };
+
+  const handleExitTour = () => {
+    setTourStep(null);
+  };
+
+  // Scroll to the current tour step section
+  useEffect(() => {
+    if (tourStep !== null) {
+      const sectionId = tourSteps[tourStep].section;
+      document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [tourStep]);
+
+  // Render pop-up if tour is active
+  const renderTourPopup = () => {
+    if (tourStep !== null) {
+      return (
+        <div className="tour-popup">
+          <p>{tourSteps[tourStep].text}</p>
+          <div style={{ marginTop: '20px' }}>
+            <button className='nav-button' onClick={handleExitTour} style={{ marginRight: '10px' }}>Exit</button>
+            <button className='nav-button' onClick={handleNextTourStep}>Next</button>
+          </div>
+        </div>
+      );
+    }
+  };  // The rest of your component remains unchanged
+
   if (isLoading) {
     return <LoadingScreen />;
   }
@@ -241,6 +299,7 @@ const Spartan = ({ gamerInfo }) => {
       <div style={{ color: "#D6A849", paddingTop: '5px' }}>ATTENTION</div>
       All changes made here will be reflected in the game ONLY after rebooting. 
     </div>
+    {renderTourPopup()}
 
 
       <RenderArmoryRow 

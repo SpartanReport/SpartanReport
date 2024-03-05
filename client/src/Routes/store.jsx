@@ -39,6 +39,10 @@ const Store = ({ gamerInfo }) => {
     const is2x2Tile = offering => offering.OfferingDetails.HeightHint === 2 && offering.OfferingDetails.WidthHint === 2;
     const is1x2Tile = offering => offering.OfferingDetails.HeightHint === 1 && offering.OfferingDetails.WidthHint === 2;
     function ShopImage(base64ImageData){
+        console.log("base64ImageData: ",base64ImageData)
+        if (base64ImageData === ""){
+            return null;
+        }
         return `data:image/png;base64,${base64ImageData}`;
     }
     const renderOffering = (offering, index, isSpecialOffering=false) => {
@@ -64,7 +68,9 @@ const Store = ({ gamerInfo }) => {
         const imageSrc = ShopImage(offering.OfferingDetails.OfferingImage);
         const name = offering.OfferingDetails.Title.value;
         const price = offering.Prices.length > 0 ? `${offering.Prices[0].Cost}` : '';
-
+        if (imageSrc === null){
+            return null;
+        }
         
         return (
             <SvgBorderWrapper height={dynamicStyle.heightInt} width={dynamicStyle.widthInt} rarity={offering.OfferingDetails.Quality}>
@@ -158,8 +164,11 @@ const Store = ({ gamerInfo }) => {
     
     
     return (
-        <div>
-            <div className="offerings-container">
+        <div className="home-grid-container">
+            <div className="title-container-home">
+            <h1 className="spartan-title-home">STORE (Preview)</h1>
+            </div>
+              <div className="offerings-container">
                 {renderOfferings()}
             </div>
         </div>
