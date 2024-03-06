@@ -1,12 +1,26 @@
 # Spartan Report
-Spartan Report is a project designed to track various statistics and data for Halo Infinite. The backend is written in Go and interfaces with a MongoDB database, while the frontend is built using React.
+Spartan Report is a web application for Halo Infinite. It allows for users to create/modify custom armor presets, view progression stats, upcoming/previous seasons, and match history
 
 #  Prerequisites
 - Docker/Docker Compose
 - [Registering an Azure Active Directory Application (Step 1 here)](https://den.dev/blog/halo-api-authentication/#step-1-registering-an-azure-active-directory-application)
 
+# Docker Setup (RECOMMENDED)
+- Clone the repository:
+   - `git clone https://github.com/mirackara/SpartanReport.git`
 
-# Server Setup
+- Fill out the `azure-keys.template.env` file with your Azure AD Credentials.
+   - Without these keys, the app will fail to run
+
+- Rename `azure-keys.template.env` to `azure-keys.env`
+
+- Run `docker compose build` in the main directory
+
+- Run `docker compose up` to start the application
+
+
+
+# Server Setup (Advanced)
 The Back-End of this project is written in Go. Running the backend requires a MongoDB server to be set up. [You may follow this walkthrough](https://www.mongodb.com/docs/manual/installation/) to get this up and running
 - Clone the repository:
    - `git clone https://github.com/mirackara/SpartanReport.git`
@@ -19,7 +33,7 @@ The Back-End of this project is written in Go. Running the backend requires a Mo
 - Start the backend server:
   - `go run main.go`
 
-# Client Setup
+# Client Setup (Advanced)
 The Client-Side/Front-End of this project is written in ReactJS. Running the frontend requires npm and Node.js
 
 
@@ -31,6 +45,18 @@ The Client-Side/Front-End of this project is written in ReactJS. Running the fro
 
 - Run the build:
   - `npm start`
+
+# Proxy Server Setup (Advanced)
+The Proxy Server of this project is used to query halo infinite's api from the front end directly. It's only being used in the Armory section in order to display non-compressed highlighted images.
+
+
+- Navigate to the `client/src/utils` directory:
+  - `cd client/src/utils`
+
+- Run the proxy server:
+  - `node proxyserver.js`
+
+
  
 
 # Env Setup
@@ -44,11 +70,6 @@ There are a couple of enviormental variables that should be loaded in before the
   - `CLIENT_ID = "CLIENT_ID_HERE"` 
   - `CLIENT_SECRET = "CLIENT_SECRET_HERE"`
   - `REDIRECT_URI= "http://localhost:8080/callback"`
-
-`google-keys.json` this file is not included, but is required if you want to store operation data on Google Cloud Storage.
-
-  - The reason why we are using Google Cloud Storage is because Operation data contains high quality image assets. Storing these on MongoDB is not possible nor is it practical.
-  - Follow the [guide here](https://cloud.google.com/iam/docs/keys-create-delete) to get the .json file from your Google Cloud Project
 
 
 ## Contributing
