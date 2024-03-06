@@ -18,7 +18,7 @@ export const CurrentlyEquippedProvider = ({ children }) => {
         CurrentlyEquippedHipAttachment: null,
         CurrentlyEquippedChestAttachment: null,
         CurrentlyEquippedArmorKit: null,
-        CurrentlyEquippedMythicFx: null,
+        CurrentlyEquippedArmorMythicFx: null,
         CurrentlyEquippedArmorFx: null,
         CurrentlyEquippedArmorEmblem: null,
 
