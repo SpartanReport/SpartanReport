@@ -196,16 +196,19 @@ func ProcessAuthCode(code string, w http.ResponseWriter, r *http.Request) {
 	SetTokenInfo(SpartanResp.SpartanToken, tokenData)
 
 	gamerInfo, err := RequestUserProfile(SpartanResp.SpartanToken)
+	if err != nil {
+		fmt.Println("Error when getting user profile: ", err)
+
+	}
 	// Temporarily store gamerInfo with SpartanToken as the key
 	SetGamerInfo(SpartanResp.SpartanToken, gamerInfo)
 	// Send the SpartanToken to the client
-	host := "localhost:3000"
+	host := os.Getenv("HOST")
 	// userAgent := useragent.Parse(r.UserAgent())
 	// if userAgent.OS == "iOS" {
 	// 	host = "msauth.MiracKara.SpartanReport://auth"
 	// }
 	redirectURL := fmt.Sprintf("%s/?token=%s", host, SpartanResp.SpartanToken)
-	fmt.Println("redircint to: ", redirectURL)
 	http.Redirect(w, r, redirectURL, http.StatusSeeOther)
 
 }

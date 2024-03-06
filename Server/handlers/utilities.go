@@ -8,6 +8,8 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"os"
+	"spartanreport/db"
 	requests "spartanreport/requests"
 )
 
@@ -245,4 +247,70 @@ func GetCurrentArmor(gamerInfo requests.GamerInfo, ArmorCoreData ArmorCoreEquip,
 
 func remove(slice []CoreTheme, s int) []CoreTheme {
 	return append(slice[:s], slice[s+1:]...)
+}
+
+// LoadAndInsertData loads data from a JSON file and inserts it into the specified MongoDB collection.
+func LoadAndInsertData(jsonFilename, collectionName string) error {
+	jsonFile, err := os.Open(jsonFilename)
+	if err != nil {
+		return fmt.Errorf("error opening JSON file: %w", err)
+	}
+	defer jsonFile.Close()
+
+	byteValue, err := io.ReadAll(jsonFile)
+	if err != nil {
+		return fmt.Errorf("error reading JSON file: %w", err)
+	}
+
+	var data []map[string]interface{}
+	if err := json.Unmarshal(byteValue, &data); err != nil {
+		return fmt.Errorf("error unmarshalling JSON: %w", err)
+	}
+
+	for _, document := range data {
+		convertDocumentID(document)
+		encodeImageToBinary(document, "emblemimagedata")
+		encodeImageToBinary(document, "nameplateimagedata")
+
+		// You can do similar encoding for other fields if necessary.
+	}
+
+	empty, err := db.IsCollectionEmpty(collectionName)
+	if err != nil {
+		return fmt.Errorf("error checking if collection is empty: %w", err)
+	}
+
+	if empty {
+		for _, document := range data {
+			if err := db.StoreData(collectionName, document); err != nil {
+				return fmt.Errorf("error storing data: %w", err)
+			}
+		}
+	} else {
+		fmt.Println("Collection is not empty, no action taken.")
+	}
+
+	return nil
+}
+
+func convertDocumentID(document map[string]interface{}) {
+	if idField, ok := document["_id"].(map[string]interface{}); ok {
+		if oid, ok := idField["$oid"].(string); ok {
+			document["_id"] = oid
+		}
+	}
+}
+
+// encodeImageToBinary replaces the base64 encoded string with its binary equivalent.
+func encodeImageToBinary(document map[string]interface{}, key string) {
+	if imageData, ok := document[key].(map[string]interface{}); ok {
+		if b64, ok := imageData["$binary"].(map[string]interface{}); ok {
+			if b64data, ok := b64["base64"].(string); ok {
+				data, err := base64.StdEncoding.DecodeString(b64data)
+				if err == nil {
+					document[key] = data
+				}
+			}
+		}
+	}
 }

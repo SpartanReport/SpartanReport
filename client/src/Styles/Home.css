@@ -323,6 +323,11 @@ description-container-policy{
   background-color: #4389BA;
 }
 
+.releasenotes-container{
+  text-align: center;
+  gap: 20px;
+  
+}
 .event-days{
   text-align: center;
   font-family: 'Oswald', sans-serif;

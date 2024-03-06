@@ -3,6 +3,7 @@ import GoogleAd from "../Components/GoogleAds";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate, Link } from 'react-router-dom';
+import ReleaseNotesViewer from "./ReleaseNotes";
 
 function SeasonImage(base64ImageData){
   return `data:image/png;base64,${base64ImageData}`;
@@ -98,21 +99,7 @@ function Home() {
         <p className="spartan-description-home">
         <span style={{ fontStyle: 'italic', fontSize: 'larger', padding:0}}><p style={{color:"#fffff"}}>Welcome to Spartan Report</p></span> Your premier destination for tracking progression, viewing upcoming operations, and managing your in-game spartan armors with presets in Halo Infinite</p>
       </div>
-      <div className="title-container-events-home">
-        <h1 className="spartan-title-home">Whats New?</h1>
-      </div>
-        <div className="spartan-description-operations">
-        <span style={{ fontStyle: 'italic', fontSize: 'larger' }}>
-          Release 0.106.0-preview
-          <ul>          
-           - Armor FXs and Mythic FXs are now supported
-            <ul> Note: Existing Custom Kits have to be deleted and readded to add FXs </ul>
-          </ul>
-          <ul>          
-            - Fixed a couple of bugs with the Custom Kits
-          </ul>
-        </span>
-      </div>
+
       <div className="title-container-events-home">
         <h1 className="spartan-title-home">EVENTS</h1>
       </div>
@@ -135,8 +122,10 @@ function Home() {
             </div>
           )}
         </div>
-      <GoogleAd slot="7820477824" googleAdId="ca-pub-9090570730897630"/>
-
+      <div className="title-container-events-home">
+        <h1 className="spartan-title-home">Whats New?</h1>
+      </div>
+      <ReleaseNotesViewer />
       </div>
   );
 }

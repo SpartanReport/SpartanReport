@@ -2,7 +2,9 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"spartanreport/db"
@@ -10,7 +12,6 @@ import (
 
 	spartanreport "spartanreport/handlers"
 
-	"cloud.google.com/go/storage"
 	"github.com/gin-gonic/contrib/gzip"
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8" // Updated import statement
@@ -24,19 +25,20 @@ import (
 )
 
 func main() {
-
+	REDIS_HOST := os.Getenv("REDIS_HOST")
+	mongodb_host := os.Getenv("MONGODB_HOST")
 	// Initialize a Redis client
 	db.RedisClient = redis.NewClient(&redis.Options{
-		Addr: "localhost:6379", // Redis server address
+		Addr: REDIS_HOST, // Redis server address
 	})
 
-	// Initialize New Relic
+	// Initialize New Relic for monitoring
 	// Create an Application:
 	app, err := newrelic.NewApplication(
 		// Name your application
 		newrelic.ConfigAppName("SpartanReport"),
 		// Fill in your New Relic license key
-		newrelic.ConfigLicense("6ef9ceb3452731978dc1bf6c6df5f2f8FFFFNRAL"),
+		newrelic.ConfigLicense(os.Getenv("NEW_RELIC_LICENSE_KEY")),
 		// Add logging:
 		// Optional: add additional changes to your configuration via a config function:
 		func(cfg *newrelic.Config) {
@@ -49,17 +51,10 @@ func main() {
 	}
 	app.WaitForConnection(10 * time.Second)
 	nrMon := nrmongo.NewCommandMonitor(nil)
-	ctx := context.Background()
 	host := os.Getenv("HOST")
-	// Initialize Google Cloud Storage Client
-	client, err := storage.NewClient(ctx)
-	if err != nil {
-		log.Fatalf("Failed to create client: %v", err)
-	}
-	client.Bucket("haloseasondata")
 
 	// Initialize MongoDB Client
-	db.MongoClient, err = mongo.NewClient(options.Client().ApplyURI("mongodb://localhost:27017").SetMonitor(nrMon))
+	db.MongoClient, err = mongo.NewClient(options.Client().ApplyURI(mongodb_host).SetMonitor(nrMon))
 	if err != nil {
 		fmt.Println("Error creating MongoDB client:", err)
 		return
@@ -78,13 +73,17 @@ func main() {
 	defer db.MongoClient.Disconnect(ctx)
 
 	err = db.CreateIndex("detailed_matches", bson.D{{"MatchId", 1}})
+	if err != nil {
+		fmt.Println("Error creating index:", err)
+		return
+	}
 	err = db.CreateIndex("item_data", bson.D{{"inventoryitempath", 1}})
 
 	if err != nil {
 		fmt.Println("Error creating index:", err)
 		return
 	}
-
+	InitialBootSetup()
 	r := gin.Default()
 	r.Use(nrgin.Middleware(app))
 	r.Use(gzip.Gzip(gzip.DefaultCompression))
@@ -134,6 +133,73 @@ func main() {
 	r.POST("/getCustomKit", spartanreport.HandleGetCustomKit)
 	r.POST("/getItemImage", spartanreport.HandleGetItemImage)
 	r.GET("/.well-known/microsoft-identity-association.json", spartanreport.HandleMSIdentity)
+
 	fmt.Println("Server started at :8080")
 	r.Run(":8080")
+}
+
+// Inserts data into the specified collection if it is empty
+func insertDataIfCollectionEmpty(collectionName string, data []map[string]interface{}) {
+	empty, err := db.IsCollectionEmpty(collectionName)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	if empty {
+		fmt.Println("Collection", collectionName, "is empty, inserting data...")
+		for _, document := range data {
+			err := db.StoreData(collectionName, document)
+			if err != nil {
+				fmt.Println("Error storing data in", collectionName, ":", err)
+			}
+		}
+	} else {
+		fmt.Println("Collection", collectionName, "is not empty, no action taken.")
+	}
+}
+
+// General function to read and unmarshal JSON file data
+func readJSONData(filePath string) ([]map[string]interface{}, error) {
+	jsonFile, err := os.Open(filePath)
+	if err != nil {
+		return nil, err
+	}
+	defer jsonFile.Close()
+
+	byteValue, err := io.ReadAll(jsonFile)
+	if err != nil {
+		return nil, err
+	}
+
+	var data []map[string]interface{}
+	err = json.Unmarshal(byteValue, &data)
+	if err != nil {
+		return nil, err
+	}
+
+	// Convert $oid fields to plain string _id values
+	for _, document := range data {
+		if idField, ok := document["_id"].(map[string]interface{}); ok {
+			if oid, ok := idField["$oid"].(string); ok {
+				document["_id"] = oid
+			}
+		}
+	}
+
+	return data, nil
+}
+
+// Loads in required initial armor cores and default emblem tags
+// A lot of the emblem data is missing from the Halo API, so we need to provide it ourselves if a users emblem cannot be retrieved
+func InitialBootSetup() {
+	if err := spartanreport.LoadAndInsertData("armorcoredata.json", "item_data"); err != nil {
+		fmt.Println(err)
+	}
+	if err := spartanreport.LoadAndInsertData("default_emblem_colors.json", "default_emblem_colors"); err != nil {
+		fmt.Println(err)
+	}
+	if err := spartanreport.LoadAndInsertData("default_emblem_info.json", "default_emblem_info"); err != nil {
+		fmt.Println(err)
+	}
 }

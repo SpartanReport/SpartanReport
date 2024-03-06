@@ -191,6 +191,14 @@ func CheckAndAddProgression(collectionName string, data interface{}, uniqueField
 	return fmt.Errorf("document with %s '%v' already exists", uniqueField, uniqueValue)
 }
 
+func IsCollectionEmpty(collectionName string) (bool, error) {
+	collection := GetCollection(collectionName)
+	count, err := collection.CountDocuments(context.Background(), bson.M{})
+	if err != nil {
+		return false, err
+	}
+	return count == 0, nil
+}
 func StoreOrUpdateData(collectionName string, data interface{}, uniqueValue interface{}) error {
 	collection := GetCollection(collectionName)
 

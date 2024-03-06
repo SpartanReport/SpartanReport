@@ -39,15 +39,11 @@ ENV REDIRECT-HOST=$REDIRECT-HOST
 
 # Copy the Go binary from the builder stage
 COPY --from=builder /app/main /app/main
-
-# Set the Google Cloud credentials environment variable
-ENV GOOGLE_APPLICATION_CREDENTIALS=/app/google-key.json
-
-# Copy the Google Cloud credentials file into the container
-COPY google-key.json /app/google-key.json
-# Also copy the google-key.json file
-COPY google-key.json /app/google-key.json
 COPY azure-keys.env /app/azure-keys.env
+COPY /initialdata/armorcoredata.json /app/armorcoredata.json
+COPY /initialdata/default_emblem_colors.json /app/default_emblem_colors.json
+COPY /initialdata/default_emblem_info.json /app/default_emblem_info.json
+
 
 # Set the working directory in the container
 WORKDIR /app

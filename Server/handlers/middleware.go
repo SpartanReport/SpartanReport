@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 	requests "spartanreport/requests"
 
 	"github.com/gin-gonic/gin"
@@ -53,7 +54,7 @@ func HandleMSIdentity(c *gin.Context) {
 	IdentityPayload := map[string]interface{}{
 		"associatedApplications": []map[string]string{
 			{
-				"applicationId": "4267a656-30e6-4027-a973-edf079a6b52b",
+				"applicationId": os.Getenv("CLIENT_ID"),
 			},
 		},
 	}
