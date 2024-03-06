@@ -582,10 +582,15 @@ const ArmoryRow = ({ visId, objects, fullObjects, resetHighlight, gamerInfo, onE
           newDummyObject: {
             ...editingObject,
             currentlyEquipped: Object.entries(editingObject.currentlyEquipped).reduce((acc, [key, value]) => {
+              if (value) { // Ensure value exists before attempting to destructure
+                const { Image, ...rest } = value; // Exclude the Image property
+                acc[key] = rest; // Add the rest of the properties to the accumulator
+              } else {
                 acc[key] = value; // If value is null or undefined, just copy it as is
+              }
               return acc;
             }, {}),
-          },
+                    },
         };
         const response = await axios.post(`${apiUrl}/updateCustomKit`, payload);
 
