@@ -1,5 +1,4 @@
 import "../Styles/Home.css"
-import GoogleAd from "../Components/GoogleAds";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate, Link } from 'react-router-dom';

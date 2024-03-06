@@ -4,7 +4,6 @@ import useFetchChallengeDeck from "../Components/FetchSpartanChallenges"
 import { useState } from "react";
 import "../Styles/CommandCenter.css"
 import { useNavigate } from 'react-router-dom';
-import GoogleAd from "../Components/GoogleAds";
 function SpartanCard({ card , navigation}) {
   return (
     <div className="welcome-cards-spartan" onClick={() => navigation("/spartan")}>

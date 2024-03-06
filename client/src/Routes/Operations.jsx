@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import '../Styles/operations.css';
-import GoogleAd from '../Components/GoogleAds';
 import SelectedOperation from './SelectedOperation';
 import { useNavigate, Link } from 'react-router-dom';
 import LoadingScreen from '../Components/Loading';
@@ -110,7 +109,6 @@ const Operations = ({ gamerInfo }) => {
 
             </div>
 
-            <GoogleAd slot="7820477824" googleAdId="ca-pub-9090570730897630"/>
         </div>
     );
 };

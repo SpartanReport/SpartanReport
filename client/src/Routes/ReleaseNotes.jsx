@@ -25,7 +25,6 @@ const releaseNotes = [
       },
     ],
   },
-  // Add more release notes here in the same format
 ];
 
 const ReleaseNotesViewer = () => {
@@ -65,11 +64,12 @@ const ReleaseNotesViewer = () => {
             ))}
           </div>
           <div className="releasenotes-container">
-            {currentIndex < releaseNotes.length - 1 && (
-              <button className="nav-button" onClick={handleNext}>Next &gt;</button>
-            )}
+
             {currentIndex > 0 && (
-              <button className="nav-button" onClick={handlePrevious}>&lt; Previous</button>
+              <button className="nav-button" onClick={handlePrevious}>&lt; Next Release</button>
+            )}
+                        {currentIndex < releaseNotes.length - 1 && (
+              <button className="nav-button" onClick={handleNext}>Previous Release &gt;</button>
             )}
           </div>
         </div>

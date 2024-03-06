@@ -3,6 +3,7 @@ import '../Styles/header.css';
 import useFetchSpartanInventory from "../Components/useFetchSpartanInventory";
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Link } from 'react-router-dom';
+import  githubIcon from './github-icon.png';
 function hexToRgb(hex) {
   // Remove the hash at the start if it's there
   hex = hex.charAt(0) === '#' ? hex.substr(1) : hex;
@@ -15,6 +16,14 @@ function hexToRgb(hex) {
 
   return `${r}, ${g}, ${b}`;
 }
+function GithubButton({ onClick }) {
+  return (
+    <button onClick={onClick} style={{ border: 'none', background: 'none' }}>
+      <img src={githubIcon} alt="GitHub" style={{ width: '25px', height: '25px' }} />
+    </button>
+  );
+}
+
 const Header = ({ gamerInfo }) => {
   const { spartanInventory, armoryRow,helmetRow, isLoading, fetchSpartanInventory } = useFetchSpartanInventory(gamerInfo);
   const [forceFetch, setForceFetch] = useState(false);
@@ -72,6 +81,7 @@ const Header = ({ gamerInfo }) => {
           <Link to="/policy" className='bottom-left-items'> Privacy Policy </Link>
 
           | VISR v0.107.0-preview
+          <GithubButton onClick={() => window.open('https://github.com/mirackara/spartanreport')} />
 
           </div>
           

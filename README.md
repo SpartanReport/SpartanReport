@@ -2,11 +2,8 @@
 Spartan Report is a project designed to track various statistics and data for Halo Infinite. The backend is written in Go and interfaces with a MongoDB database, while the frontend is built using React.
 
 #  Prerequisites
-- Go [Latest Version]
-- Node.js and npm
-- MongoDB server
+- Docker/Docker Compose
 - [Registering an Azure Active Directory Application (Step 1 here)](https://den.dev/blog/halo-api-authentication/#step-1-registering-an-azure-active-directory-application)
-- Google Cloud [optional]
 
 
 # Server Setup

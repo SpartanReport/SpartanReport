@@ -23,9 +23,6 @@ function Donate() {
             </div>
 
             <div className="donate-buttons">
-                <a href="https://www.patreon.com/SpartanReport" target="_blank" rel="noopener noreferrer">
-                    <button className="btn patreon-btn">Donate on Patreon</button>
-                </a>
                 
                 <a href="https://www.paypal.com/donate/?hosted_button_id=KL2JTNKLF43AN" target="_blank" rel="noopener noreferrer">
                     <button className="btn paypal-btn">Donate with PayPal (One Time Donation)</button>
