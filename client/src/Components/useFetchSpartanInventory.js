@@ -14,6 +14,9 @@ const customConversion = {
   "ArmorWristAttachment": "ArmoryRowWristAttachments",
   "ArmorHipAttachment": "ArmoryRowHipAttachments",
   "ArmorKneePad": "ArmoryRowKneePads",
+  "MythicFx":"ArmoryRowMythicFxs",
+  "ArmorFx": "ArmoryRowArmorFxs",
+  "ArmorEmblem": "ArmoryRowArmorEmblems",
 };
 
 
@@ -55,6 +58,7 @@ const useFetchSpartanInventory = (gamerInfo, includeArmory = false, setHighlight
         }    
       }
       setSpartanInventory(response.data.PlayerInventory[0]);
+      console.log("response: ", response.data)
       if (includeArmory) {
         const equippedData = response.data.CurrentlyEquipped;
         console.log("Setting current equip")
@@ -71,6 +75,10 @@ const useFetchSpartanInventory = (gamerInfo, includeArmory = false, setHighlight
           CurrentlyEquippedChestAttachment: equippedData.CurrentlyEquippedChestAttachment,
           CurrentlyEquippedKneePad: equippedData.CurrentlyEquippedKneePad,
           CurrentlyEquippedArmorKit: equippedData.CurrentlyEquippedKit,
+          CurrentlyEquippedArmorMythicFx: equippedData.CurrentlyEquippedArmorMythicFx,
+          CurrentlyEquippedArmorFx: equippedData.CurrentlyEquippedArmorFx,
+          CurrentlyEquippedArmorEmblem: equippedData.CurrentlyEquippedArmorEmblem,
+
 
         });
   
@@ -87,6 +95,18 @@ const useFetchSpartanInventory = (gamerInfo, includeArmory = false, setHighlight
         const initialChestAttachmentHighlight = response.data.ArmoryRowChestAttachments.find(obj => obj.isHighlighted);
         const initialKneePadHighlight = response.data.ArmoryRowKneePads.find(obj => obj.isHighlighted);
         const initialArmorKitHighlight = response.data.ArmoryRowKits.find(obj => obj.isHighlighted);
+        const initialArmorMythicFxHighlight = response.data.ArmoryRowMythicFxs.find(obj => obj.isHighlighted);
+        const initialArmorFxHighlight = response.data.ArmoryRowFxs.find(obj => obj.isHighlighted);
+        const initialArmorEmblemHighlight = response.data.ArmoryRowEmblems.find(obj => obj.isHighlighted);
+        if (initialArmorEmblemHighlight){
+          setHighlightedItems(items => ({ ...items, armoremblemId: initialArmorEmblemHighlight.id }));
+        }
+        if (initialArmorFxHighlight){
+          setHighlightedItems(items => ({ ...items, armorfxId: initialArmorFxHighlight.id }));
+        }
+        if (initialArmorMythicFxHighlight){
+          setHighlightedItems(items => ({ ...items, armormythicfxId: initialArmorMythicFxHighlight.id }));
+        }
 
 
         if (initialCoreHighlight) {
@@ -141,7 +161,9 @@ const useFetchSpartanInventory = (gamerInfo, includeArmory = false, setHighlight
           console.log(KitItems)
           // Kit Items is an Object arary, loop through and print out each item
           Object.keys(KitItems).forEach((key) => {
-            console.log("item type: ", KitItems[key].Type)
+            if (KitItems[key].Type === "") {
+              return;
+            }
             let row = customConversion[KitItems[key].Type]
             // row is now a string. search for response.data.row for the item with the id of key.Id, when found, set the image of the item to the image of the item in the response.data.row
             console.log("Row: ", row)

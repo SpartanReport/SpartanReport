@@ -18,6 +18,10 @@ export const CurrentlyEquippedProvider = ({ children }) => {
         CurrentlyEquippedHipAttachment: null,
         CurrentlyEquippedChestAttachment: null,
         CurrentlyEquippedArmorKit: null,
+        CurrentlyEquippedMythicFx: null,
+        CurrentlyEquippedArmorFx: null,
+        CurrentlyEquippedArmorEmblem: null,
+
     });
 
     return (

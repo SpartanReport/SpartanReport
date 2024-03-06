@@ -90,6 +90,7 @@ type CoreTheme struct {
 	Emblems              []Emblem `json:"Emblems"`
 	ArmorFxPath          string   `json:"ArmorFxPath"`
 	MythicFxPath         string   `json:"MythicFxPath"`
+	ArmorEmblemPath      string   `json:"ArmorEmblemPath"`
 	VisorPath            string   `json:"VisorPath"`
 	HipAttachmentPath    string   `json:"HipAttachmentPath"`
 	WristAttachmentPath  string   `json:"WristAttachmentPath"`
@@ -218,6 +219,22 @@ func GetCurrentArmor(gamerInfo requests.GamerInfo, ArmorCoreData ArmorCoreEquip,
 	}
 	if ArmorCoreData.CurrentlyEquipped.HipAttachments.CorePath != "" && !GetCore {
 		customizationData.Themes[0].HipAttachmentPath = ArmorCoreData.CurrentlyEquipped.HipAttachments.CorePath
+	}
+	if ArmorCoreData.CurrentlyEquipped.ArmorFxs.CorePath != "" && !GetCore {
+		customizationData.Themes[0].ArmorFxPath = ArmorCoreData.CurrentlyEquipped.ArmorFxs.CorePath
+	}
+	if ArmorCoreData.CurrentlyEquipped.MythicFxs.CorePath != "" && !GetCore {
+		customizationData.Themes[0].MythicFxPath = ArmorCoreData.CurrentlyEquipped.MythicFxs.CorePath
+	}
+	if ArmorCoreData.CurrentlyEquipped.ArmorEmblems.CorePath != "" && !GetCore {
+		// if length of Emblems[] is 0, then append the emblem to the array
+		if len(customizationData.Themes[0].Emblems) == 0 {
+			customizationData.Themes[0].Emblems = append(customizationData.Themes[0].Emblems, Emblem{EmblemPath: ArmorCoreData.CurrentlyEquipped.ArmorEmblems.CorePath})
+		}
+		// if length of Emblems[] is 1, then replace the emblem in the array
+		if len(customizationData.Themes[0].Emblems) == 1 {
+			customizationData.Themes[0].Emblems[0].EmblemPath = ArmorCoreData.CurrentlyEquipped.ArmorEmblems.CorePath
+		}
 	}
 
 	customizationData.Themes[0].CoreId = ArmorCoreData.CurrentlyEquipped.Core.CoreId

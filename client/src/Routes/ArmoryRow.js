@@ -44,6 +44,9 @@ const visIdConversion = {
   "ArmorHipAttachment": "hipattachement",
   "ArmorChestAttachment": "chestattachement",
   "ArmorTheme": "armorkit",
+  "ArmorMythicFx" : "mythicfx",
+  "ArmorFx": "fx",
+  "ArmorEmblem": "emblem",
 };
 const itemTypeToEquippedProperty = {
   "ArmorHelmet": "CurrentlyEquippedHelmet",
@@ -56,7 +59,11 @@ const itemTypeToEquippedProperty = {
   "ArmorWristAttachment": "CurrentlyEquippedWristAttachment",
   "ArmorHipAttachment": "CurrentlyEquippedHipAttachment",
   "ArmorChestAttachment": "CurrentlyEquippedChestAttachment",
-  "ArmorKneePad": "CurrentlyEquippedKneePad"
+  "ArmorKneePad": "CurrentlyEquippedKneePad",
+  "ArmorMythicFx": "CurrentlyEquippedArmorMythicFx",
+  "ArmorFx": "CurrentlyEquippedArmorFx",
+  "ArmorEmblem": "CurrentlyEquippedArmorEmblem",
+
 };
 
 
@@ -654,6 +661,10 @@ const ArmoryRow = ({ visId, objects, fullObjects, resetHighlight, gamerInfo, onE
       currentlyEquipped.CurrentlyEquippedHipAttachment = null;
       currentlyEquipped.CurrentlyEquippedKit = null;
       currentlyEquipped.CurrentlyEquippedKitCustom = null;
+      currentlyEquipped.CurrentlyEquippedArmorMythicFx = null;
+      currentlyEquipped.CurrentlyEquippedArmorFx = null;
+      currentlyEquipped.CurrentlyEquippedArmorEmblem = null;
+
 
     }
     const payload = {
@@ -709,6 +720,9 @@ const ArmoryRow = ({ visId, objects, fullObjects, resetHighlight, gamerInfo, onE
     safelyEquipItem(object.currentlyEquipped.CurrentlyEquippedWristAttachment, "ArmorWristAttachment");
     safelyEquipItem(object.currentlyEquipped.CurrentlyEquippedChestAttachment, "ArmorChestAttachment");
     safelyEquipItem(object.currentlyEquipped.CurrentlyEquippedKneePad, "ArmorKneePad");
+    safelyEquipItem(object.currentlyEquipped.CurrentlyEquippedArmorEmblem, "ArmorEmblem");
+    safelyEquipItem(object.currentlyEquipped.CurrentlyEquippedArmorFx, "ArmorFx");
+    safelyEquipItem(object.currentlyEquipped.CurrentlyEquippedArmorMythicFx, "ArmorMythicFx");
 
 
     // Once all items are equipped, highlight the object
@@ -757,6 +771,24 @@ const ArmoryRow = ({ visId, objects, fullObjects, resetHighlight, gamerInfo, onE
           const newHighlightedHipAttachment = fullObjects.ArmoryRowHipAttachments.find(hipattachment => hipattachment.CorePath === response.Themes[0].HipAttachmentPath);
           const newHighlightedChestAttachment = fullObjects.ArmoryRowChestAttachments.find(chestattachment => chestattachment.CorePath === response.Themes[0].ChestAttachmentPath);
           const newHighlightedKneePad = fullObjects.ArmoryRowKneePads.find(kneepad => kneepad.CorePath === response.Themes[0].KneePadPath);
+          const newHighlightedArmorFx = fullObjects.ArmoryRowFxs.find(fx => fx.CorePath === response.Themes[0].ArmorFxPath);
+          const newHighlightedMythicFx = fullObjects.ArmoryRowMythicFxs.find(mythicfx => mythicfx.CorePath === response.Themes[0].MythicFxPath);
+          const newHighlightedEmblem = fullObjects.ArmoryRowEmblems.find(emblem => emblem.CorePath === response.Themes[0].ArmorEmblemPath);
+          if (newHighlightedArmorFx) {
+            setHighlightedItems(items => ({ ...items, armorfxId: newHighlightedArmorFx.id }));
+            resetHighlight(newHighlightedArmorFx.id, "ArmorFx");
+            await onEquipItem(newHighlightedArmorFx);
+          }
+          if (newHighlightedMythicFx) {
+            setHighlightedItems(items => ({ ...items, armormythicfxId: newHighlightedMythicFx.id }));
+            resetHighlight(newHighlightedMythicFx.id, "ArmorMythicFx");
+            await onEquipItem(newHighlightedMythicFx);
+          }
+          if (newHighlightedEmblem) {
+            setHighlightedItems(items => ({ ...items, armoremblemId: newHighlightedEmblem.id }));
+            resetHighlight(newHighlightedEmblem.id, "ArmorEmblem");
+            await onEquipItem(newHighlightedEmblem);
+          }
           if (newHighlightedCore) {
             setHighlightedItems(items => ({ ...items, armorcoreId: object.id }));
             resetHighlight(newHighlightedCore.id, "ArmorCore");
@@ -876,6 +908,28 @@ const ArmoryRow = ({ visId, objects, fullObjects, resetHighlight, gamerInfo, onE
         resetHighlight(object.id, object.Type);
         setHighlightedItems(items => ({ ...items, armorkneepadId: object.id }));
       }
+      else if (object.Type === "ArmorMythicFx") {
+        dataToSend.CurrentlyEquippedCore.GetInv = false;
+        dataToSend.CurrentlyEquippedArmorMythicFx = object;
+        await sendEquip(gamerInfo, dataToSend);
+        resetHighlight(object.id, object.Type);
+        setHighlightedItems(items => ({ ...items, armormythicfxId: object.id }));
+      }
+      else if (object.Type === "ArmorFx") {
+        dataToSend.CurrentlyEquippedCore.GetInv = false;
+        dataToSend.CurrentlyEquippedArmorFx = object;
+        await sendEquip(gamerInfo, dataToSend);
+        resetHighlight(object.id, object.Type);
+        setHighlightedItems(items => ({ ...items, armorfxId: object.id }));
+      }
+      else if (object.Type === "ArmorEmblem") {
+        dataToSend.CurrentlyEquippedCore.GetInv = false;
+        dataToSend.CurrentlyEquippedArmorEmblem = object;
+        await sendEquip(gamerInfo, dataToSend);
+        resetHighlight(object.id, object.Type);
+        setHighlightedItems(items => ({ ...items, armoremblemId: object.id }));
+      }
+
 
     }
   };
@@ -889,7 +943,6 @@ const ArmoryRow = ({ visId, objects, fullObjects, resetHighlight, gamerInfo, onE
 
       const uniqueId = `saveLoadout-${new Date().getTime()}`;
       const newKitName = `[${customKitCount + 1}] New Loadout`; // Use the new count for naming
-
       const newDummyObject = {
         id: uniqueId,
         Type: 'ArmorKitCustom',
@@ -999,7 +1052,6 @@ const ArmoryRow = ({ visId, objects, fullObjects, resetHighlight, gamerInfo, onE
       obj.id === objectId ? { ...obj, name: newName } : obj
     ));
   };
-
 
   // First, ensure that the 'objects' array is not empty before trying to access its elements
   const highlightedObject = objects.length > 0 ? objects.find(obj => {

@@ -44,6 +44,9 @@ const Spartan = ({ gamerInfo }) => {
     hipattachement: true,
     chestattachement: true,
     armorkit: true,
+    armorfx : true,
+    armormythicfx: true,
+    armoremblem: true,
   });
   const [highlightedItems, setHighlightedItems] = useState({
     armorcoreId: null,
@@ -58,6 +61,10 @@ const Spartan = ({ gamerInfo }) => {
     armorhipattachmentId: null,
     armorchestattachmentId: null,
     armorthemeId: null,
+    armorfxId: null,
+    armormythicfxId: null,
+    armoremblemId: null,
+  
 
 
   });
@@ -223,7 +230,10 @@ const Spartan = ({ gamerInfo }) => {
       "ArmorHipAttachment": "ArmoryRowHipAttachments",
       "ArmorChestAttachment": "ArmoryRowChestAttachments",
       "ArmorTheme": "ArmoryRowKits",
-      "ArmorKitCustom": "ArmoryRowKits"
+      "ArmorKitCustom": "ArmoryRowKits",
+      "ArmorFx": "ArmoryRowFxs",
+      "ArmorMythicFx": "ArmoryRowMythicFxs",
+      "ArmorEmblem": "ArmoryRowEmblems",
     };
   
     // Update the appropriate armory row if the itemType matches
@@ -259,6 +269,9 @@ const Spartan = ({ gamerInfo }) => {
         CurrentlyEquippedHipAttachment: null,
         CurrentlyEquippedChestAttachment: null,
         CurrentlyEquippedArmorKit: null,
+        CurrentlyEquippedArmorFX: null,
+        CurrentlyEquippedArmorMythicFX: null,
+        CurrentlyEquippedArmorEmblem: null,
       });
       console.log("Armor Core equipped, other items reset.");
     } else {
@@ -472,6 +485,36 @@ const Spartan = ({ gamerInfo }) => {
         isLast={true}
         isVisible={visibleRows.kneepad} 
         objects={armoryRow.ArmoryRowKneePads}
+        fullObjects={armoryRow}
+        gamerInfo={gamerInfo}
+        onEquipItem={handleEquipItem}
+        currentlyEquipped={currentlyEquipped}
+        setHighlightedItems={setHighlightedItems}
+        highlightedItems={highlightedItems}
+        resetHighlight={resetHighlight}
+        toggleVisibility={toggleVisibility}
+        />
+        <RenderArmoryRow
+        rowType="Armor FX"
+        visId = "armorfx"
+        isLast={true}
+        isVisible={visibleRows.armorfx}
+        objects={armoryRow.ArmoryRowFxs}
+        fullObjects={armoryRow}
+        gamerInfo={gamerInfo}
+        onEquipItem={handleEquipItem}
+        currentlyEquipped={currentlyEquipped}
+        setHighlightedItems={setHighlightedItems}
+        highlightedItems={highlightedItems}
+        resetHighlight={resetHighlight}
+        toggleVisibility={toggleVisibility}
+        />
+        <RenderArmoryRow
+        rowType="Mythic Armor FX"
+        visId = "armormythicfx"
+        isLast={true}
+        isVisible={visibleRows.armormythicfx}
+        objects={armoryRow.ArmoryRowMythicFxs}
         fullObjects={armoryRow}
         gamerInfo={gamerInfo}
         onEquipItem={handleEquipItem}

@@ -26,6 +26,9 @@ type CurrentlyEquipped struct {
 	KneePads          ArmoryRowElements    `bson:"CurrentlyEquippedKneePad" json:"CurrentlyEquippedKneePad"`
 	ChestAttachments  ArmoryRowElements    `bson:"CurrentlyEquippedChestAttachment" json:"CurrentlyEquippedChestAttachment"`
 	Kit               ArmoryKitRowElements `bson:"CurrentlyEquippedKit" json:"CurrentlyEquippedKit"`
+	MythicFxs         ArmoryRowElements    `bson:"CurrentlyEquippedArmorMythicFx" json:"CurrentlyEquippedArmorMythicFx"`
+	ArmorFxs          ArmoryRowElements    `bson:"CurrentlyEquippedArmorFx" json:"CurrentlyEquippedArmorFx"`
+	ArmorEmblems      ArmoryRowElements    `bson:"CurrentlyEquippedArmorEmblem" json:"CurrentlyEquippedArmorEmblem"`
 }
 
 type ArmoryRowElements struct {

@@ -58,6 +58,7 @@ type Theme struct {
 	Emblems                     []Emblem    `json:"Emblems"`
 	ArmorFxPath                 string      `json:"ArmorFxPath"`
 	MythicFxPath                string      `json:"MythicFxPath"`
+	ArmorEmblemPath             string      `json:"ArmorEmblemPath"`
 	VisorPath                   string      `json:"VisorPath"`
 	HipAttachmentPath           string      `json:"HipAttachmentPath"`
 	WristAttachmentPath         string      `json:"WristAttachmentPath"`
@@ -168,6 +169,9 @@ type ArmoryRowItems struct {
 	ArmoryRowHipAttachments    []ArmoryRowElements `json:"HipAttachments"`
 	ArmoryRowKneePads          []ArmoryRowElements `json:"KneePads"`
 	ArmoryRowChestAttachments  []ArmoryRowElements `json:"ChestAttachments"`
+	ArmoryRowMythicFxs         []ArmoryRowElements `json:"ArmorMythicFxs"`
+	ArmoryRowFxs               []ArmoryRowElements `json:"ArmorFxs"`
+	ArmoryRowEmblems           []ArmoryRowElements `json:"ArmorEmblems"`
 }
 
 type DataToReturn struct {
@@ -185,22 +189,28 @@ type DataToReturn struct {
 	ArmoryRowKneePads          []ArmoryRowElements
 	ArmoryRowChestAttachments  []ArmoryRowElements
 	ArmoryRowKits              []ArmoryKitRowElements
+	ArmoryRowMythicFxs         []ArmoryRowElements
+	ArmoryRowFxs               []ArmoryRowElements
+	ArmoryRowEmblems           []ArmoryRowElements
 
 	CurrentlyEquipped CurrentlyEquipped
 	Items             Items
 }
 
 func HandleInventory(c *gin.Context) {
+	// Get GamerInfo from request
 	var gamerInfo requests.GamerInfo
 	if err := c.ShouldBindJSON(&gamerInfo); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	// Check GamerInfo token to ensure it's valid
 	newGamerInfo := requests.CheckAndUpdateGamerInfo(c, gamerInfo)
 	if newGamerInfo.SpartanKey == "" {
 		c.JSON(http.StatusForbidden, "Empty GamerInfo received")
 		return
 	}
+	// Get Player Inventory
 	playerInventory, err := GetInventory(c, newGamerInfo)
 	if err != nil {
 		fmt.Println("Error getting inventory: ", err)
@@ -214,9 +224,12 @@ func HandleInventory(c *gin.Context) {
 		GamerInfo:       newGamerInfo,
 		PlayerInventory: playerInventory,
 	}
+	// If includeArmory is true, get every armor piece in the players inventory and organize them into their own rows.
 	if includeArmory {
+		// Armory Row for Cores
 		objects := []ArmoryRowCore{}
 		var coreResults = []InventoryReward{}
+
 		// Get Player Inventory
 		var InventoryResults = Items{}
 		url := "https://economy.svc.halowaypoint.com/hi/players/xuid(" + gamerInfo.XUID + ")/Inventory"
@@ -229,6 +242,9 @@ func HandleInventory(c *gin.Context) {
 		}
 		var missingItems Items
 		var existingItems Items
+		// For loop that goes through every item in the player's inventory
+		// And checks if the item's data is in the redis server, if not
+		// It adds it to the missingItems struct
 		for _, item := range InventoryResults.InventoryItems {
 			var existingItem ItemsInInventory
 			if isExcludedItemType(item.ItemType) {
@@ -249,6 +265,7 @@ func HandleInventory(c *gin.Context) {
 				if err := json.Unmarshal([]byte(val), &existingItem); err != nil {
 					fmt.Printf("Error unmarshalling item from Redis: %v", err)
 				} else {
+					// If the item is not a Custom Armor Kit, remove the image data
 					if existingItem.ItemType != "ArmorKitCustom" || existingItem.ItemType != "ArmorKit" {
 						existingItem.ItemImageData = ""
 					}
@@ -258,6 +275,7 @@ func HandleInventory(c *gin.Context) {
 				}
 			}
 		}
+		// Fetch and insert missing items into redis database
 		fetchedItems := FetchInventoryItems(gamerInfo, missingItems)
 		var completeItems Items
 
@@ -326,13 +344,16 @@ func loadArmoryRow(data DataToReturn, playerInventory []SpartanInventory) DataTo
 	kneepads := []ArmoryRowElements{}
 	chestattachments := []ArmoryRowElements{}
 	armorkits := []ArmoryKitRowElements{}
+	myhticfxs := []ArmoryRowElements{}
+	armorfxs := []ArmoryRowElements{}
+	armoremblems := []ArmoryRowElements{}
 
 	for i, item := range data.Items.InventoryItems {
 		// Skip if the item path is empty
 		if item.ItemPath == "" {
 			continue
 		}
-
+		fmt.Println("Item Type: ", item.ItemType)
 		switch item.ItemType {
 		case "ArmorTheme":
 			armorkit := createArmoryRowKit(i, item, "ArmorTheme", playerInventory[0].ArmorCores.ArmorCores[0].Themes[0].ThemePath)
@@ -406,6 +427,25 @@ func loadArmoryRow(data DataToReturn, playerInventory []SpartanInventory) DataTo
 			if coating.IsHighlighted {
 				data.CurrentlyEquipped.Coatings = coating
 			}
+		case "ArmorMythicFx":
+			mythicfx := createArmoryRowElement(i, item, "ArmorMythicFx", playerInventory[0].ArmorCores.ArmorCores[0].Themes[0].MythicFxPath)
+			myhticfxs = append(myhticfxs, mythicfx)
+			if mythicfx.IsHighlighted {
+				data.CurrentlyEquipped.MythicFxs = mythicfx
+			}
+		case "ArmorFx":
+			armorfx := createArmoryRowElement(i, item, "ArmorFx", playerInventory[0].ArmorCores.ArmorCores[0].Themes[0].ArmorFxPath)
+			armorfxs = append(armorfxs, armorfx)
+			if armorfx.IsHighlighted {
+				data.CurrentlyEquipped.ArmorFxs = armorfx
+			}
+		case "ArmorEmblem":
+			armoremblem := createArmoryRowElement(i, item, "ArmorEmblem", playerInventory[0].ArmorCores.ArmorCores[0].Themes[0].ArmorEmblemPath)
+			armoremblems = append(armoremblems, armoremblem)
+			if armoremblem.IsHighlighted {
+				data.CurrentlyEquipped.ArmorEmblems = armoremblem
+			}
+
 		default:
 			continue
 		}
@@ -433,6 +473,10 @@ func loadArmoryRow(data DataToReturn, playerInventory []SpartanInventory) DataTo
 	data.ArmoryRowKneePads = kneepads
 	data.ArmoryRowChestAttachments = chestattachments
 	data.ArmoryRowKits = armorkits
+	data.ArmoryRowMythicFxs = myhticfxs
+	data.ArmoryRowFxs = armorfxs
+	data.ArmoryRowEmblems = armoremblems
+
 	return data
 
 }
@@ -466,6 +510,9 @@ func addLabelsToDetailedItems(details ItemResponse) ItemResponse {
 	details.RightShoulderPads.ItemType = "ArmorRightShoulderPad"
 	details.WristAttachments.ItemType = "ArmorWristAttachment"
 	details.HipAttachments.ItemType = "ArmorHipAttachment"
+	details.ArmorEmblems.ItemType = "ArmorEmblem"
+	details.ArmorFxs.ItemType = "ArmorFx"
+	details.ArmorMythicFxs.ItemType = "ArmorMythicFx"
 	return details
 
 }
@@ -483,6 +530,9 @@ func createArmoryRowKit(id int, item ItemsInInventory, itemType, equippedPath st
 	KitEquippablePieces = append(KitEquippablePieces, item.DetailedItem.RightShoulderPads)
 	KitEquippablePieces = append(KitEquippablePieces, item.DetailedItem.WristAttachments)
 	KitEquippablePieces = append(KitEquippablePieces, item.DetailedItem.HipAttachments)
+	KitEquippablePieces = append(KitEquippablePieces, item.DetailedItem.ArmorEmblems)
+	KitEquippablePieces = append(KitEquippablePieces, item.DetailedItem.ArmorFxs)
+	KitEquippablePieces = append(KitEquippablePieces, item.DetailedItem.ArmorMythicFxs)
 	parentCorePath := ""
 	// Iterate over ParentPaths and check for "ArmorCore"
 	for _, parentPath := range item.ItemMetaData.ParentPaths {
@@ -514,6 +564,8 @@ func createArmoryRowKit(id int, item ItemsInInventory, itemType, equippedPath st
 func FetchInventoryItems(gamerInfo requests.GamerInfo, Items Items) Items {
 	// Create a channel to receive the results
 	results := make(chan RewardResult)
+
+	// Skips these specific items as they are currently returning 404s
 	skipTitles := map[string]bool{
 		"Deep Ocean":       true,
 		"SOFTPOINT":        true,
@@ -537,7 +589,6 @@ func FetchInventoryItems(gamerInfo requests.GamerInfo, Items Items) Items {
 		title := currentItemResponse.CommonData.Title.Value
 
 		if _, found := skipTitles[title]; found {
-			fmt.Println("Skipping:", title)
 			results <- RewardResult{} // Send an empty result to ensure channel doesn't block
 		}
 		if err != nil {
@@ -554,6 +605,10 @@ func FetchInventoryItems(gamerInfo requests.GamerInfo, Items Items) Items {
 		if err != nil {
 			fmt.Println("Error getting image data: ", err)
 		}
+
+		// Compress the raw image to be stored in the redis database
+		// Images is resized to 140x140, this is done to reduce the size of the response
+		// (Also, the images are displayed at 140x140 on the front end, so it's not a big deal to resize them here)
 		rawImageData, err = compressPNGWithImaging(rawImageData, true, 140, 140)
 
 		if err != nil {
@@ -570,6 +625,7 @@ func FetchInventoryItems(gamerInfo requests.GamerInfo, Items Items) Items {
 	for _, item := range Items.InventoryItems {
 		if item.ItemPath != "" {
 			if !isExcludedItemType(item.ItemType) {
+				// Concurrently fetch item data
 				go makeRequest(item.ItemPath)
 				totalPaths++
 				filteredRewards = append(filteredRewards, item)
@@ -608,6 +664,8 @@ func FetchInventoryItems(gamerInfo requests.GamerInfo, Items Items) Items {
 				if err != nil {
 					fmt.Printf("Error marshalling item: %v", err)
 				}
+
+				// Insert twice into Redis. Once with the full item data and once with just the image data
 
 				if err := db.RedisClient.HSet(ctx, "items_images", itemPath, itemBytesJustImageData).Err(); err != nil {
 					fmt.Printf("error setting value in Redis: %v", err)
@@ -654,8 +712,6 @@ func compressPNGWithImaging(base64PNG string, resize bool, width, height int) (s
 	optimizedImage, err := optimizePNGWithPngquant(buf.Bytes())
 	if err != nil {
 		return "", err
-		fmt.Println("Error optimizing png")
-
 	}
 
 	// Convert back to base64
@@ -694,14 +750,11 @@ func isExcludedItemType(itemType string) bool {
 		"VehicleTheme":                  true,
 		"SpartanVoice":                  true,
 		"SpartanActionPose":             true,
-		"ArmorFx":                       true,
 		"AiColor":                       true,
-		"ArmorEmblem":                   true,
 		"WeaponTheme":                   true,
 		"WeaponAlternateGeometryRegion": true,
 		"SpartanBackdropImage":          true,
 		"WeaponCharm":                   true,
-		"ArmorMythicFx":                 true,
 		"WeaponDeathFx":                 true,
 		"AiModel":                       true,
 		"AiTheme":                       true,
@@ -711,24 +764,34 @@ func isExcludedItemType(itemType string) bool {
 	return found
 }
 
+// WAYPOINT ENDPOINTS
+// https://economy.svc.halowaypoint.com/hi/customization?players=xuid() => returns Inventory Response
+// https://gamecms-hacs.svc.halowaypoint.com/hi/Waypoint/file/images/emblems/mapping.json => returns Emblem Mapping
+// https://gamecms-hacs.svc.halowaypoint.com/hi/Waypoint/file/ => returns Emblem Image/Nameplate Image
+
 func GetInventory(c *gin.Context, gamerInfo requests.GamerInfo) ([]SpartanInventory, error) {
 	fmt.Println("Getting Inventory!")
+	// Headers
 	hdrs := map[string]string{}
-	hdrs["343-clearance"] = gamerInfo.ClearanceCode
 	hdrs["Accept"] = "application/json"
+
+	// Adds Clearance Code from GamerInfo to headers. Required for querying the economy.svc.halowaypoint.com endpoint
+	hdrs["343-clearance"] = gamerInfo.ClearanceCode
+
+	// Create a structure to hold the response. The response from the endpoint is a list of the players currently equipped items.
 	var inventoryResponse InventoryResponse
 	url := "https://economy.svc.halowaypoint.com/hi/customization?players=xuid(" + gamerInfo.XUID + ")"
-	fmt.Println("querying ", url)
 	err := makeAPIRequest(gamerInfo.SpartanKey, url, hdrs, &inventoryResponse)
 	if err != nil {
 		fmt.Println("Error getting inventory: ", err)
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": "Internal server error",
 		})
-
+		// Something went wrong with user credientals, sign out user
 		HandleLogout(c)
 		return nil, err
 	}
+
 	spartanInventories := make([]SpartanInventory, 0, len(inventoryResponse.PlayerCustomizations))
 
 	fmt.Println("Spartan Customization Length: ", len(inventoryResponse.PlayerCustomizations))
@@ -842,6 +905,7 @@ func FetchCoreDetails(spartanInventory *SpartanInventory, gamerInfo requests.Gam
 
 }
 
+// Unmarshall the JSON response from the core details endpoint
 func ParseCoreDetails(responseBody []byte) CoreDetails {
 	var details CoreDetails
 	err := json.Unmarshal(responseBody, &details)
@@ -877,6 +941,7 @@ func FetchImageData(imageURL string, gamerInfo requests.GamerInfo) []byte {
 	return imgData
 }
 
+// Loads Armor Cores in from an endpoint and stores them in the database
 func LoadArmorCores(gamerInfo requests.GamerInfo, armorcore string) {
 	url := "https://gamecms-hacs.svc.halowaypoint.com/hi/progression/file/cores/armorcores/" + armorcore + ".json"
 	currentItemResponse := ItemResponse{}
@@ -907,6 +972,7 @@ type ItemRequest struct {
 	ImagePath string `json:"ImagePath"`
 }
 
+// Returns the image data from the redis server for a given item
 func HandleGetItemImage(c *gin.Context) {
 	fmt.Println("in item image!")
 	var item ItemRequest

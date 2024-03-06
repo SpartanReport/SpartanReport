@@ -135,6 +135,9 @@ type ItemResponse struct {
 	WristAttachments  ItemOptions `json:"WristAttachments"`
 	ChestAttachments  ItemOptions `json:"ChestAttachments"`
 	HipAttachments    ItemOptions `json:"HipAttachments"`
+	ArmorEmblems      ItemOptions `json:"ArmorEmblems"`
+	ArmorFxs          ItemOptions `json:"ArmorFxs"`
+	ArmorMythicFxs    ItemOptions `json:"ArmorMythicFxs"`
 }
 type Title struct {
 	Value string `json:"value"`

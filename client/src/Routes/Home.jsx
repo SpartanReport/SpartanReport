@@ -98,7 +98,21 @@ function Home() {
         <p className="spartan-description-home">
         <span style={{ fontStyle: 'italic', fontSize: 'larger', padding:0}}><p style={{color:"#fffff"}}>Welcome to Spartan Report</p></span> Your premier destination for tracking progression, viewing upcoming operations, and managing your in-game spartan armors with presets in Halo Infinite</p>
       </div>
-
+      <div className="title-container-events-home">
+        <h1 className="spartan-title-home">Whats New?</h1>
+      </div>
+        <div className="spartan-description-operations">
+        <span style={{ fontStyle: 'italic', fontSize: 'larger' }}>
+          Release 0.106.0-preview
+          <ul>          
+           - Armor FXs and Mythic FXs are now supported
+            <ul> Note: Existing Custom Kits have to be deleted and readded to add FXs </ul>
+          </ul>
+          <ul>          
+            - Fixed a couple of bugs with the Custom Kits
+          </ul>
+        </span>
+      </div>
       <div className="title-container-events-home">
         <h1 className="spartan-title-home">EVENTS</h1>
       </div>
