@@ -2,3 +2,4 @@
 google-key.json
 azure-keys.env
 initialsetup.env
+.DS_Store
