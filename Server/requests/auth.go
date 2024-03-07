@@ -10,33 +10,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )
-
-var refreshTokenMap = make(map[string]RefreshTokenInfo)
-
-// SetTokenInfo adds or updates token information in the map
-func SetTokenInfo(token string, info RefreshTokenInfo) {
-	refreshTokenMap[token] = info
-}
-
-// DeleteTokenInfo removes token information from the map
-func DeleteTokenInfo(token string) {
-	delete(refreshTokenMap, token)
-}
-
-// GetTokenInfo retrieves token information from the map
-func GetTokenInfo(token string) (RefreshTokenInfo, bool) {
-	info, exists := refreshTokenMap[token]
-	return info, exists
-}
-
-func PrintOutTokenInfo() {
-	for key, _ := range refreshTokenMap {
-		fmt.Printf("Key: %s", key)
-	}
-}
 
 type OAuthResponse struct {
 	AccessToken  string `json:"access_token"`
@@ -184,16 +159,6 @@ func ProcessAuthCode(code string, w http.ResponseWriter, r *http.Request) {
 		fmt.Println("Error with XSTS Token:", err)
 		return
 	}
-	// Get the current time
-	now := time.Now()
-	expirationTime := now.Add(time.Second * time.Duration(oauthResp.ExpiresIn))
-
-	tokenData := RefreshTokenInfo{
-		RefreshToken:    oauthResp.RefreshToken,
-		ExpirationData:  expirationTime,
-		OAuthExpiration: expirationTime,
-	}
-	SetTokenInfo(SpartanResp.SpartanToken, tokenData)
 
 	gamerInfo, err := RequestUserProfile(SpartanResp.SpartanToken)
 	if err != nil {
@@ -210,113 +175,5 @@ func ProcessAuthCode(code string, w http.ResponseWriter, r *http.Request) {
 	// }
 	redirectURL := fmt.Sprintf("%s/?token=%s", host, SpartanResp.SpartanToken)
 	http.Redirect(w, r, redirectURL, http.StatusSeeOther)
-
-}
-
-func ProcessAuthCodeWithRefresh(code string, w http.ResponseWriter, r *http.Request, OAuthExpiration time.Time) (SpartanTokenResponse, error) {
-	fmt.Println("Received authorization code:", code)
-	SpartanTokenResponse := SpartanTokenResponse{}
-	// Make the OAuth request
-	// Load environment variables from .env file
-	err := godotenv.Load("azure-keys.env")
-	if err != nil {
-		log.Fatal("Error loading .env file", err)
-	}
-
-	clientID := os.Getenv("CLIENT_ID")
-	clientSecret := os.Getenv("CLIENT_SECRET")
-	redirectURI := os.Getenv("REDIRECT_URI")
-
-	body, err := RequestOAuthWithRefreshToken(clientID, clientSecret, redirectURI, code)
-	if err != nil {
-		fmt.Println("Error with RefreshToken:", err)
-		return SpartanTokenResponse, err
-	}
-	// Parse the OAuth response
-	var oauthResp OAuthResponse
-	err = json.Unmarshal(body, &oauthResp)
-
-	if err != nil {
-		fmt.Println("Error parsing JSON:", err)
-		return SpartanTokenResponse, err
-	}
-	// Request the user token
-	userToken, err := RequestUserToken(oauthResp.AccessToken)
-	if err != nil {
-		fmt.Println("Error with AccessToken:", err)
-		return SpartanTokenResponse, err
-	}
-
-	// Request the XSTS token
-	err, SpartanResp := RequestXstsToken(*userToken)
-
-	if err != nil {
-		fmt.Println("Error with XSTS Token:", err)
-		return SpartanTokenResponse, err
-	}
-
-	now := time.Now()
-	expirationTime := now.Add(time.Second * time.Duration(oauthResp.ExpiresIn))
-
-	tokenData := RefreshTokenInfo{
-		RefreshToken:    oauthResp.RefreshToken,
-		ExpirationData:  expirationTime,
-		OAuthExpiration: OAuthExpiration,
-	}
-
-	// Set the new token info in the map
-	SetTokenInfo(SpartanResp.SpartanToken, tokenData)
-	return SpartanResp, nil
-}
-func CheckAndUpdateGamerInfo(c *gin.Context, gamerInfoPassedIn GamerInfo) GamerInfo {
-	fmt.Println("Current Active Users: ", len(refreshTokenMap))
-	spartanTokenPassedIn := gamerInfoPassedIn.SpartanKey
-	// Check if the SpartanToken is in the map
-	tokenInfo, exists := GetTokenInfo(spartanTokenPassedIn)
-	if exists {
-		fmt.Println("Token Expiration: ", tokenInfo.ExpirationData)
-		currentTime := time.Now()
-		expirationTime := tokenInfo.ExpirationData
-		OAuthExpiration := tokenInfo.OAuthExpiration
-		if OAuthExpiration.Before(currentTime) {
-			fmt.Println("OAuth Token has expired")
-			DeleteTokenInfo(spartanTokenPassedIn)
-			return GamerInfo{XBLToken: "", SpartanKey: "", Gamertag: "", XUID: ""}
-		}
-		// Check if the token is expired or expiring within 5 minutes
-		if expirationTime.Before(currentTime) || expirationTime.Sub(currentTime) <= 5*time.Minute {
-			fmt.Println("Token is expired or expiring within 5 minutes.")
-			// Delete the token from the map
-			DeleteTokenInfo(spartanTokenPassedIn)
-			// Get the refresh token from the map
-			refreshtoken := tokenInfo.RefreshToken
-			// Make the OAuth request
-			spartanTokenResp, err := ProcessAuthCodeWithRefresh(refreshtoken, c.Writer, c.Request, OAuthExpiration)
-			if err != nil {
-				fmt.Println("Error when processing auth code with refresh token: ", err)
-				fmt.Println("Signing user out")
-				DeleteTokenInfo(spartanTokenPassedIn)
-				return GamerInfo{XBLToken: "", SpartanKey: "", Gamertag: "", XUID: ""}
-			}
-			newGamerInfo, err := RequestUserProfile(spartanTokenResp.SpartanToken)
-			if err != nil {
-				fmt.Println("Error when getting refreshed user profile: ", err)
-			}
-			newGamerInfo.XBLToken = spartanTokenResp.XBLToken
-			newGamerInfo.SpartanKey = spartanTokenResp.SpartanToken
-			// remove old token info
-			DeleteTokenInfo(spartanTokenPassedIn)
-			return newGamerInfo
-
-		} else {
-			fmt.Println("Token is valid.")
-			return gamerInfoPassedIn
-		}
-	} else {
-		fmt.Println("Error when processing auth code with refresh token")
-		fmt.Println("Signing user out")
-		DeleteTokenInfo(spartanTokenPassedIn)
-		return GamerInfo{XBLToken: "", SpartanKey: "", Gamertag: "", XUID: ""}
-	}
 
 }

@@ -37,7 +37,7 @@ func HandleSaveCustomKit(c *gin.Context) {
 		return
 	}
 
-	newGamerInfo := requests.CheckAndUpdateGamerInfo(c, customKitData.GamerInfo)
+	newGamerInfo := customKitData.GamerInfo
 	if newGamerInfo.SpartanKey == "" {
 		c.JSON(http.StatusForbidden, "Empty GamerInfo received")
 		return
@@ -86,11 +86,7 @@ func HandleUpdateCustomKit(c *gin.Context) {
 		return
 	}
 
-	newGamerInfo := requests.CheckAndUpdateGamerInfo(c, requestData.GamerInfo)
-	if newGamerInfo.SpartanKey == "" {
-		c.JSON(http.StatusForbidden, "Empty GamerInfo received")
-		return
-	}
+	newGamerInfo := requestData.GamerInfo
 
 	err := db.UpdateKit("progression_data", newGamerInfo.XUID, requestData.CustomKit.Id, requestData.CustomKit)
 	if err != nil {
@@ -111,7 +107,7 @@ func HandleRemoveCustomKit(c *gin.Context) {
 		return
 	}
 
-	newGamerInfo := requests.CheckAndUpdateGamerInfo(c, customKitData.GamerInfo)
+	newGamerInfo := customKitData.GamerInfo
 	if newGamerInfo.SpartanKey == "" {
 		c.JSON(http.StatusForbidden, "Empty GamerInfo received")
 		return

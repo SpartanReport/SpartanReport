@@ -21,23 +21,6 @@ func HandleAuthenticated(c *gin.Context) {
 		})
 		return
 	}
-	// Check if gamertoken is expired
-	// If it is, refresh it
-	if gamerInfo.SpartanKey != "" {
-		newGamerInfo := requests.CheckAndUpdateGamerInfo(c, gamerInfo)
-		if newGamerInfo.SpartanKey == gamerInfo.SpartanKey {
-			c.JSON(http.StatusOK, gin.H{
-				"GamerInfo": gamerInfo,
-				"IsNew":     false,
-			})
-			return
-		}
-		c.JSON(http.StatusOK, gin.H{
-			"GamerInfo": newGamerInfo,
-			"IsNew":     true,
-		})
-
-	}
 
 	return
 
@@ -66,8 +49,6 @@ func HandleLogout(c *gin.Context) {
 		})
 		return
 	}
-
-	requests.DeleteTokenInfo(gamerInfo.SpartanKey)
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Logged out",
