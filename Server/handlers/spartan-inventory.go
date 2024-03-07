@@ -205,11 +205,7 @@ func HandleInventory(c *gin.Context) {
 		return
 	}
 	// Check GamerInfo token to ensure it's valid
-	newGamerInfo := requests.CheckAndUpdateGamerInfo(c, gamerInfo)
-	if newGamerInfo.SpartanKey == "" {
-		c.JSON(http.StatusForbidden, "Empty GamerInfo received")
-		return
-	}
+	newGamerInfo := gamerInfo
 	// Get Player Inventory
 	playerInventory, err := GetInventory(c, newGamerInfo)
 	if err != nil {
