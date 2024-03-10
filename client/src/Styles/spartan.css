@@ -13,9 +13,6 @@
   box-shadow: 0 4px 6px rgba(0,0,0,0.1);
   border-radius: 8px;
 }
-
-
-
   .spartan-text-overlay {
     z-index: 1;
     background: rgba(0, 0, 0, 0.5); /* Semi-transparent black background */
@@ -24,7 +21,6 @@
     box-sizing: border-box;
     position: absolute;
   }
-  
   
   .spartan-description {
     font-size: 0.7em; /* Adjust based on your preference */
@@ -140,3 +136,25 @@
 
   
   }
+
+  @media (max-width: 768px) {
+    .main-grid-container-spartan{
+      width:125%;
+      padding:0;
+      
+    }
+      .container-cores{
+        display: grid;
+      }
+      .cardContainer{
+        padding-left:0;
+      }
+      .objectsDisplay {
+        display: grid;
+        grid-auto-rows: 200px;
+        grid-column-gap: 60px;
+        padding: 10px;
+        margin-left:10px;
+      }
+
+    }
