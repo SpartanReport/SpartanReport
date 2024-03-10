@@ -58,7 +58,6 @@ const useFetchSpartanInventory = (gamerInfo, includeArmory = false, setHighlight
         }    
       }
       setSpartanInventory(response.data.PlayerInventory[0]);
-      console.log("response: ", response.data)
       if (includeArmory) {
         const equippedData = response.data.CurrentlyEquipped;
         console.log("Setting current equip")

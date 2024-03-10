@@ -1,5 +1,6 @@
 /Discoveries
 google-key.json
 azure-keys.env
+docker-compose.yml
 initialsetup.env
 .DS_Store

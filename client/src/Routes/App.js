@@ -18,17 +18,19 @@ import CommandCenter from './CommandCenter';
 import Policy from './policy';
 import SelectedOperation from './SelectedOperation';
 import Donate from './donate';
+import useAutoRenewToken from '../auth/AuthRenewToken'; // Adjust the path as necessary
+import { useAuth } from '../Components/GlobalStateContext'; // Adjust the import path as needed
+import useStartAuth from '../auth/AuthComponent';
+
 
 function App() {
+  useAutoRenewToken();
   const [isLoading, setIsLoading] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [gamerInfo, setGamerInfo] = useState();
+  const {isAuthenticated, setIsAuthenticated } = useAuth();
+    const [gamerInfo, setGamerInfo] = useState();
   const [HaloStats, setHaloStats] = useState(null);
   const [selectedMatch, setSelectedMatch] = useState(null);
   const [spartanInventory, setSpartanInventory] = useState(null);
-  const [selectedSeason, setSelectedSeason] = useState(null);
-  const searchParams = new URLSearchParams(window.location.search);
-  const token = searchParams.get('token');
 
   useEffect(() => {
     // Load gamerInfo from local storage on component mount
@@ -56,67 +58,9 @@ function App() {
     }
   }, [gamerInfo]);
 
-  const fetchGamerInfo = async (token) => {
-    try {
-      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8080';
-      const response = await axios.get(`${apiUrl}/getGamerInfo?token=${token}`);
-      if (response.data) {
-        setGamerInfo(response.data);
-        setIsAuthenticated(true);
-        const apiUrl = process.env.REACT_APP_REDIRECT_URL || 'http://localhost:3000';
 
-        window.location.href = `${apiUrl}/`;
-  
-      } else {
-        setIsAuthenticated(false);
-      }
-    } catch (error) {
-      console.error("Error fetching gamerInfo:", error);
-      setIsAuthenticated(false);
-    }
-  };
 
-  const checkAuth = async () => {
-    if (gamerInfo) {
-      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8080';
-      try {
-        const response = await axios.post(`${apiUrl}/account`, gamerInfo);
-        if (response.data.IsNew) {
-          if (response.data.gamerInfo!==null) {
-          setGamerInfo(response.data.gamerInfo); // Update gamerInfo with new data
-          setIsAuthenticated(true);
-          }
-        } else {
-          setIsAuthenticated(false);
-        }
-      } catch (error) {
-        console.error("Error in checkAuth:", error);
-        setIsAuthenticated(false);
-      }
-    } else {
-      if (localStorage.getItem('gamerInfo')!==null) {
-        setIsAuthenticated(true);
-      }else{
-      setIsAuthenticated(false);
-
-      }
-    }
-  };
-
-  useEffect(() => {
-    const searchParams = new URLSearchParams(window.location.search);
-    const token = searchParams.get('token');
-    if (token) {
-      fetchGamerInfo(token);
-    } else {
-      checkAuth();
-    }
-  }, []);
-
-  const startAuth = () => {
-    const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8080';
-    window.location.href = `${apiUrl}/startAuth`;
-  };
+  const startAuth = useStartAuth();
 
   // JSX rendering
   return (

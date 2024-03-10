@@ -783,9 +783,6 @@ func GetInventory(c *gin.Context, gamerInfo requests.GamerInfo) ([]SpartanInvent
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": "Internal server error",
 		})
-		// Something went wrong with user credientals, sign out user
-		HandleLogout(c)
-		return nil, err
 	}
 
 	spartanInventories := make([]SpartanInventory, 0, len(inventoryResponse.PlayerCustomizations))

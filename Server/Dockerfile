@@ -39,7 +39,6 @@ ENV REDIRECT-HOST=$REDIRECT-HOST
 
 # Copy the Go binary from the builder stage
 COPY --from=builder /app/main /app/main
-COPY azure-keys.env /app/azure-keys.env
 COPY /initialdata/armorcoredata.json /app/armorcoredata.json
 COPY /initialdata/default_emblem_colors.json /app/default_emblem_colors.json
 COPY /initialdata/default_emblem_info.json /app/default_emblem_info.json
