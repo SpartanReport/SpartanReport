@@ -12,6 +12,7 @@
   transform: scale(0.95);
 
 }
+
 .editingCard{
   cursor: pointer;
   min-width: 200px;
@@ -163,7 +164,7 @@
 }
 
 .container-cores, .container-cores-custom-kits {
-  padding-top:50px;
+  padding-top:10px;
   flex: 1; /* Takes up remaining space */
   transition: flex 0.3s ease; /* Smooth transition for resizing */
 }

@@ -412,32 +412,21 @@ description-container-policy{
   .events-container-home {
     width: 100%; /* Full width on smaller screens */
   }
+  .event-image {
+    padding-bottom: 20px;
+  }
 
   .event-card {
     flex-basis: 100%; /* Stack cards in a single column on small screens */
-    padding-right : 0px;
     margin-top:0px;
+    margin-left: 10%;
   }
   .home-grid-container{
-    margin: -56px;
+    margin: -60px;
+    overflow: hidden;
   }
- 
   .title-container-events-home{
-    width: 75%;
-  }
-
-  .title-container-event-home-active{
-    margin-left: 60px;
-  }
-  .title-container-event-home-past{
-    margin-left: 60px;
-  }
-  .spartan-title-home{
-    width:100%;
-  }
-  .title-container-home{
-    margin-left: 50px;
-    margin-top:0px;
+    width: 89%;
   }
 
   .subheader-container-home{
@@ -446,40 +435,10 @@ description-container-policy{
   .description-container-home{
     margin-left: 10px;
   }
-  .event-card img{
-    max-height: 100%;
-    padding-bottom: 50px;
-    padding-left:60px;
-  }
-  .event-subheader{
-    width:85%;
-    margin-left:15%;
-    padding-top:0px;
-  }
-  .event-days{
-    margin-left:10px;
-    margin-right:150px;
-  }
-  .event-date{
-    margin-left:10px;
-    margin-right:150px;
-  }
-  .spartan-description-home{
-    padding-left: 10px;
-    padding-right: 10px;
-  }
 
-  .event-title-home{
-    padding-left: 10px;
-    padding-right: 10px;
-  }
-  .welcome-title{
-    padding-left: 10px;
-    padding-right: 10px;
-  }
-  .event-date-home{
-    padding-left: 10px;
-    padding-right: 10px;
-  }
+.release-notes{
+  padding:45px;
+  padding-top:5px;
+}
 
 }

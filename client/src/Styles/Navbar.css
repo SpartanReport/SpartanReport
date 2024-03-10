@@ -239,14 +239,14 @@
     margin-top: 75px;
   }
   .title-container-home, .spartan-title{
-    width:80%;
+    width:89%;
   }
   .subheader-container-home{
-    width:80%;
+    width:89%;
   }
 
   .title-container {
-    width: 110%;
+    width: 100%;
     margin-left: 0px;
   }
 
@@ -266,6 +266,8 @@
   .hamburger {
     display: flex; /* Show the hamburger icon */
     z-index: 1000;
+    width:35px;
+    height: 35px;
     background-color: #273B44;
     top:0;
     left:0;
