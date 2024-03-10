@@ -23,7 +23,7 @@ Spartan Report is a web application for Halo Infinite. It allows for users to cr
 # Server Setup (Advanced)
 The Back-End of this project is written in Go. Running the backend requires a MongoDB server to be set up. [You may follow this walkthrough](https://www.mongodb.com/docs/manual/installation/) to get this up and running
 - Clone the repository:
-   - `git clone https://github.com/mirackara/SpartanReport.git`
+   - `git clone https://github.com/SpartanReport/SpartanReport.git`
  
 - Navigate to Server folder
   - `cd Server`
@@ -55,22 +55,6 @@ The Proxy Server of this project is used to query halo infinite's api from the f
 
 - Run the proxy server:
   - `node proxyserver.js`
-
-
- 
-
-# Env Setup
-There are a couple of enviormental variables that should be loaded in before the project is ran. Make sure to remove the `.template` portion!
-
-`initialsetup.template.env`
-  - `MONGODB_HOST="mongodb://localhost:27017/"` this .env file points to where your MongoDB server is being hosted
-
-`azure-keys.template.env` this env file contains authentication codes for Azure AD. View the Azure Active Directory Application Prerequisite step above for more details
-
-  - `CLIENT_ID = "CLIENT_ID_HERE"` 
-  - `CLIENT_SECRET = "CLIENT_SECRET_HERE"`
-  - `REDIRECT_URI= "http://localhost:8080/callback"`
-
 
 ## Contributing
 
