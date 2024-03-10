@@ -7,12 +7,12 @@ Spartan Report is a web application for Halo Infinite. It allows for users to cr
 
 # Docker Setup (RECOMMENDED)
 - Clone the repository:
-   - `git clone https://github.com/mirackara/SpartanReport.git`
+   - `git clone https://github.com/SpartanReport/SpartanReport.git`
 
-- Fill out the `azure-keys.template.env` file with your Azure AD Credentials.
-   - Without these keys, the app will fail to run
+- Fill out the `REACT_APP_CLIENT_ID` section of the `docker-compose-template.yml`.
+   - Without this key, the app will fail to run
 
-- Rename `azure-keys.template.env` to `azure-keys.env`
+- Rename `docker-compose-template.yml` to `docker-compose.yml`
 
 - Run `docker compose build` in the main directory
 
