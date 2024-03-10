@@ -2,8 +2,10 @@
 import React, { createContext, useContext, useState } from 'react';
 
 const CurrentlyEquippedContext = createContext();
+const AuthContext = createContext();
 
 export const useCurrentlyEquipped = () => useContext(CurrentlyEquippedContext);
+export const useAuth = () => useContext(AuthContext);
 
 export const CurrentlyEquippedProvider = ({ children }) => {
     const [currentlyEquipped, setCurrentlyEquipped] = useState({
@@ -23,10 +25,12 @@ export const CurrentlyEquippedProvider = ({ children }) => {
         CurrentlyEquippedArmorEmblem: null,
 
     });
-
-    return (
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+        return (
         <CurrentlyEquippedContext.Provider value={{ currentlyEquipped, setCurrentlyEquipped }}>
-            {children}
+            <AuthContext.Provider value={{ isAuthenticated, setIsAuthenticated }}> 
+                {children}
+            </AuthContext.Provider>
         </CurrentlyEquippedContext.Provider>
     );
 };

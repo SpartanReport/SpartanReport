@@ -4,14 +4,23 @@ import (
 	"fmt"
 	"net/http"
 	requests "spartanreport/requests"
+
+	"github.com/gin-gonic/gin"
 )
 
-// handleCallback handles the OAuth callback and processes the authorization code
-func HandleCallback(w http.ResponseWriter, r *http.Request) {
-	code := r.URL.Query().Get("code")
-	fmt.Println("code: ", code)
-	if code != "" {
-		requests.ProcessAuthCode(code, w, r)
+type AuthExchange struct {
+	Code string `json:"token"`
+}
+
+func HandleAuth(c *gin.Context) {
+	var authCode AuthExchange
+	if err := c.ShouldBindJSON(&authCode); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"could not bind": err.Error()})
+		return
+	}
+
+	if authCode.Code != "" {
+		requests.ProcessAuthCode(authCode.Code, c)
 	} else {
 		fmt.Println("No code received")
 	}

@@ -5,12 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
-	"os"
 	"time"
 
-	"github.com/joho/godotenv"
+	"github.com/gin-gonic/gin"
 )
 
 type OAuthResponse struct {
@@ -121,32 +119,8 @@ func GetGamerInfo(token string) (GamerInfo, bool) {
 	return gamerInfo, exists
 }
 
-func ProcessAuthCode(code string, w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Received authorization code:", code)
-
-	// Make the OAuth request
-	// Load environment variables from .env file
-	err := godotenv.Load("azure-keys.env")
-	if err != nil {
-		log.Fatal("Error loading .env file", err)
-	}
-
-	clientID := os.Getenv("CLIENT_ID")
-	clientSecret := os.Getenv("CLIENT_SECRET")
-	redirectURI := os.Getenv("REDIRECT_URI")
-
-	body := RequestOAuth(clientID, clientSecret, redirectURI, code)
-
-	// Parse the OAuth response
-	var oauthResp OAuthResponse
-	err = json.Unmarshal(body, &oauthResp)
-
-	if err != nil {
-		fmt.Println("Error parsing JSON:", err)
-		return
-	}
-	// Request the user token
-	userToken, err := RequestUserToken(oauthResp.AccessToken)
+func ProcessAuthCode(code string, c *gin.Context) {
+	userToken, err := RequestUserToken(code)
 	if err != nil {
 		fmt.Println("Error with AccessToken:", err)
 		return
@@ -165,15 +139,6 @@ func ProcessAuthCode(code string, w http.ResponseWriter, r *http.Request) {
 		fmt.Println("Error when getting user profile: ", err)
 
 	}
-	// Temporarily store gamerInfo with SpartanToken as the key
-	SetGamerInfo(SpartanResp.SpartanToken, gamerInfo)
 	// Send the SpartanToken to the client
-	host := os.Getenv("HOST")
-	// userAgent := useragent.Parse(r.UserAgent())
-	// if userAgent.OS == "iOS" {
-	// 	host = "msauth.MiracKara.SpartanReport://auth"
-	// }
-	redirectURL := fmt.Sprintf("%s/?token=%s", host, SpartanResp.SpartanToken)
-	http.Redirect(w, r, redirectURL, http.StatusSeeOther)
-
+	c.JSON(http.StatusOK, gamerInfo)
 }
