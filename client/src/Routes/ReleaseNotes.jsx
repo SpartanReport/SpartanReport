@@ -3,6 +3,18 @@ import React, { useState } from 'react';
 // Mock data for release notes
 const releaseNotes = [
     {
+      version: "0.108.0-preview",
+      details: [
+        {
+          feature: "Better Mobile Support on Armory and Homepage",
+        },
+        {
+          feature: "Improvements to authentication suite including client side token refresh",
+        },
+      ],
+    },
+
+    {
         version: "0.107.0-preview",
         details: [
           {
