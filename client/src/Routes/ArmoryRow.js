@@ -587,7 +587,10 @@ const ArmoryRow = ({ visId, objects, fullObjects, resetHighlight, gamerInfo, onE
         const payload = {
           gamerInfo,
           newDummyObject: {
-            ...editingObject,
+            ...(() => {
+              const { Image, ...rest } = editingObject;
+              return rest;
+            })(),
             currentlyEquipped: Object.entries(editingObject.currentlyEquipped).reduce((acc, [key, value]) => {
               if (value) { // Ensure value exists before attempting to destructure
                 const { Image, ...rest } = value; // Exclude the Image property
