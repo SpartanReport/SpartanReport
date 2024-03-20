@@ -3,6 +3,9 @@ package spartanreport
 import (
 	"bytes"
 	"context"
+	"crypto/aes"
+	"crypto/cipher"
+	"crypto/rand"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -16,9 +19,12 @@ import (
 	requests "spartanreport/requests"
 	. "spartanreport/structures"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/disintegration/imaging"
 	"github.com/gin-gonic/gin"
+	"github.com/patrickmn/go-cache"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
@@ -196,6 +202,63 @@ type DataToReturn struct {
 	Items             Items
 }
 
+// Initialize the cache. DefaultExpiration is 0 which means no expiration, and CleanupInterval is 5 minutes.
+var invCache = cache.New(5*time.Minute, 10*time.Minute)
+
+func encryptData(data interface{}, key []byte) ([]byte, error) {
+	plaintext, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		return nil, err
+	}
+
+	gcm, err := cipher.NewGCM(block)
+	if err != nil {
+		return nil, err
+	}
+
+	nonce := make([]byte, gcm.NonceSize())
+	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
+		return nil, err
+	}
+
+	ciphertext := gcm.Seal(nonce, nonce, plaintext, nil)
+	return ciphertext, nil
+}
+func decryptData(ciphertext, key []byte) (*Items, error) {
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		return nil, err
+	}
+
+	gcm, err := cipher.NewGCM(block)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(ciphertext) < gcm.NonceSize() {
+		return nil, fmt.Errorf("ciphertext too short")
+	}
+
+	nonce, ciphertext := ciphertext[:gcm.NonceSize()], ciphertext[gcm.NonceSize():]
+	plaintext, err := gcm.Open(nil, nonce, ciphertext, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var inventoryResults Items
+	err = json.Unmarshal(plaintext, &inventoryResults)
+	if err != nil {
+		return nil, err
+	}
+
+	return &inventoryResults, nil
+}
+
 func HandleInventory(c *gin.Context) {
 	// Get GamerInfo from request
 	var gamerInfo requests.GamerInfo
@@ -227,53 +290,76 @@ func HandleInventory(c *gin.Context) {
 
 		// Get Player Inventory
 		var InventoryResults = Items{}
+		// If not found in cache, proceed to make the API request.
 		url := "https://economy.svc.halowaypoint.com/hi/players/xuid(" + gamerInfo.XUID + ")/Inventory"
-		hdrs := map[string]string{}
-		hdrs["343-clearance"] = gamerInfo.ClearanceCode
-		makeAPIRequest(gamerInfo.SpartanKey, url, hdrs, &InventoryResults)
-		if err != nil {
-			fmt.Println(err)
-			return
+		hdrs := map[string]string{
+			"343-clearance": gamerInfo.ClearanceCode,
 		}
+		start := time.Now()
+		makeAPIRequest(gamerInfo.SpartanKey, url, hdrs, &InventoryResults)
+		elapsed := time.Since(start)
+		fmt.Printf("Time to get inventory: %s\n", elapsed)
+
 		var missingItems Items
 		var existingItems Items
 		// For loop that goes through every item in the player's inventory
 		// And checks if the item's data is in the redis server, if not
 		// It adds it to the missingItems struct
 		var itemPaths []string
+		start = time.Now()
 		for _, item := range InventoryResults.InventoryItems {
 			if isExcludedItemType(item.ItemType) {
 				continue
 			}
 			itemPaths = append(itemPaths, item.ItemPath)
 		}
+		elapsed = time.Since(start)
+		fmt.Printf("Time to get item paths: %s\n", elapsed)
 
 		ctx := context.Background()
+		start = time.Now()
 		vals, err := db.RedisClient.HMGet(ctx, "items", itemPaths...).Result()
+		elapsed = time.Since(start)
+		fmt.Printf("Time to get from Redis: %s\n", elapsed)
 		if err != nil {
 			fmt.Printf("Error getting from Redis: %v\n", err)
 			return
 		}
 
+		var wg sync.WaitGroup
+		var mutex sync.Mutex
+		// Time this function
+		start = time.Now()
 		for i, val := range vals {
-			if val == nil {
-				fmt.Println("Covered in nil check")
-				missingItems.InventoryItems = append(missingItems.InventoryItems, InventoryResults.InventoryItems[i])
-				continue
-			}
+			wg.Add(1)
+			go func(i int, val interface{}) {
+				defer wg.Done()
+				if val == nil {
+					fmt.Println("Covered in nil check")
+					// Use thread-safe mechanisms to append to missingItems
+					mutex.Lock()
+					missingItems.InventoryItems = append(missingItems.InventoryItems, InventoryResults.InventoryItems[i])
+					mutex.Unlock()
+					return
+				}
 
-			var existingItem ItemsInInventory
-			if err := json.Unmarshal([]byte(val.(string)), &existingItem); err != nil {
-				fmt.Printf("Error unmarshalling item from Redis: %v\n", err)
-			} else {
-				// If the item is not a Custom Armor Kit, remove the image data
+				var existingItem ItemsInInventory
+				if err := json.Unmarshal([]byte(val.(string)), &existingItem); err != nil {
+					fmt.Printf("Error unmarshalling item from Redis: %v\n", err)
+					return
+				}
+
 				if existingItem.ItemType != "ArmorKitCustom" && existingItem.ItemType != "ArmorKit" {
 					existingItem.ItemImageData = ""
 				}
-				// Item found, add to existing items
+				mutex.Lock()
 				existingItems.InventoryItems = append(existingItems.InventoryItems, existingItem)
-			}
+				mutex.Unlock()
+			}(i, val)
 		}
+		wg.Wait()
+		elapsed = time.Since(start)
+		fmt.Printf("Time to fetch items from Redis: %s\n", elapsed)
 		// Fetch and insert missing items into redis database
 		fetchedItems := FetchInventoryItems(gamerInfo, missingItems)
 		var completeItems Items
@@ -346,13 +432,13 @@ func loadArmoryRow(data DataToReturn, playerInventory []SpartanInventory) DataTo
 	armorfxs := []ArmoryRowElements{}
 	armoremblems := []ArmoryRowElements{}
 	armorcores := []ArmoryRowElements{}
-
+	// time
+	start := time.Now()
 	for i, item := range data.Items.InventoryItems {
 		// Skip if the item path is empty
 		if item.ItemPath == "" {
 			continue
 		}
-		fmt.Println("Item Type: ", item.ItemType)
 		switch item.ItemType {
 		case "ArmorTheme":
 			armorkit := createArmoryRowKit(i, item, "ArmorTheme", playerInventory[0].ArmorCores.ArmorCores[0].Themes[0].ThemePath)
@@ -455,16 +541,21 @@ func loadArmoryRow(data DataToReturn, playerInventory []SpartanInventory) DataTo
 		}
 	}
 	// if armorkit.name is in data.armoryrow.name (object) then remove it from armorkit
+	elapsed := time.Since(start)
+	fmt.Println("Time Elapsed loading armory rows: ", elapsed)
+
+	start = time.Now()
 	for i := len(armorkits) - 1; i >= 0; i-- {
 		kit := armorkits[i]
 		for _, core := range data.ArmoryRow {
-			fmt.Println("Kit Name: ", kit.Name)
 			if kit.Name == core.Name || kit.Name == "Mark VII" || kit.Name == "" {
 				armorkits = append(armorkits[:i], armorkits[i+1:]...)
 				break // Break out of the inner loop once you've removed an element
 			}
 		}
 	}
+	elapsed = time.Since(start)
+	fmt.Println("Time Elapsed modifying armorkits: ", elapsed)
 
 	data.ArmoryRowHelmets = helmets
 	data.ArmoryRowGloves = gloves
@@ -604,6 +695,13 @@ func FetchInventoryItems(gamerInfo requests.GamerInfo, Items Items) Items {
 			currentItemResponse = StripKitDataFromItem(currentItemResponse)
 		}
 		itemImagePath := currentItemResponse.CommonData.Media.Media.MediaUrl.Path
+		fmt.Println("Making request for ", itemImagePath)
+		// if itemImagePAth begins with "progression/Inventory/Emblems" skip the image request
+		if strings.HasPrefix(itemImagePath, "progression/Inventory/Emblems") {
+			results <- RewardResult{} // Send an empty result to ensure channel doesn't block
+			return
+		}
+
 		url = "https://gamecms-hacs.svc.halowaypoint.com/hi/images/file/" + itemImagePath
 		rawImageData, err := makeAPIRequestImage(gamerInfo.SpartanKey, url, nil)
 		if err != nil {
