@@ -335,8 +335,6 @@ func HandleInventory(c *gin.Context) {
 			go func(i int, val interface{}) {
 				defer wg.Done()
 				if val == nil {
-					fmt.Println("Covered in nil check")
-					// Use thread-safe mechanisms to append to missingItems
 					mutex.Lock()
 					missingItems.InventoryItems = append(missingItems.InventoryItems, InventoryResults.InventoryItems[i])
 					mutex.Unlock()
@@ -361,7 +359,10 @@ func HandleInventory(c *gin.Context) {
 		elapsed = time.Since(start)
 		fmt.Printf("Time to fetch items from Redis: %s\n", elapsed)
 		// Fetch and insert missing items into redis database
+		start = time.Now()
 		fetchedItems := FetchInventoryItems(gamerInfo, missingItems)
+		elapsed = time.Since(start)
+		fmt.Printf("Time to fetch missing items: %s\n", elapsed)
 		var completeItems Items
 
 		completeItems.InventoryItems = append(existingItems.InventoryItems, fetchedItems.InventoryItems...)
@@ -446,8 +447,6 @@ func loadArmoryRow(data DataToReturn, playerInventory []SpartanInventory) DataTo
 			if armorkit.IsHighlighted {
 				data.CurrentlyEquipped.Kit = armorkit
 			}
-			fmt.Println("Armor Kit Received")
-			fmt.Println("Kit Name: ", item.ItemMetaData.Title.Value)
 		case "ArmorHelmet":
 			helmet := createArmoryRowElement(i, item, "ArmorHelmet", playerInventory[0].ArmorCores.ArmorCores[0].Themes[0].HelmetPath)
 			helmets = append(helmets, helmet)
@@ -695,12 +694,12 @@ func FetchInventoryItems(gamerInfo requests.GamerInfo, Items Items) Items {
 			currentItemResponse = StripKitDataFromItem(currentItemResponse)
 		}
 		itemImagePath := currentItemResponse.CommonData.Media.Media.MediaUrl.Path
-		fmt.Println("Making request for ", itemImagePath)
 		// if itemImagePAth begins with "progression/Inventory/Emblems" skip the image request
-		if strings.HasPrefix(itemImagePath, "progression/Inventory/Emblems") {
+		if strings.HasPrefix(itemImagePath, "progression/Inventory/Emblems") || itemImagePath == "" {
 			results <- RewardResult{} // Send an empty result to ensure channel doesn't block
 			return
 		}
+		fmt.Println("Making request for ", itemImagePath)
 
 		url = "https://gamecms-hacs.svc.halowaypoint.com/hi/images/file/" + itemImagePath
 		rawImageData, err := makeAPIRequestImage(gamerInfo.SpartanKey, url, nil)
