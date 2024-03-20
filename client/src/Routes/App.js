@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import "../Styles/styles.css";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Home from './Home';
@@ -9,7 +8,7 @@ import Progression from './Progression';
 import MatchStats from './match-stats';
 import Header from './Header';
 import UnauthenticatedContent from './UnauthenticatedContent';
-import { BrowserRouter as Router, Route, Routes , useNavigate} from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Navbar from './Navbar';
 import Operations from './Operations';
 import Store from './store';
@@ -21,11 +20,12 @@ import Donate from './donate';
 import useAutoRenewToken from '../auth/AuthRenewToken'; // Adjust the path as necessary
 import { useAuth } from '../Components/GlobalStateContext'; // Adjust the import path as needed
 import useStartAuth from '../auth/AuthComponent';
+import CustomKit from './CustomKit';
 
 
 function App() {
   useAutoRenewToken();
-  const [isLoading, setIsLoading] = useState(true);
+  const [ setIsLoading] = useState(true);
   const {isAuthenticated, setIsAuthenticated } = useAuth();
     const [gamerInfo, setGamerInfo] = useState();
   const [HaloStats, setHaloStats] = useState(null);
@@ -48,8 +48,7 @@ function App() {
     } else {
       setIsAuthenticated(false);
     }
-    setIsLoading(false);
-  }, []);
+  }, [setIsAuthenticated]);
 
   useEffect(() => {
     // Save gamerInfo to local storage whenever it changes
@@ -84,7 +83,9 @@ function App() {
               <Route path="/operations/:operationId" element={<SelectedOperation gamerInfo={gamerInfo} />} />
               <Route path="/progression" element={<Progression gamerInfo={JSON.parse(localStorage.getItem('gamerInfo'))} HaloStats={HaloStats} setHaloStats={setHaloStats} setSelectedMatch={setSelectedMatch} />} />
               <Route path="/store" element={<Store gamerInfo={JSON.parse(localStorage.getItem('gamerInfo'))} />} />
-              <Route path="/item-details" element={<ItemDetailsPage />} />
+                <Route path= "/customkit/:kitId/:xuid" element={<CustomKit gamerInfo={JSON.parse(localStorage.getItem('gamerInfo'))}  />} />
+
+            <Route path="/item-details" element={<ItemDetailsPage />} />
               <Route path="/logout" />
             </Routes>
           </div>

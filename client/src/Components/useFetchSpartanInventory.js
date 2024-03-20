@@ -25,7 +25,7 @@ const useFetchSpartanInventory = (gamerInfo, includeArmory = false, setHighlight
   const [spartanInventory, setSpartanInventory] = useState(null);
   const [isFetched, setIsFetched] = useState(false);
   const [armoryRow, setArmoryRow] = useState(null); // State for ArmoryRow data
-  const { currentlyEquipped, setCurrentlyEquipped } = useCurrentlyEquipped();
+  const { setCurrentlyEquipped } = useCurrentlyEquipped();
   const fetchSpartanInventory = async (force = false) => {
     if (isFetched && !force) return;
   
@@ -34,6 +34,7 @@ const useFetchSpartanInventory = (gamerInfo, includeArmory = false, setHighlight
       const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8080';
       const storedGamerInfo = localStorage.getItem('gamerInfo');
       const parsedGamerInfo = JSON.parse(storedGamerInfo);
+      console.log("Parsed gamer info: ", parsedGamerInfo)
       const response = await axios.post(`${apiUrl}/spartan${queryParams}`, storedGamerInfo);
 
       if (response.data.GamerInfo){
@@ -76,7 +77,7 @@ const useFetchSpartanInventory = (gamerInfo, includeArmory = false, setHighlight
           CurrentlyEquippedArmorKit: equippedData.CurrentlyEquippedKit,
           CurrentlyEquippedArmorMythicFx: equippedData.CurrentlyEquippedArmorMythicFx,
           CurrentlyEquippedArmorFx: equippedData.CurrentlyEquippedArmorFx,
-          CurrentlyEquippedArmorEmblem: equippedData.CurrentlyEquippedArmorEmblem,
+          // CurrentlyEquippedArmorEmblem: equippedData.CurrentlyEquippedArmorEmblem,
 
 
         });
@@ -96,10 +97,10 @@ const useFetchSpartanInventory = (gamerInfo, includeArmory = false, setHighlight
         const initialArmorKitHighlight = response.data.ArmoryRowKits.find(obj => obj.isHighlighted);
         const initialArmorMythicFxHighlight = response.data.ArmoryRowMythicFxs.find(obj => obj.isHighlighted);
         const initialArmorFxHighlight = response.data.ArmoryRowFxs.find(obj => obj.isHighlighted);
-        const initialArmorEmblemHighlight = response.data.ArmoryRowEmblems.find(obj => obj.isHighlighted);
-        if (initialArmorEmblemHighlight){
-          setHighlightedItems(items => ({ ...items, armoremblemId: initialArmorEmblemHighlight.id }));
-        }
+        // const initialArmorEmblemHighlight = response.data.ArmoryRowEmblems.find(obj => obj.isHighlighted);
+      //  if (initialArmorEmblemHighlight){
+       //   setHighlightedItems(items => ({ ...items, armoremblemId: initialArmorEmblemHighlight.id }));
+       //  }
         if (initialArmorFxHighlight){
           setHighlightedItems(items => ({ ...items, armorfxId: initialArmorFxHighlight.id }));
         }
@@ -178,7 +179,7 @@ const useFetchSpartanInventory = (gamerInfo, includeArmory = false, setHighlight
                 if (item.id === KitItems[key].id) {
                   console.log("Found item: ", item)
                   KitItems[key].Image = item.Image;
-                  if (kit.ImageType == item.Type){
+                  if (kit.ImageType === item.Type){
 
                     kit.Image = item.Image;
                   
@@ -208,18 +209,14 @@ const useFetchSpartanInventory = (gamerInfo, includeArmory = false, setHighlight
       if (error.response && error.response.status === 403) {
         // Handle the 403 Forbidden status code
         console.error("Forbidden: ", error.response.data);
-        const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8080';
         const storedGamerInfo = localStorage.getItem('gamerInfo');
         const gamerInfo = JSON.parse(storedGamerInfo);
         console.log("Got gamerinfo: ", gamerInfo)
-        localStorage.clear();
-        window.location.href = `${apiUrl}/`;
 
-        await axios.get(`${apiUrl}/logout`, gamerInfo);
-        return
 
       }
       console.error("Error fetching Spartan inventory:", error);
+      localStorage.clear();
       setIsLoading(false);
     }
   };

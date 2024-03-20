@@ -19,7 +19,6 @@ import (
 
 	"github.com/disintegration/imaging"
 	"github.com/gin-gonic/gin"
-	"github.com/go-redis/redis"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
@@ -241,34 +240,38 @@ func HandleInventory(c *gin.Context) {
 		// For loop that goes through every item in the player's inventory
 		// And checks if the item's data is in the redis server, if not
 		// It adds it to the missingItems struct
+		var itemPaths []string
 		for _, item := range InventoryResults.InventoryItems {
-			var existingItem ItemsInInventory
 			if isExcludedItemType(item.ItemType) {
 				continue
 			}
-			// Retrieve the item from Redis
-			ctx := context.Background()
-			val, err := db.RedisClient.HGet(ctx, "items", item.ItemPath).Result()
-			if err != nil {
-				if err == redis.Nil {
-					fmt.Println("Covered in nil check")
-					missingItems.InventoryItems = append(missingItems.InventoryItems, item)
-				} else {
-					fmt.Printf("Error getting from Redis: %v\n", err)
-					missingItems.InventoryItems = append(missingItems.InventoryItems, item)
-				}
-			} else {
-				if err := json.Unmarshal([]byte(val), &existingItem); err != nil {
-					fmt.Printf("Error unmarshalling item from Redis: %v", err)
-				} else {
-					// If the item is not a Custom Armor Kit, remove the image data
-					if existingItem.ItemType != "ArmorKitCustom" || existingItem.ItemType != "ArmorKit" {
-						existingItem.ItemImageData = ""
-					}
-					// Item found, add to existing items
-					existingItems.InventoryItems = append(existingItems.InventoryItems, existingItem)
+			itemPaths = append(itemPaths, item.ItemPath)
+		}
 
+		ctx := context.Background()
+		vals, err := db.RedisClient.HMGet(ctx, "items", itemPaths...).Result()
+		if err != nil {
+			fmt.Printf("Error getting from Redis: %v\n", err)
+			return
+		}
+
+		for i, val := range vals {
+			if val == nil {
+				fmt.Println("Covered in nil check")
+				missingItems.InventoryItems = append(missingItems.InventoryItems, InventoryResults.InventoryItems[i])
+				continue
+			}
+
+			var existingItem ItemsInInventory
+			if err := json.Unmarshal([]byte(val.(string)), &existingItem); err != nil {
+				fmt.Printf("Error unmarshalling item from Redis: %v\n", err)
+			} else {
+				// If the item is not a Custom Armor Kit, remove the image data
+				if existingItem.ItemType != "ArmorKitCustom" && existingItem.ItemType != "ArmorKit" {
+					existingItem.ItemImageData = ""
 				}
+				// Item found, add to existing items
+				existingItems.InventoryItems = append(existingItems.InventoryItems, existingItem)
 			}
 		}
 		// Fetch and insert missing items into redis database
@@ -285,9 +288,9 @@ func HandleInventory(c *gin.Context) {
 			coreData.Name = reward.ItemMetaData.Title.Value
 			coreData.IsHighlighted = false
 			coreData.Rarity = reward.ItemMetaData.Quality
-			coreData.Image = reward.ItemImageData
 			coreData.Description = reward.ItemMetaData.Description.Value
 			coreData.CoreId = reward.ItemMetaData.Core
+			coreData.CorePath = LoadArmorCores(gamerInfo, reward.ItemMetaData.Core)
 			coreData.CoreTitle = reward.ItemMetaData.CoreTitle
 			coreData.Type = "ArmorCore"
 			// Mark core if it's the equipped core
@@ -303,7 +306,6 @@ func HandleInventory(c *gin.Context) {
 		data.ArmoryRow = objects
 	}
 
-	// Aggregate Armory Row For Helmets
 	data = loadArmoryRow(data, playerInventory)
 	data.GamerInfo = newGamerInfo
 	data.Items = Items{}
@@ -343,6 +345,7 @@ func loadArmoryRow(data DataToReturn, playerInventory []SpartanInventory) DataTo
 	myhticfxs := []ArmoryRowElements{}
 	armorfxs := []ArmoryRowElements{}
 	armoremblems := []ArmoryRowElements{}
+	armorcores := []ArmoryRowElements{}
 
 	for i, item := range data.Items.InventoryItems {
 		// Skip if the item path is empty
@@ -360,11 +363,16 @@ func loadArmoryRow(data DataToReturn, playerInventory []SpartanInventory) DataTo
 			fmt.Println("Armor Kit Received")
 			fmt.Println("Kit Name: ", item.ItemMetaData.Title.Value)
 		case "ArmorHelmet":
-
 			helmet := createArmoryRowElement(i, item, "ArmorHelmet", playerInventory[0].ArmorCores.ArmorCores[0].Themes[0].HelmetPath)
 			helmets = append(helmets, helmet)
 			if helmet.IsHighlighted {
 				data.CurrentlyEquipped.Helmet = helmet
+			}
+		case "ArmorCore":
+			core := createArmoryRowElement(i, item, "ArmorCore", playerInventory[0].ArmorCores.ArmorCores[0].CorePath)
+			armorcores = append(armorcores, core)
+			if core.IsHighlighted {
+				data.CurrentlyEquipped.Helmet = core
 			}
 
 		case "ArmorVisor":
@@ -471,7 +479,7 @@ func loadArmoryRow(data DataToReturn, playerInventory []SpartanInventory) DataTo
 	data.ArmoryRowKits = armorkits
 	data.ArmoryRowMythicFxs = myhticfxs
 	data.ArmoryRowFxs = armorfxs
-	data.ArmoryRowEmblems = armoremblems
+	// data.ArmoryRowEmblems = armoremblems
 
 	return data
 
@@ -893,7 +901,6 @@ func FetchCoreDetails(spartanInventory *SpartanInventory, gamerInfo requests.Gam
 	details := ParseCoreDetails(body)
 	// Add image data to details
 	url = "https://gamecms-hacs.svc.halowaypoint.com/hi/images/file/" + details.CommonData.DisplayPath.Media.MediaUrl.Path
-	details.CommonData.ImageData = FetchImageData(url, gamerInfo)
 	spartanInventory.CoreDetails = details
 
 }
@@ -935,7 +942,7 @@ func FetchImageData(imageURL string, gamerInfo requests.GamerInfo) []byte {
 }
 
 // Loads Armor Cores in from an endpoint and stores them in the database
-func LoadArmorCores(gamerInfo requests.GamerInfo, armorcore string) {
+func LoadArmorCores(gamerInfo requests.GamerInfo, armorcore string) string {
 	url := "https://gamecms-hacs.svc.halowaypoint.com/hi/progression/file/cores/armorcores/" + armorcore + ".json"
 	currentItemResponse := ItemResponse{}
 
@@ -945,20 +952,8 @@ func LoadArmorCores(gamerInfo requests.GamerInfo, armorcore string) {
 		fmt.Println("Error making request for item data: ", err)
 	}
 	itemImagePath := currentItemResponse.CommonData.Media.Media.MediaUrl.Path
-	url = "https://gamecms-hacs.svc.halowaypoint.com/hi/images/file/" + itemImagePath
-	rawImageData, err := makeAPIRequestImage(gamerInfo.SpartanKey, url, nil)
-	path := "cores/armorcores/" + armorcore + ".json"
-	t := RewardResult{Path: path, ImageData: rawImageData, Item: currentItemResponse.CommonData}
-
-	reward := InventoryReward{}
-	reward.InventoryItemPath = t.Path
-	reward.Amount = 1
-	reward.Type = "ArmorCore"
-	reward.ItemImageData = rawImageData
-	reward.ItemMetaData = currentItemResponse.CommonData
-	reward.ItemMetaData.Core = armorcore
-	db.StoreData("item_data", reward)
-
+	// 	url = "https://gamecms-hacs.svc.halowaypoint.com/hi/images/file/" + itemImagePath
+	return itemImagePath
 }
 
 type ItemRequest struct {

@@ -255,13 +255,13 @@ func (sc *SeasonCache) Get(ctx context.Context, seasonID string) (Seasons, bool)
 func (sc *SeasonCache) Set(ctx context.Context, seasonID string, data Seasons) {
 	jsonData, err := json.Marshal(data)
 	if err != nil {
-		panic(err) // Handle the error appropriately
+		fmt.Println(err) // Handle the error appropriately
 	}
 
 	// Set in Redis only if it does not already exist
 	_, err = db.RedisClient.SetNX(ctx, seasonID, jsonData, 0).Result()
 	if err != nil {
-		panic(err) // Handle the error appropriately
+		fmt.Println(err) // Handle the error appropriately
 	}
 }
 

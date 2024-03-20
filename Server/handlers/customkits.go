@@ -142,3 +142,33 @@ func HandleGetCustomKit(c *gin.Context) {
 	fmt.Println("Kits data:", string(kits))
 	c.Data(http.StatusOK, "application/json", kits)
 }
+
+func HandleGetCustomKitById(c *gin.Context) {
+	kitID := c.Param("kitId")
+	xuid := c.Param("xuid")
+
+	kits, err := db.GetKitByID("progression_data", xuid, kitID)
+	userInfo, err := db.GetGamerInfoByXUID("progression_data", xuid)
+	if err != nil {
+		fmt.Println("Error getting kit:", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve kits"})
+		return
+	}
+	if err != nil {
+		fmt.Println("Error getting kit:", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve kits"})
+		return
+	}
+
+	kits.Image = userInfo
+
+	// Convert kits struct to json and send it
+	kitsJSON, err := json.Marshal(kits)
+	if err != nil {
+		fmt.Println("Error marshalling kits to JSON:", err)
+		return
+
+	}
+
+	c.Data(http.StatusOK, "application/json", kitsJSON)
+}

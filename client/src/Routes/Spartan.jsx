@@ -391,20 +391,22 @@ const Spartan = ({ gamerInfo }) => {
         resetHighlight={resetHighlight}
         toggleVisibility={toggleVisibility}
       />
-            <RenderArmoryRow 
-        rowType="Chest Attachments"
-        visId = "chestattachement"
-        isVisible={visibleRows.chestattachement} 
-        objects={armoryRow.ArmoryRowChestAttachments} 
-        fullObjects={armoryRow}
-        gamerInfo={gamerInfo}
-        onEquipItem={handleEquipItem}
-        currentlyEquipped={currentlyEquipped}
-        setHighlightedItems={setHighlightedItems}
-        highlightedItems={highlightedItems}
-        resetHighlight={resetHighlight}
-        toggleVisibility={toggleVisibility}
-        />
+
+        <RenderArmoryRow 
+          rowType="Chest Attachments"
+          visId = "chestattachement"
+          isVisible={visibleRows.chestattachement} 
+          objects={armoryRow.ArmoryRowChestAttachments} 
+          fullObjects={armoryRow}
+          gamerInfo={gamerInfo}
+          onEquipItem={handleEquipItem}
+          currentlyEquipped={currentlyEquipped}
+          setHighlightedItems={setHighlightedItems}
+          highlightedItems={highlightedItems}
+          resetHighlight={resetHighlight}
+          toggleVisibility={toggleVisibility}
+          />
+
           <RenderArmoryRow 
             rowType="Left Shoulder Pads" 
             visId = "shoulderleft"

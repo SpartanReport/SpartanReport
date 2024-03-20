@@ -18,27 +18,6 @@
   padding-top: 20px;
   backdrop-filter: blur(10px);
 }
-.btn.patreon-btn {
-  margin-right: 10px;
-  margin-left: 10px;
-  padding: 10px;
-  border-radius: 5px;
-  background-color: #F96854;
-  color: white;
-  font-family: 'Oswald', sans-serif;
-  font-size: 18px;
-  border: none;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.31);
-  backdrop-filter: blur(10px);
-}
-.btn.patreon-btn:hover {
-  background-color: #F96854;
-  color: white;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.31);
-  transform: scale(1.05);
-}
 .btn.paypal-btn {
   margin-right: 10px;
   margin-left: 10px;
@@ -82,6 +61,10 @@
   color: white;
   margin-bottom: 0px;
 
+}
+.scaled-object-card {
+  transform: scale(0.6); /* Adjust scale value as needed */
+  transform-origin: center; /* Keeps the scaling centered */
 }
 .spartan-title-donate {
   font-family: 'Oswald', sans-serif;
@@ -144,7 +127,7 @@
 .event-date-home{
   font-family: 'Oswald', sans-serif;
   letter-spacing: 1px;
-  
+
 }
 .title-container-event-home-past {
   margin-top: 10px;
@@ -205,7 +188,7 @@
   position: absolute;
   background-color: #4389BA;
 }
- 
+
 .description-container-home {
   padding: 20px;
   margin-top:20px;
@@ -282,7 +265,7 @@ description-container-policy{
         height: auto;
   }
 
-  
+
 }
 /* Container for the events */
 .events-container-home {
@@ -326,7 +309,7 @@ description-container-policy{
 .releasenotes-container{
   text-align: center;
   gap: 20px;
-  
+
 }
 .event-days{
   text-align: center;
@@ -395,8 +378,8 @@ description-container-policy{
     border-left: 5px solid #80cde9;
     border-right: 40px solid #1D435D;
   }
-  
-  
+
+
   .donate-buttons {
     flex-direction: column; /* Stack buttons vertically */
     align-items: center; /* Center buttons horizontally */

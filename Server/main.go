@@ -2,9 +2,7 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"io"
 	"log"
 	"os"
 	"spartanreport/db"
@@ -19,7 +17,6 @@ import (
 	"github.com/newrelic/go-agent/v3/integrations/nrmongo"
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"go.mongodb.org/mongo-driver/bson"
-
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -105,6 +102,7 @@ func main() {
 	// startAuth is the route that redirects to the authentication page
 	r.POST("/startAuth", spartanreport.HandleAuth)
 	r.POST("/spartan", spartanreport.HandleInventory)
+	r.POST("/customkitcheck", spartanreport.HandleCustomKitCheck)
 	r.POST("/stats", spartanreport.HandleStats)
 	r.POST("/progression", spartanreport.HandleProgression)
 	r.POST("/operations", spartanreport.HandleOperations)
@@ -121,6 +119,7 @@ func main() {
 	r.POST("/getCustomKit", spartanreport.HandleGetCustomKit)
 	r.POST("/getItemImage", spartanreport.HandleGetItemImage)
 	r.GET("/.well-known/microsoft-identity-association.json", spartanreport.HandleMSIdentity)
+	r.GET("/customkit/:kitId/:xuid", spartanreport.HandleGetCustomKitById)
 
 	fmt.Println("Server started at :8080")
 	r.Run(":8080")
@@ -147,38 +146,7 @@ func insertDataIfCollectionEmpty(collectionName string, data []map[string]interf
 	}
 }
 
-// General function to read and unmarshal JSON file data
-func readJSONData(filePath string) ([]map[string]interface{}, error) {
-	jsonFile, err := os.Open(filePath)
-	if err != nil {
-		return nil, err
-	}
-	defer jsonFile.Close()
-
-	byteValue, err := io.ReadAll(jsonFile)
-	if err != nil {
-		return nil, err
-	}
-
-	var data []map[string]interface{}
-	err = json.Unmarshal(byteValue, &data)
-	if err != nil {
-		return nil, err
-	}
-
-	// Convert $oid fields to plain string _id values
-	for _, document := range data {
-		if idField, ok := document["_id"].(map[string]interface{}); ok {
-			if oid, ok := idField["$oid"].(string); ok {
-				document["_id"] = oid
-			}
-		}
-	}
-
-	return data, nil
-}
-
-// Loads in required initial armor cores and default emblem tags
+// InitialBootSetup Loads in required initial armor cores and default emblem tags
 // A lot of the emblem data is missing from the Halo API, so we need to provide it ourselves if a users emblem cannot be retrieved
 func InitialBootSetup() {
 	if err := spartanreport.LoadAndInsertData("armorcoredata.json", "item_data"); err != nil {

@@ -18,6 +18,70 @@ func GetCollection(name string) *mongo.Collection {
 	return MongoClient.Database("halo_stats_db").Collection(name) // Ensure the database name is correct
 }
 
+// Adjusted to return just the gamertag as a string.
+func GetGamerInfoByXUID(collectionName string, gamerXUID string) (string, error) {
+	collection := GetCollection(collectionName)
+	filter := bson.M{"gamerinfo.xuid": gamerXUID}
+
+	// Adjusted to target the structure for direct `gamertag` extraction.
+	var result struct{
+		GamerInfo struct {
+			Gamertag string `bson:"gamertag"`
+		} `bson:"gamerinfo"`
+	}
+	err := collection.FindOne(context.TODO(), filter, options.FindOne().SetProjection(bson.M{"gamerinfo.gamertag": 1})).Decode(&result)
+	if err != nil {
+		return "", err // Return an empty string and the error
+	}
+
+	return result.GamerInfo.Gamertag, nil
+}
+func GetKitByID(collectionName string, gamerXUID string, kitId string) (spartanreport.CustomKit, error) {
+	collection := GetCollection(collectionName)
+
+	pipeline := mongo.Pipeline{
+		{{Key: "$match", Value: bson.D{{Key: "gamerinfo.xuid", Value: gamerXUID}}}},
+		{{Key: "$project", Value: bson.D{
+			{Key: "loadouts", Value: bson.D{
+				{Key: "$filter", Value: bson.D{
+					{Key: "input", Value: "$loadouts"},
+					{Key: "as", Value: "loadout"},
+					{Key: "cond", Value: bson.D{{Key: "$eq", Value: []interface{}{"$$loadout.id", kitId}}}},
+				}},
+			}},
+			{Key: "_id", Value: 0},
+		}}},
+	}
+
+	var result struct {
+		Loadouts []spartanreport.CustomKit `bson:"loadouts"`
+	}
+	cur, err := collection.Aggregate(context.Background(), pipeline)
+	if err != nil {
+		fmt.Printf("Error executing aggregation: %v\n", err)
+		return spartanreport.CustomKit{}, err
+	}
+	defer cur.Close(context.Background())
+
+	if cur.Next(context.Background()) {
+		err := cur.Decode(&result)
+		if err != nil {
+			fmt.Printf("Error decoding result: %v\n", err)
+			return spartanreport.CustomKit{}, err
+		}
+		if len(result.Loadouts) > 0 {
+			return result.Loadouts[0], nil
+		}
+		return spartanreport.CustomKit{}, fmt.Errorf("no matching loadout found")
+	}
+
+	if err := cur.Err(); err != nil {
+		return spartanreport.CustomKit{}, err
+	}
+
+	return spartanreport.CustomKit{}, mongo.ErrNoDocuments
+}
+
 func AddKit(collectionName string, gamerXUID string, loadoutData spartanreport.CustomKit) error {
 	collection := GetCollection(collectionName)
 
@@ -134,19 +198,6 @@ func GetKit(collectionName string, gamerXUID string) ([]byte, error) {
 func StoreDataMatch(collectionName string, data interface{}, uniqueFieldValue string) error {
 	collection := GetCollection(collectionName)
 	uniqueField := "MatchId"
-
-	// Use the upsert option: Insert if it doesn't exist, otherwise update.
-	opts := options.Update().SetUpsert(true)
-	filter := bson.M{uniqueField: uniqueFieldValue}
-	update := bson.M{"$set": data}
-
-	_, err := collection.UpdateOne(context.TODO(), filter, update, opts)
-	return err
-}
-
-func StoreDataItem(collectionName string, data interface{}, uniqueFieldValue string) error {
-	collection := GetCollection(collectionName)
-	uniqueField := "inventoryitempath"
 
 	// Use the upsert option: Insert if it doesn't exist, otherwise update.
 	opts := options.Update().SetUpsert(true)

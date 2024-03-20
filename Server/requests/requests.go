@@ -54,19 +54,19 @@ type SpartanTokenResponse struct {
 }
 
 type GamerInfo struct {
-	SpartanKey string `json:"spartankey"`
-	XBLToken   string `json:"xbltoken"`
+	SpartanKey string `json:"spartankey" bson:"spartankey"`
+	XBLToken   string `json:"xbltoken" bson:"xbltoken"`
 
-	XUID     string `json:"xuid"`
-	Gamertag string `json:"gamertag"`
+	XUID     string `json:"xuid" bson:"xuid"`
+	Gamertag string `json:"gamertag" bson:"gamertag"`
 	Gamerpic struct {
-		Small  string `json:"small"`
-		Medium string `json:"medium"`
-		Large  string `json:"large"`
-		XLarge string `json:"xlarge"`
-	} `json:"gamerpic"`
-	ClearanceCode string
-	Seasons       []string
+		Small  string `json:"small" bson:"small"`
+		Medium string `json:"medium" bson:"medium"`
+		Large  string `json:"large" bson:"large"`
+		XLarge string `json:"xlarge" bson:"xlarge"`
+	} `json:"gamerpic" bson:"gamerpic"`
+	ClearanceCode string   `bson:"clearancecode"`
+	Seasons       []string `bson:"seasons"`
 }
 
 type Date struct {

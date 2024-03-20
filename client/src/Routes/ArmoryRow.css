@@ -157,6 +157,14 @@
   backdrop-filter: blur(10px);
   height: 400px;
 }
+.editing-details-kit-page{
+  background: #1d435d25;
+  backdrop-filter: blur(10px);
+  width:90%;
+  margin-left:5%;
+  margin-top:50px;
+
+}
 .subheader-container-edit {
   text-align: left;
   background-color: #4389BA;
@@ -178,6 +186,17 @@
   overflow-x: auto; /* Enable horizontal scrolling */
   white-space: nowrap; /* Keep items in a single line */
 
+}
+
+.scrollable-container-kit-page {
+  display: flex; /* Use Flexbox */
+  flex-wrap: wrap; /* Allow items to wrap to the next line */
+  justify-content: start; /* Align items to the start of the container */
+  align-items: stretch; /* Stretch items to fill the container vertically */
+  gap: 10px; /* Optional: Adds some space between items */
+  overflow-y: hidden; /* Allows vertical scrolling if necessary */
+  padding: 10px; /* Optional: Adds some padding inside the container */
+  overflow-x: hidden;
 }
 .container-cores {
     display: flex;
@@ -233,7 +252,17 @@
   cursor: pointer;
   overflow: hidden;
   outline:none;
+}
 
+.link-button{
+  background-color: #5bea4f;
+  border: 0px;
+  position: absolute;
+  bottom:0;
+  right:0;
+  cursor: pointer;
+  overflow: hidden;
+  outline:none;
 }
 .scrollable-container > div {
   margin-right: 10px; /* Adjust the right margin as needed */

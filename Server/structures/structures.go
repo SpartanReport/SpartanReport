@@ -13,6 +13,20 @@ type CustomKit struct {
 	CurrentlyEquipped CurrentlyEquipped `bson:"currentlyEquipped"`
 	Id                string            `bson:"id"`
 }
+
+type CustomKitWithGamerInfo struct {
+	ImageIndex int    `bson:"ImageIndex"`
+	ImageType  string `bson:"ImageType"`
+	GamerInfo      string `bson:"GamerInfo"`
+
+	IsCrossCore       bool              `bson:"IsCrossCore"`
+	Rarity            string            `bson:"Rarity"`
+	Type              string            `bson:"Type"`
+	IsHighlighted     bool              `bson:"isHighlighted"`
+	Name              string            `bson:"name"`
+	CurrentlyEquipped CurrentlyEquipped `bson:"currentlyEquipped"`
+	Id                string            `bson:"id"`
+}
 type CurrentlyEquipped struct {
 	Helmet            ArmoryRowElements    `bson:"CurrentlyEquippedHelmet" json:"CurrentlyEquippedHelmet"`
 	Core              ArmoryRowCore        `bson:"CurrentlyEquippedCore" json:"CurrentlyEquippedCore"`
@@ -56,6 +70,7 @@ type ArmoryRowCore struct {
 	GetInv        bool   `bson:"GetInv" json:"GetInv"`
 	CoreTitle     string `bson:"CoreTitle" json:"CoreTitle"`
 	Rarity        string `bson:"Rarity" json:"Rarity"`
+	CorePath 	string `bson:"CorePath" json:"CorePath"`
 }
 
 type ArmoryKitRowElements struct {
