@@ -3,6 +3,19 @@ import React, { useState } from 'react';
 // Mock data for release notes
 const releaseNotes = [
     {
+      version: "0.109.0-preview",
+      details: [
+        {
+          feature: "Added support for Sharing and equipping shared Custom Kits",
+          note: "You can now share your Custom Kits with others by sending them the URL (Green Icon in the Custom Kit List). Users can see custom kits regardless of if they're signed in or not. If they're signed in, they can equip the kit directly from the shared link.",
+        },
+        {
+          feature: "Speed Improvements to the Armory Page",
+        },
+      ],
+    },
+
+    {
       version: "0.108.0-preview",
       details: [
         {

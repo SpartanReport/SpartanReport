@@ -80,7 +80,7 @@ const Header = ({ gamerInfo }) => {
           | 
           <Link to="/policy" className='bottom-left-items'> Privacy Policy </Link>
 
-          | VISR v0.108.0-preview
+          | VISR v0.109.0-preview
           <GithubButton onClick={() => window.open('https://github.com/SpartanReport/SpartanReport')} />
 
           </div>
