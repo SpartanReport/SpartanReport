@@ -19,7 +19,6 @@ import (
 	requests "spartanreport/requests"
 	. "spartanreport/structures"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/disintegration/imaging"
@@ -326,36 +325,27 @@ func HandleInventory(c *gin.Context) {
 			return
 		}
 
-		var wg sync.WaitGroup
-		var mutex sync.Mutex
 		// Time this function
 		start = time.Now()
 		for i, val := range vals {
-			wg.Add(1)
-			go func(i int, val interface{}) {
-				defer wg.Done()
-				if val == nil {
-					mutex.Lock()
-					missingItems.InventoryItems = append(missingItems.InventoryItems, InventoryResults.InventoryItems[i])
-					mutex.Unlock()
-					return
-				}
+			if val == nil {
+				fmt.Println("Covered in nil check")
+				missingItems.InventoryItems = append(missingItems.InventoryItems, InventoryResults.InventoryItems[i])
+				continue
+			}
 
-				var existingItem ItemsInInventory
-				if err := json.Unmarshal([]byte(val.(string)), &existingItem); err != nil {
-					fmt.Printf("Error unmarshalling item from Redis: %v\n", err)
-					return
-				}
-
+			var existingItem ItemsInInventory
+			if err := json.Unmarshal([]byte(val.(string)), &existingItem); err != nil {
+				fmt.Printf("Error unmarshalling item from Redis: %v\n", err)
+			} else {
+				// If the item is not a Custom Armor Kit, remove the image data
 				if existingItem.ItemType != "ArmorKitCustom" && existingItem.ItemType != "ArmorKit" {
 					existingItem.ItemImageData = ""
 				}
-				mutex.Lock()
+				// Item found, add to existing items
 				existingItems.InventoryItems = append(existingItems.InventoryItems, existingItem)
-				mutex.Unlock()
-			}(i, val)
+			}
 		}
-		wg.Wait()
 		elapsed = time.Since(start)
 		fmt.Printf("Time to fetch items from Redis: %s\n", elapsed)
 		// Fetch and insert missing items into redis database
