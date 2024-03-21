@@ -694,11 +694,6 @@ func FetchInventoryItems(gamerInfo requests.GamerInfo, Items Items) Items {
 			currentItemResponse = StripKitDataFromItem(currentItemResponse)
 		}
 		itemImagePath := currentItemResponse.CommonData.Media.Media.MediaUrl.Path
-		// if itemImagePAth begins with "progression/Inventory/Emblems" skip the image request
-		if strings.HasPrefix(itemImagePath, "progression/Inventory/Emblems") || itemImagePath == "" {
-			results <- RewardResult{} // Send an empty result to ensure channel doesn't block
-			return
-		}
 		fmt.Println("Making request for ", itemImagePath)
 
 		url = "https://gamecms-hacs.svc.halowaypoint.com/hi/images/file/" + itemImagePath
@@ -727,6 +722,10 @@ func FetchInventoryItems(gamerInfo requests.GamerInfo, Items Items) Items {
 		if item.ItemPath != "" {
 			if !isExcludedItemType(item.ItemType) {
 				// Concurrently fetch item data
+				if strings.Contains(item.ItemPath, "Emblem") || item.ItemPath == "" || strings.Contains(item.ItemPath, "002-001-wlv-e781426b") {
+					continue
+				}
+
 				go makeRequest(item.ItemPath)
 				totalPaths++
 				filteredRewards = append(filteredRewards, item)
@@ -745,6 +744,8 @@ func FetchInventoryItems(gamerInfo requests.GamerInfo, Items Items) Items {
 		if result.Item.Title.Value == "" {
 			continue
 		}
+		fmt.Println("Checking result: ", result.Path)
+
 		for _, item := range Items.InventoryItems {
 			// Update Free Rewards
 			if item.ItemPath == result.Path {
