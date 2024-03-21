@@ -4,6 +4,7 @@ import axios from "axios";
 import { useParams } from "react-router-dom";
 import SvgBorderWrapper from "../Styles/Border";
 import ObjectCard from "./ObjectCard";
+import LoadingScreen from "../Components/Loading";
 
 function renderEquippedItem(onObjectClick, item, gamerInfo, highlightedItems) {
     if (!item.id) {
@@ -41,8 +42,10 @@ function CustomKit({ gamerInfo }) {
     const [kitCheck, setKitCheck] = useState({});
     const [deletedItems, setDeletedItems] = useState({}); // State for storing "deleted" items
     const [highlightedItems, setHighlightedItems] = useState({});
+    const [isLoading, setIsLoading] = useState(true); // State to track loading status
     useEffect(() => {
         const fetchKit = async () => {
+            setIsLoading(true); // Start loading
             try {
                 const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8080';
                 const response = await axios.get(`${apiUrl}/customkit/${kitId}/${xuid}`);
@@ -72,6 +75,8 @@ function CustomKit({ gamerInfo }) {
                 }
             } catch (error) {
                 console.error("Error fetching Spartan inventory:", error);
+            } finally {
+                setIsLoading(false); // End loading regardless of the outcome
             }
         };
         fetchKit();
@@ -301,6 +306,11 @@ function CustomKit({ gamerInfo }) {
         );
     };
     console.log("deleted items: ", deletedItems)
+
+    if (isLoading) {
+        return <LoadingScreen />;
+
+    }
     return (
         <div className="home-grid-container">
             <div className="title-container-donate">
