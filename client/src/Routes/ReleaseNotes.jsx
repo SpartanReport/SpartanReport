@@ -3,6 +3,14 @@ import React, { useState } from 'react';
 // Mock data for release notes
 const releaseNotes = [
     {
+      version: "0.109.1-preview",
+      details: [
+        {
+          feature: "Bug Fixes",
+        },
+      ],
+    },
+  {
       version: "0.109.0-preview",
       details: [
         {
