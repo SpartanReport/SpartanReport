@@ -79,19 +79,13 @@ const ObjectCard = ({ customKitCount, setCustomKitCount, editingObjectId, onEdit
                             let imgType = object.ImageType;
                             // For each object in object.currentlyEquipped, fetch the image from the database if the type matches the img Type and set object.Image to it
                             for (const [key, value] of Object.entries(object.currentlyEquipped)) {
-                                if (value === null){
-                                    continue;
-                                }
                                 console.log("Checking custom kit: ", value.Type, " vs ", imgType)
                                 if (value.Type === imgType){
                                     fetchImageFromDB(gamerInfo,value.CorePath).then((response) => {
                                         if (response === null){
                                             return;
                                         }
-                                        object.Image = response.imageData;
                                         setImageSrc(object.Image ? `data:image/png;base64,${response.imageData}` : null);
-
-                                        setImageSrc(response.imageData);
                                     });
                                 }
                             }
@@ -123,7 +117,7 @@ const ObjectCard = ({ customKitCount, setCustomKitCount, editingObjectId, onEdit
                 observer.unobserve(cardRef.current);
             }
         };
-    }, [object]); // Depend on `object` to re-attach observer if the object changes
+    }, [object,object.Type]); // Depend on `object` to re-attach observer if the object changes
 
     const inputRef = useRef(null);
     // If the object is a custom kit, get the images of the currently equipped items so we can cycle through them on the card in edit mode
@@ -167,13 +161,29 @@ const ObjectCard = ({ customKitCount, setCustomKitCount, editingObjectId, onEdit
     useEffect(() => {
         async function loadImage() {
             if (object.ImagePath === undefined || object.ImagePath === "" || object.CorePath === ""){
-                console.log("checkisng armor core: ", object)
+                console.log("Object Paths undefined: ", object)
             }
             if (typeof object.id === 'string' && object.id.startsWith('saveLoadout')) {
                 console.log(object)
-                console.log("Loading image: ", object.Image ? `data:image/png;base64,${object.Image}` : null)
+                let imgType = object.ImageType;
+                // search currentlyequipped
+                for (const [key, value] of Object.entries(object.currentlyEquipped)) {
+                    if (value === null){
+                        continue;
+                    }
+                    if (value.Type === imgType){
+                        fetchImageFromDB(gamerInfo,value.CorePath).then((response) => {
+                            if (response === null){
+                                return;
+                            }
+                            object.Image = response.imageData;
+                            setImageSrc(object.Image ? `data:image/png;base64,${object.Image}` : null);
+                        });
+                    }
+                }
                 setImageSrc(object.Image ? `data:image/png;base64,${object.Image}` : null);
-            } else if (object.ImagePath && gamerInfo.spartankey && object.isHighlighted  && object.Type !== "ArmorCore") {
+            }
+            else if (object.ImagePath && gamerInfo.spartankey && object.isHighlighted  && object.Type !== "ArmorCore") {
                 const imgSrc = await fetchImage("hi/images/file/" + object.ImagePath, gamerInfo.spartankey);
                 if (object.Type === "ArmorCore"){
                     console.log("checking armor core")
@@ -214,15 +224,16 @@ const ObjectCard = ({ customKitCount, setCustomKitCount, editingObjectId, onEdit
         let newIndex = currentImageIndex + (direction === 'next' ? 1 : -1);
         if (newIndex < 0) newIndex = equippedImages.length - 1;
         if (newIndex >= equippedImages.length) newIndex = 0;
+        console.log("Equipped Images: ", equippedImages);
         setCurrentImageIndexType(equippedTypes[newIndex])
         setCurrentImageIndex(newIndex);
         // Update the image of the card
-        onImageChange(object.id, equippedImages[newIndex]);
+        onImageChange(object.id, equippedTypes[newIndex]);
     };
 
     // Function to handle the name change of the custom kit
     const handleNameChange = (event) => {
-        const newName = `${nonEditableIndex} ${event.target.value}`; // Reconstruct the full name with the index
+        const newName = `${event.target.value}`; // Reconstruct the full name with the index
         setKitName(newName);
         onNameChange(object.id, newName);
     };
@@ -284,9 +295,7 @@ const ObjectCard = ({ customKitCount, setCustomKitCount, editingObjectId, onEdit
             console.error('Failed to copy: ', err);
         }
     }
-    const nameParts = object.name.split('] '); // Splitting the name into the index and the actual name
-    const nonEditableIndex = nameParts[0] + ']'; // The non-editable part, including the closing bracket
-    const editableName = nameParts.length > 1 ? nameParts[1] : ''; // The editable part
+    const editableName = object.name
     return (
         <div ref={cardRef} className={cardClassName} onClick={handleCardClick}>
             {isEditableDummyObject && isEditing ? (

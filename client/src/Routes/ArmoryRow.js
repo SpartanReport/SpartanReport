@@ -124,7 +124,6 @@ const ObjectsDisplay = ({ customKitCount, setCustomKitCount, setTempHighlightId,
     // Check if the special edge case applies
     const isSpecialCase = currentlyEquipped.CurrentlyEquippedCore.CoreId === '017-001-hws-c13d0b38';
     const effectiveCoreId = isSpecialCase ? '017-001-olympus-c13d0b38' : currentlyEquipped.CurrentlyEquippedCore.CoreId;
-
     if (object.Type === "ArmorCoating") {
       return object.Image === "undefined" ||
         object.BelongsToCore === effectiveCoreId ||
@@ -136,6 +135,8 @@ const ObjectsDisplay = ({ customKitCount, setCustomKitCount, setTempHighlightId,
         object.Type === "ArmorCore";
     }
   }).sort((a, b) => {
+    if (a.name === "Save Loadout") return -1;
+    if (b.name === "Save Loadout") return 1;
     // First sort by name alphabetically
     const rarityCompare = rarityOrder[a.Rarity] - rarityOrder[b.Rarity];
     if (rarityCompare !== 0) {
@@ -296,7 +297,16 @@ const ArmoryRow = ({ visId, objects, fullObjects, resetHighlight, gamerInfo, onE
     
     }, [objects, currentlyEquipped]);
   // Add a dummy object to initialObjects if visId is 'armorkit'
-  const modifiedInitialObjects = visId === 'armorkit' ? [...objects, { id: 'saveLoadout', Type: 'ArmorKit', name: 'Save Loadout', Rarity: "LegendaryCustom", IsCrossCore: true, currentlyEquipped: currentlyEquipped }] : objects;
+  const modifiedInitialObjects = visId === 'armorkit' ?
+    [...objects,
+      { id: 'saveLoadout',
+        Type: 'ArmorKit',
+        name: 'Save Loadout',
+        Rarity: "LegendaryCustom",
+        IsCrossCore: true,
+        currentlyEquipped: currentlyEquipped
+      }
+    ] : objects;
   const [currentObjects, setCurrentObjects] = useState(modifiedInitialObjects);
 
   // Sends equip payload to the backend with the currently equipped items
@@ -589,12 +599,11 @@ const ArmoryRow = ({ visId, objects, fullObjects, resetHighlight, gamerInfo, onE
       onEquipItem(object);
 
       const uniqueId = `saveLoadout-${new Date().getTime()}`;
-      const newKitName = `[${customKitCount + 1}] New Loadout`; // Use the new count for naming
       const newDummyObject = {
         id: uniqueId,
         Type: 'ArmorKitCustom',
         Rarity: 'LegendaryCustom',
-        name: newKitName,
+        name: "",
         IsCrossCore: true,
         ImageType: "ArmorHelmet",
         Image: currentlyEquipped.CurrentlyEquippedHelmet.Image,
@@ -653,8 +662,9 @@ const ArmoryRow = ({ visId, objects, fullObjects, resetHighlight, gamerInfo, onE
   };
 
   const handleImageChange = (objectId, newImage) => {
+    console.log("Image changing", objectId, newImage)
     setCurrentObjects(currentObjects.map(obj =>
-      obj.id === objectId ? { ...obj, Image: newImage } : obj
+      obj.id === objectId ? { ...obj, ImageType: newImage } : obj
     ));
   };
   const handleRemoveCard = async (idToRemove) => {
