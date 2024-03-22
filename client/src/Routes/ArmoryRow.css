@@ -1,6 +1,6 @@
 .objectCard {
   cursor: pointer;
-  min-width: 200px;
+  width: 200px;
   height: 200px;
   box-sizing: border-box;
   color: white;
@@ -135,7 +135,6 @@
   padding: 10px;
   margin-left:10px;
   overflow-y:hidden;
-  align-content: left;
 }
 
 .container {
@@ -356,4 +355,6 @@
   display: block;
 
 }
+
+
 

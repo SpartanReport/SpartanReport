@@ -1,47 +1,59 @@
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import "../Styles/Home.css";
+import "./CustomKit.css";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 import SvgBorderWrapper from "../Styles/Border";
 import ObjectCard from "./ObjectCard";
 import LoadingScreen from "../Components/Loading";
 import useStartAuth from "../auth/AuthComponent";
+import border from "../Styles/Border";
 
-function renderEquippedItem(onObjectClick, item, gamerInfo, highlightedItems) {
+function renderEquippedItem(onObjectClick, item, gamerInfo, highlightedItems,windowWidth) {
     if (!item.id) {
         return null;
     }
     const isHighlighted = highlightedItems[item.id] || false;
+    let borderSize = 200;
+    if (windowWidth.current < 590){
+        borderSize = 150;
+
+    }
+    item.CustomStyle = "objectCardKitsPage";
     if (gamerInfo == null) {
         return (
-            <div>
-                <p className="cardHeader">{item.Type.replace(/([A-Z])/g, ' $1').trim()}</p>
+            <styledComponent>
 
-                <SvgBorderWrapper className="scaled-object-card" height={200} width={200} rarity={item.Rarity}>
-                    <ObjectCard
-                        key={item.id}
-                        object={item}
-                        gamerInfo=""
-                        onClick={() => onObjectClick(item, gamerInfo)}
-                    />
-                </SvgBorderWrapper>
+                <div className="test">
+                    <p className="cardHeader">{item.Type.replace(/([A-Z])/g, ' $1').trim()}</p>
 
-            </div>
-        );
+                    <SvgBorderWrapper className="scaled-object-card" height={borderSize} width={borderSize} rarity={item.Rarity}>
+                        <ObjectCard
+                            key={item.id}
+                            object={item}
+                            gamerInfo=""
+                            onClick={() => onObjectClick(item, gamerInfo)}
+
+                        />
+                    </SvgBorderWrapper>
+                </div>
+            </styledComponent>
+    )
+        ;
     }
     return (
-        <div>
+        <div className="test">
             <p className="cardHeader">{item.Type.replace(/([A-Z])/g, ' $1').trim()}</p>
             <SvgBorderWrapper
-            className="scaled-object-card" height={200} width={200} rarity={item.Rarity}>
-            <ObjectCard
-                key={item.id}
-                object={item}
-                gamerInfo={gamerInfo}
-                isHighlighted={isHighlighted}
-                onClick={() => onObjectClick(item, gamerInfo)}
-            />
-        </SvgBorderWrapper>
+                className="scaled-object-card" height={borderSize} width={borderSize} rarity={item.Rarity}>
+                <ObjectCard
+                    key={item.id}
+                    object={item}
+                    gamerInfo={gamerInfo}
+                    isHighlighted={isHighlighted}
+                    onClick={() => onObjectClick(item, gamerInfo)}
+                />
+            </SvgBorderWrapper>
         </div>
     );
 }
@@ -287,7 +299,7 @@ function CustomKit({gamerInfo, startAuth=useStartAuth}) {
     const onClickNotOwned = () => {
         console.log("clicked not owned")
     }
-    const renderEditingDetails = (items, gamerInfo, subheaderTitle, onClick) => {
+    const renderEditingDetails = (items, gamerInfo, subheaderTitle, onClick,windowWidth) => {
         return (
             <div className="editing-details-kit-page">
                 <div className="subheader-container-edit">
@@ -311,7 +323,7 @@ function CustomKit({gamerInfo, startAuth=useStartAuth}) {
                 <div className="scrollable-container-kit-page">
                     {Object.values(items || {}).map(item =>
                         (item && (item === items.CurrentlyEquippedArmorEmblem || item.CorePath || item.Type === "ArmorCore")) ?
-                            renderEquippedItem(onClick, item, gamerInfo, highlightedItems) : null
+                            renderEquippedItem(onClick, item, gamerInfo, highlightedItems,windowWidth) : null
                     )}
                 </div>
                 {gamerInfo ? null : (
@@ -368,20 +380,21 @@ function CustomKit({gamerInfo, startAuth=useStartAuth}) {
     }
     // Sort the CurrentlyEquipped items by type before rendering
     const sortedCurrentlyEquipped = sortItemsByType(kit.CurrentlyEquipped);
+    const windowWidth = useRef(window.innerWidth);
     if (isLoading) {
         return <LoadingScreen />;
 
     }
     return (
         <div className="home-grid-container">
-            <div className="title-container-donate">
+            <div className="title-container-ck">
                 <h1 className="spartan-title-home">{kit.Image} - {kit.Name}</h1>
             </div>
             <div>
-                {renderEditingDetails(sortedCurrentlyEquipped || {}, gamerInfo, "Available To Equip",onClickOwned)}
+                {renderEditingDetails(sortedCurrentlyEquipped || {}, gamerInfo, "Available To Equip",onClickOwned,windowWidth)}
                 {Object.keys(deletedItems).length > 0 && (
                     <div>
-                        {renderEditingDetails(deletedItems, gamerInfo,"Not Owned", onClickNotOwned)}
+                        {renderEditingDetails(deletedItems, gamerInfo,"Not Owned", onClickNotOwned,windowWidth)}
                     </div>
                 )}
             </div>

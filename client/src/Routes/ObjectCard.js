@@ -58,7 +58,7 @@ async function fetchImageFromDB(gamerInfo,path) {
  * @param {function} props.onRemove - The function to handle removal of the armor piece.
  * @returns {JSX.Element} The rendered ObjectCard component.
  */
-const ObjectCard = ({ customKitCount, setCustomKitCount, editingObjectId, onEditingChange, onClickCustomKit, gamerInfo, object, isHighlighted, onClick, onNameChange, onImageChange, onRemove }) => {
+const ObjectCard = ({customStyle, customKitCount, setCustomKitCount, editingObjectId, onEditingChange, onClickCustomKit, gamerInfo, object, isHighlighted, onClick, onNameChange, onImageChange, onRemove }) => {
     // States for the image source, editing mode, and the current image index
     const [copied, setCopied] = useState(false);
     const [imageSrc, setImageSrc] = useState('');
@@ -118,7 +118,6 @@ const ObjectCard = ({ customKitCount, setCustomKitCount, editingObjectId, onEdit
             }
         };
     }, [object,object.Type]); // Depend on `object` to re-attach observer if the object changes
-
     const inputRef = useRef(null);
     // If the object is a custom kit, get the images of the currently equipped items so we can cycle through them on the card in edit mode
     useEffect(() => {
@@ -160,7 +159,7 @@ const ObjectCard = ({ customKitCount, setCustomKitCount, editingObjectId, onEdit
     // Fetch Higher Resolution Image if the object is highlighted
     useEffect(() => {
         async function loadImage() {
-            if (object.ImagePath === undefined || object.ImagePath === "" || object.CorePath === ""){
+            if (object.ImagePath === undefined && object.ImagePath === "" && object.CorePath === ""){
                 console.log("Object Paths undefined: ", object)
             }
             if (typeof object.id === 'string' && object.id.startsWith('saveLoadout')) {
@@ -270,7 +269,10 @@ const ObjectCard = ({ customKitCount, setCustomKitCount, editingObjectId, onEdit
     const isEditableDummyObject = isDummyObject && object.id !== 'saveLoadout';
     const rarityClass = object.Rarity;
     const imageClassName = isHighlighted ? 'highlightedImage' : 'unhighlightedImage';
-    const cardClassName = `${isHighlighted ? 'highlightedObjectCardRow' : 'objectCard'} cardWithGradient ${rarityClass}`;
+    if (object.CustomStyle !== undefined){
+        customStyle = object.CustomStyle;
+    }
+    const cardClassName = `${isHighlighted ? 'highlightedObjectCardRow' : `objectCard ${customStyle}`} cardWithGradient ${rarityClass}`;
     const svgContainerStyle = { display: 'flex', justifyContent: 'center', alignItems: 'center', height: '150px', width: '185px' };
 
     // Determine the click handler based on if the card is in edit mode or not
@@ -296,6 +298,8 @@ const ObjectCard = ({ customKitCount, setCustomKitCount, editingObjectId, onEdit
         }
     }
     const editableName = object.name
+    // if object.CustomStyle exists, set customStyle to object.CustomStyle
+
     return (
         <div ref={cardRef} className={cardClassName} onClick={handleCardClick}>
             {isEditableDummyObject && isEditing ? (

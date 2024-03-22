@@ -62,6 +62,16 @@
   border-left: 5px solid #80cde9;
   border-right: 40px solid #1D435D;
 }
+.title-container-ck {
+  margin-top: 10px;
+  margin-left: 50px;
+  text-align: center;
+  width: 95%;
+  position: absolute;
+  background-color: #273b44;
+  border-left: 5px solid #80cde9;
+  border-right: 40px solid #1D435D;
+}
 
 
 .diamond-icon {
@@ -270,6 +280,17 @@
 
 @media screen and (max-width: 500px) {
   .title-container-home, .subheader-container-home {
+    width: 100%;
+    margin-left:0;
+  }
+  .title-container-ck {
+    margin-top: 10px;
+    margin-left:10px;
+    text-align: center;
+    position: relative;
+    background-color: #273b44;
+    border-left: 5px solid #80cde9;
+    border-right: 40px solid #1D435D;
   }
 
   .cards-container{

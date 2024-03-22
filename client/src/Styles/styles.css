@@ -158,7 +158,12 @@ nav ul li a:hover {
 
   .d-flex{
     background-color: #1A282E;
-	
+
   }
+    @media screen and (max-width: 540px) {
+        .d-flex{
+            margin: 0 auto;
+        }
+    }
 
 

@@ -381,6 +381,11 @@ description-container-policy{
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
+  .home-grid-container{
+    max-width: 100%;
+    overflow: hidden;
+  }
+
   .title-container-donate {
     margin-left: 50px;
     text-align: center;
@@ -416,10 +421,7 @@ description-container-policy{
     margin-top:0px;
     margin-left: 10%;
   }
-  .home-grid-container{
-    margin: -60px;
-    overflow: hidden;
-  }
+
   .title-container-events-home{
     width: 89%;
   }

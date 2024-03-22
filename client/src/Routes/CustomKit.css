@@ -1,0 +1,24 @@
+@media screen and (max-width: 590px) {
+    .test{
+        max-width:150px;
+    }
+    .objectCardKitsPage{
+        width: 150px;
+        height: 150px;
+    }
+    .cardHeader{
+        font-size: 12px;
+    }
+    .card-subheader-mini{
+        font-size: 12px;
+    }
+    .objectsDisplay {
+        display: grid;
+        grid-auto-rows: 220px;
+        grid-column-gap: 60px;
+        padding: 10px;
+        margin-left:10px;
+        overflow-y:hidden;
+    }
+
+}
