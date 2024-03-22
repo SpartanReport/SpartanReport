@@ -83,8 +83,7 @@ function App() {
               <Route path="/operations/:operationId" element={<SelectedOperation gamerInfo={gamerInfo} />} />
               <Route path="/progression" element={<Progression gamerInfo={JSON.parse(localStorage.getItem('gamerInfo'))} HaloStats={HaloStats} setHaloStats={setHaloStats} setSelectedMatch={setSelectedMatch} />} />
               <Route path="/store" element={<Store gamerInfo={JSON.parse(localStorage.getItem('gamerInfo'))} />} />
-                <Route path= "/customkit/:kitId/:xuid" element={<CustomKit gamerInfo={JSON.parse(localStorage.getItem('gamerInfo'))}  />} />
-
+                <Route path= "/customkit/:kitId/:xuid" element={<CustomKit gamerInfo={JSON.parse(localStorage.getItem('gamerInfo'))} startAuth={startAuth}  />} />
             <Route path="/item-details" element={<ItemDetailsPage />} />
               <Route path="/logout" />
             </Routes>

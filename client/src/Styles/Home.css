@@ -62,6 +62,18 @@
   margin-bottom: 0px;
 
 }
+.cardHeader{
+  background: #1D435D;
+    color: white;
+    font-family: 'Oswald', sans-serif;
+    font-size: 16px;
+    text-align: center;
+    margin-right:-2px;
+    margin-bottom: 0px;
+    margin-left:2px;
+    border-radius: 5px 5px 0 0;
+
+}
 .scaled-object-card {
   transform: scale(0.6); /* Adjust scale value as needed */
   transform-origin: center; /* Keeps the scaling centered */

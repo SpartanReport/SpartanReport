@@ -184,6 +184,11 @@
 
   cursor: pointer;
 }
+.hamburger-button-kit-page{
+  cursor: pointer;
+  margin-left: 12px;
+  width:100%;
+}
 
 .fixed {
   position: fixed; /* Apply fixed positioning only when this class is present */

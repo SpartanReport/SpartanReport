@@ -5,6 +5,7 @@ import { useParams } from "react-router-dom";
 import SvgBorderWrapper from "../Styles/Border";
 import ObjectCard from "./ObjectCard";
 import LoadingScreen from "../Components/Loading";
+import useStartAuth from "../auth/AuthComponent";
 
 function renderEquippedItem(onObjectClick, item, gamerInfo, highlightedItems) {
     if (!item.id) {
@@ -13,18 +14,26 @@ function renderEquippedItem(onObjectClick, item, gamerInfo, highlightedItems) {
     const isHighlighted = highlightedItems[item.id] || false;
     if (gamerInfo == null) {
         return (
-            <SvgBorderWrapper className="scaled-object-card" height={200} width={200} rarity={item.Rarity}>
-                <ObjectCard
-                    key={item.id}
-                    object={item}
-                    gamerInfo=""
-                    onClick={() => onObjectClick(item, gamerInfo)}
-                />
-            </SvgBorderWrapper>
+            <div>
+                <p className="cardHeader">{item.Type.replace(/([A-Z])/g, ' $1').trim()}</p>
+
+                <SvgBorderWrapper className="scaled-object-card" height={200} width={200} rarity={item.Rarity}>
+                    <ObjectCard
+                        key={item.id}
+                        object={item}
+                        gamerInfo=""
+                        onClick={() => onObjectClick(item, gamerInfo)}
+                    />
+                </SvgBorderWrapper>
+
+            </div>
         );
     }
     return (
-        <SvgBorderWrapper className="scaled-object-card" height={200} width={200} rarity={item.Rarity}>
+        <div>
+            <p className="cardHeader">{item.Type.replace(/([A-Z])/g, ' $1').trim()}</p>
+            <SvgBorderWrapper
+            className="scaled-object-card" height={200} width={200} rarity={item.Rarity}>
             <ObjectCard
                 key={item.id}
                 object={item}
@@ -33,11 +42,12 @@ function renderEquippedItem(onObjectClick, item, gamerInfo, highlightedItems) {
                 onClick={() => onObjectClick(item, gamerInfo)}
             />
         </SvgBorderWrapper>
+        </div>
     );
 }
 
-function CustomKit({ gamerInfo }) {
-    const { kitId, xuid } = useParams();
+function CustomKit({gamerInfo, startAuth=useStartAuth}) {
+    const {kitId, xuid } = useParams();
     const [kit, setKit] = useState({});
     const [kitCheck, setKitCheck] = useState({});
     const [deletedItems, setDeletedItems] = useState({}); // State for storing "deleted" items
@@ -287,26 +297,77 @@ function CustomKit({ gamerInfo }) {
                         <rect className="cls-1" x="8.16" y="8.16" width="6.59" height="6.59"
                               transform="translate(-4.75 11.46) rotate(-45)"/>
                     </svg>
-                    {gamerInfo ? (<h1 className="spartan-subheader-home"> {subheaderTitle}</h1>) : (
-                        <h1 className="spartan-subheader-home"> Pieces</h1>)}
-                </div>
-                <div >
-                    {gamerInfo  && subheaderTitle != "Not Owned"? (<button className="nav-button" style={{margin: '10px'}} onClick={handleEquipAll} > Equip All</button>): null}
-                    {gamerInfo && subheaderTitle != "Not Owned" ? (<button className="nav-button" onClick={handleEquipAllRouteToArmory} > Equip All & Go To Armory</button>): null}
+                    {gamerInfo ? (<h1 className="spartan-subheader-home"> {subheaderTitle}</h1>) :
+                        (
+                            <div>
+                                <h1 className="spartan-subheader-home"> Pieces</h1>
+                            </div>
+                        )
 
+                    }
                 </div>
+
 
                 <div className="scrollable-container-kit-page">
                     {Object.values(items || {}).map(item =>
                         (item && (item === items.CurrentlyEquippedArmorEmblem || item.CorePath || item.Type === "ArmorCore")) ?
-                            renderEquippedItem(onClick,item, gamerInfo,highlightedItems) : null
+                            renderEquippedItem(onClick, item, gamerInfo, highlightedItems) : null
                     )}
                 </div>
+                {gamerInfo ? null : (
+                    <div>
+                        <button
+                            onClick={() => {
+                                startAuth();
+                            }}
+                            className={`nav-button hamburger-button-kit-page`}>
+                            SIGN IN TO EQUIP
+                        </button>
+
+                    </div>
+                )}
+                <div>
+                    {gamerInfo && subheaderTitle != "Not Owned" ? (
+                        <button className="nav-button" style={{margin: '10px'}} onClick={handleEquipAll}> Equip
+                            All</button>) : null}
+                    {gamerInfo && subheaderTitle != "Not Owned" ? (
+                        <button className="nav-button" onClick={handleEquipAllRouteToArmory}> Equip All & Go To
+                            Armory</button>) : null}
+
+                </div>
+
             </div>
         );
     };
     console.log("deleted items: ", deletedItems)
+    const typeOrder = [
+        "ArmorCore", "ArmorCoating", "ArmorHelmet", "ArmorVisor", "ArmorChestAttachment",
+        "ArmorLeftShoulderPad", "ArmorRightShoulderPad", "ArmorGlove", "ArmorWristAttachment",
+        "ArmorHipAttachment", "ArmorKneePad", "ArmorFx", "ArmorMythicFx"
+    ];
 
+    function sortItemsByType(items) {
+        // Convert the items object to an array of [key, value] pairs
+        if (!items) {
+            return {};
+        }
+        const itemsArray = Object.entries(items);
+        console.log("Checking type order: ", items)
+        // Sort the array based on the predefined type order
+        itemsArray.sort((a, b) => {
+            const typeAIndex = typeOrder.indexOf(a[1].Type);
+            const typeBIndex = typeOrder.indexOf(b[1].Type);
+            return typeAIndex - typeBIndex;
+        });
+
+        // Convert the sorted array back into an object
+        return itemsArray.reduce((acc, [key, value]) => {
+            acc[key] = value;
+            return acc;
+        }, {});
+    }
+    // Sort the CurrentlyEquipped items by type before rendering
+    const sortedCurrentlyEquipped = sortItemsByType(kit.CurrentlyEquipped);
     if (isLoading) {
         return <LoadingScreen />;
 
@@ -317,7 +378,7 @@ function CustomKit({ gamerInfo }) {
                 <h1 className="spartan-title-home">{kit.Image} - {kit.Name}</h1>
             </div>
             <div>
-                {renderEditingDetails(kit.CurrentlyEquipped || {}, gamerInfo, "Available To Equip",onClickOwned)}
+                {renderEditingDetails(sortedCurrentlyEquipped || {}, gamerInfo, "Available To Equip",onClickOwned)}
                 {Object.keys(deletedItems).length > 0 && (
                     <div>
                         {renderEditingDetails(deletedItems, gamerInfo,"Not Owned", onClickNotOwned)}

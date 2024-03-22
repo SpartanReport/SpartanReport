@@ -217,6 +217,8 @@ const useFetchSpartanInventory = (gamerInfo, includeArmory = false, setHighlight
       }
       console.error("Error fetching Spartan inventory:", error);
       localStorage.clear();
+      // redirect to / directory of web url
+        window.location.href = `/`;
       setIsLoading(false);
     }
   };
