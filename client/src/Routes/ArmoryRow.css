@@ -29,7 +29,7 @@
 }
 .highlightedObjectCardRow{
   cursor: pointer;
-  min-width: 200px;
+  width: 200px;
   height: 200px;
   box-sizing: border-box;
   color: white;
@@ -193,8 +193,8 @@
   align-items: stretch; /* Stretch items to fill the container vertically */
   gap: 10px; /* Optional: Adds some space between items */
   overflow-y: hidden; /* Allows vertical scrolling if necessary */
-  padding: 10px; /* Optional: Adds some padding inside the container */
   overflow-x: hidden;
+  padding-left: 10%; /* Optional: Adds some padding around the container */
 }
 .container-cores {
     display: flex;

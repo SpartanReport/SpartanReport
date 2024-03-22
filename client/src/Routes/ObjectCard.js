@@ -272,7 +272,7 @@ const ObjectCard = ({customStyle, customKitCount, setCustomKitCount, editingObje
     if (object.CustomStyle !== undefined){
         customStyle = object.CustomStyle;
     }
-    const cardClassName = `${isHighlighted ? 'highlightedObjectCardRow' : `objectCard ${customStyle}`} cardWithGradient ${rarityClass}`;
+    const cardClassName = `${isHighlighted ? `highlightedObjectCardRow ${customStyle}` : `objectCard ${customStyle}`} cardWithGradient  ${rarityClass}`;
     const svgContainerStyle = { display: 'flex', justifyContent: 'center', alignItems: 'center', height: '150px', width: '185px' };
 
     // Determine the click handler based on if the card is in edit mode or not
