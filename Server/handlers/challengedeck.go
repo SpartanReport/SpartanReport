@@ -82,6 +82,7 @@ func HandleChallengeDeck(c *gin.Context) {
 	hdrs["343-clearance"] = gamerInfo.ClearanceCode
 
 	for _, deck := range playerData.AssignedDecks {
+		// Active Challenges
 		for i, chal := range deck.ActiveChallenges {
 			var chalDetail ChallengeDetail
 			challengeURL := baseURL + chal.Path
@@ -91,6 +92,27 @@ func HandleChallengeDeck(c *gin.Context) {
 			}
 			deck.ActiveChallenges[i].ChallengeDetail = chalDetail
 		}
+		// Upcoming Challenges
+		for i, chal := range deck.UpcomingChallenges {
+			var chalDetail ChallengeDetail
+			challengeURL := baseURL + chal.Path
+			err := makeAPIRequest(gamerInfo.SpartanKey, challengeURL, hdrs, &chalDetail)
+			if err != nil {
+				fmt.Println("Error fetching Challenge Detail: ", err)
+			}
+			deck.UpcomingChallenges[i].ChallengeDetail = chalDetail
+		}
+		// Completed Challenges
+		for i, chal := range deck.CompletedChallenges {
+			var chalDetail ChallengeDetail
+			challengeURL := baseURL + chal.Path
+			err := makeAPIRequest(gamerInfo.SpartanKey, challengeURL, hdrs, &chalDetail)
+			if err != nil {
+				fmt.Println("Error fetching Challenge Detail: ", err)
+			}
+			deck.CompletedChallenges[i].ChallengeDetail = chalDetail
+		}
+
 	}
 
 	c.JSON(http.StatusOK, playerData)

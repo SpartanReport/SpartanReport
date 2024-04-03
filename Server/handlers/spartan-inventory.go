@@ -3,9 +3,6 @@ package spartanreport
 import (
 	"bytes"
 	"context"
-	"crypto/aes"
-	"crypto/cipher"
-	"crypto/rand"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -23,7 +20,6 @@ import (
 
 	"github.com/disintegration/imaging"
 	"github.com/gin-gonic/gin"
-	"github.com/patrickmn/go-cache"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
@@ -201,63 +197,6 @@ type DataToReturn struct {
 	Items             Items
 }
 
-// Initialize the cache. DefaultExpiration is 0 which means no expiration, and CleanupInterval is 5 minutes.
-var invCache = cache.New(5*time.Minute, 10*time.Minute)
-
-func encryptData(data interface{}, key []byte) ([]byte, error) {
-	plaintext, err := json.Marshal(data)
-	if err != nil {
-		return nil, err
-	}
-
-	block, err := aes.NewCipher(key)
-	if err != nil {
-		return nil, err
-	}
-
-	gcm, err := cipher.NewGCM(block)
-	if err != nil {
-		return nil, err
-	}
-
-	nonce := make([]byte, gcm.NonceSize())
-	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
-		return nil, err
-	}
-
-	ciphertext := gcm.Seal(nonce, nonce, plaintext, nil)
-	return ciphertext, nil
-}
-func decryptData(ciphertext, key []byte) (*Items, error) {
-	block, err := aes.NewCipher(key)
-	if err != nil {
-		return nil, err
-	}
-
-	gcm, err := cipher.NewGCM(block)
-	if err != nil {
-		return nil, err
-	}
-
-	if len(ciphertext) < gcm.NonceSize() {
-		return nil, fmt.Errorf("ciphertext too short")
-	}
-
-	nonce, ciphertext := ciphertext[:gcm.NonceSize()], ciphertext[gcm.NonceSize():]
-	plaintext, err := gcm.Open(nil, nonce, ciphertext, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	var inventoryResults Items
-	err = json.Unmarshal(plaintext, &inventoryResults)
-	if err != nil {
-		return nil, err
-	}
-
-	return &inventoryResults, nil
-}
-
 func HandleInventory(c *gin.Context) {
 	// Get GamerInfo from request
 	var gamerInfo requests.GamerInfo
@@ -307,9 +246,6 @@ func HandleInventory(c *gin.Context) {
 		var itemPaths []string
 		start = time.Now()
 		for _, item := range InventoryResults.InventoryItems {
-			if isExcludedItemType(item.ItemType) {
-				continue
-			}
 			itemPaths = append(itemPaths, item.ItemPath)
 		}
 		elapsed = time.Since(start)
@@ -329,11 +265,17 @@ func HandleInventory(c *gin.Context) {
 		start = time.Now()
 		for i, val := range vals {
 			if val == nil {
-				fmt.Println("Covered in nil check")
+				if isExcludedItemType(InventoryResults.InventoryItems[i].ItemType) {
+					continue
+				}
+				fmt.Println("Item Type: ", InventoryResults.InventoryItems[i].ItemType)
+				fmt.Println("Item Name: ", InventoryResults.InventoryItems[i].ItemMetaData.Title.Value)
+
 				missingItems.InventoryItems = append(missingItems.InventoryItems, InventoryResults.InventoryItems[i])
 				continue
 			}
-
+			// if the belongstocore is Unknown
+			// then we need to add it to the missing items
 			var existingItem ItemsInInventory
 			if err := json.Unmarshal([]byte(val.(string)), &existingItem); err != nil {
 				fmt.Printf("Error unmarshalling item from Redis: %v\n", err)
@@ -669,6 +611,10 @@ func FetchInventoryItems(gamerInfo requests.GamerInfo, Items Items) Items {
 
 		// Make API Request to get item data
 		err := makeAPIRequest(gamerInfo.SpartanKey, url, nil, &currentItemResponse)
+		if err != nil {
+			fmt.Println("Error making request for item data: ", err)
+
+		}
 		// Check if the title is in the skip list
 		title := currentItemResponse.CommonData.Title.Value
 
@@ -698,6 +644,7 @@ func FetchInventoryItems(gamerInfo requests.GamerInfo, Items Items) Items {
 		rawImageData, err = compressPNGWithImaging(rawImageData, true, 140, 140)
 
 		if err != nil {
+			fmt.Println("error compressing: ", err)
 			results <- RewardResult{} // Send an empty result to ensure channel doesn't block
 		} else {
 			currentItemResponse.CommonData.CoreTitle = core // Assign Core
@@ -715,7 +662,6 @@ func FetchInventoryItems(gamerInfo requests.GamerInfo, Items Items) Items {
 				if strings.Contains(item.ItemPath, "Emblem") || item.ItemPath == "" || strings.Contains(item.ItemPath, "002-001-wlv-e781426b") {
 					continue
 				}
-
 				go makeRequest(item.ItemPath)
 				totalPaths++
 				filteredRewards = append(filteredRewards, item)
@@ -734,7 +680,6 @@ func FetchInventoryItems(gamerInfo requests.GamerInfo, Items Items) Items {
 		if result.Item.Title.Value == "" {
 			continue
 		}
-		fmt.Println("Checking result: ", result.Path)
 
 		for _, item := range Items.InventoryItems {
 			// Update Free Rewards
@@ -850,6 +795,7 @@ func isExcludedItemType(itemType string) bool {
 		"WeaponDeathFx":                 true,
 		"AiModel":                       true,
 		"AiTheme":                       true,
+		"ArmorEmblem":                   true,
 	}
 
 	_, found := excludedTypes[itemType]

@@ -204,30 +204,60 @@ func GetCurrentArmor(gamerInfo requests.GamerInfo, ArmorCoreData ArmorCoreEquip,
 	if ArmorCoreData.CurrentlyEquipped.Coatings.CorePath != "" && !GetCore {
 		customizationData.Themes[0].CoatingPath = ArmorCoreData.CurrentlyEquipped.Coatings.CorePath
 	}
-	if ArmorCoreData.CurrentlyEquipped.LeftShoulderPads.CorePath != "" && !GetCore {
+	if (ArmorCoreData.CurrentlyEquipped.LeftShoulderPads.CorePath != "" || ArmorCoreData.CurrentlyEquipped.LeftShoulderPads.Name != "Unequipped") && !GetCore {
+		if ArmorCoreData.CurrentlyEquipped.LeftShoulderPads.Name == "Unequipped" {
+			customizationData.Themes[0].LeftShoulderPadPath = ""
+		} else {
+			customizationData.Themes[0].LeftShoulderPadPath = ArmorCoreData.CurrentlyEquipped.LeftShoulderPads.CorePath
+		}
 		customizationData.Themes[0].LeftShoulderPadPath = ArmorCoreData.CurrentlyEquipped.LeftShoulderPads.CorePath
 	}
-	if ArmorCoreData.CurrentlyEquipped.RightShoulderPads.CorePath != "" && !GetCore {
-		customizationData.Themes[0].RightShoulderPadPath = ArmorCoreData.CurrentlyEquipped.RightShoulderPads.CorePath
+	if (ArmorCoreData.CurrentlyEquipped.RightShoulderPads.CorePath != "" || ArmorCoreData.CurrentlyEquipped.RightShoulderPads.Name != "Unequipped") && !GetCore {
+		if ArmorCoreData.CurrentlyEquipped.RightShoulderPads.Name == "Unequipped" {
+			customizationData.Themes[0].RightShoulderPadPath = ""
+		} else {
+			customizationData.Themes[0].RightShoulderPadPath = ArmorCoreData.CurrentlyEquipped.RightShoulderPads.CorePath
+		}
 	}
+
 	if ArmorCoreData.CurrentlyEquipped.ChestAttachments.CorePath != "" && !GetCore {
 		customizationData.Themes[0].ChestAttachmentPath = ArmorCoreData.CurrentlyEquipped.ChestAttachments.CorePath
 	}
 	if ArmorCoreData.CurrentlyEquipped.KneePads.CorePath != "" && !GetCore {
 		customizationData.Themes[0].KneePadPath = ArmorCoreData.CurrentlyEquipped.KneePads.CorePath
 	}
-	if ArmorCoreData.CurrentlyEquipped.WristAttachments.CorePath != "" && !GetCore {
+	if (ArmorCoreData.CurrentlyEquipped.WristAttachments.CorePath != "" || ArmorCoreData.CurrentlyEquipped.WristAttachments.Name != "Unequipped") && !GetCore {
+		if ArmorCoreData.CurrentlyEquipped.WristAttachments.Name == "Unequipped" {
+			customizationData.Themes[0].WristAttachmentPath = ""
+		} else {
+			customizationData.Themes[0].WristAttachmentPath = ArmorCoreData.CurrentlyEquipped.WristAttachments.CorePath
+		}
 		customizationData.Themes[0].WristAttachmentPath = ArmorCoreData.CurrentlyEquipped.WristAttachments.CorePath
 	}
-	if ArmorCoreData.CurrentlyEquipped.HipAttachments.CorePath != "" && !GetCore {
-		customizationData.Themes[0].HipAttachmentPath = ArmorCoreData.CurrentlyEquipped.HipAttachments.CorePath
+	if (ArmorCoreData.CurrentlyEquipped.HipAttachments.CorePath != "" || ArmorCoreData.CurrentlyEquipped.HipAttachments.Name != "Unequipped") && !GetCore {
+		if ArmorCoreData.CurrentlyEquipped.HipAttachments.Name == "Unequipped" {
+			customizationData.Themes[0].HipAttachmentPath = ""
+		} else {
+			customizationData.Themes[0].HipAttachmentPath = ArmorCoreData.CurrentlyEquipped.HipAttachments.CorePath
+		}
 	}
-	if ArmorCoreData.CurrentlyEquipped.ArmorFxs.CorePath != "" && !GetCore {
-		customizationData.Themes[0].ArmorFxPath = ArmorCoreData.CurrentlyEquipped.ArmorFxs.CorePath
+
+	if (ArmorCoreData.CurrentlyEquipped.ArmorFxs.CorePath != "" || ArmorCoreData.CurrentlyEquipped.ArmorFxs.Name != "Unequipped") && !GetCore {
+		if ArmorCoreData.CurrentlyEquipped.ArmorFxs.Name == "Unequipped" {
+			customizationData.Themes[0].ArmorFxPath = ""
+		} else {
+			customizationData.Themes[0].ArmorFxPath = ArmorCoreData.CurrentlyEquipped.ArmorFxs.CorePath
+		}
 	}
-	if ArmorCoreData.CurrentlyEquipped.MythicFxs.CorePath != "" && !GetCore {
-		customizationData.Themes[0].MythicFxPath = ArmorCoreData.CurrentlyEquipped.MythicFxs.CorePath
+
+	if (ArmorCoreData.CurrentlyEquipped.MythicFxs.CorePath != "" || ArmorCoreData.CurrentlyEquipped.MythicFxs.Name != "Unequipped") && !GetCore {
+		if ArmorCoreData.CurrentlyEquipped.MythicFxs.Name == "Unequipped" {
+			customizationData.Themes[0].MythicFxPath = ""
+		} else {
+			customizationData.Themes[0].MythicFxPath = ArmorCoreData.CurrentlyEquipped.MythicFxs.CorePath
+		}
 	}
+
 	if ArmorCoreData.CurrentlyEquipped.ArmorEmblems.CorePath != "" && !GetCore {
 		// if length of Emblems[] is 0, then append the emblem to the array
 		if len(customizationData.Themes[0].Emblems) == 0 {

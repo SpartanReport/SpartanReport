@@ -266,23 +266,23 @@ func (sc *SeasonCache) Set(ctx context.Context, seasonID string, data Seasons) {
 }
 
 func getCoreFromInventoryItemPath(inventoryItemPath string) string {
-	if strings.Contains(inventoryItemPath, "olympus") {
+	if strings.Contains(inventoryItemPath, "olympus") || strings.Contains(inventoryItemPath, "Mark-VII") {
 		return "Mark VII Core"
-	} else if strings.Contains(inventoryItemPath, "reach") {
+	} else if strings.Contains(inventoryItemPath, "reach") || strings.Contains(inventoryItemPath, "Mark-V") {
 		return "Mark V [B] Core"
-	} else if strings.Contains(inventoryItemPath, "wlv") {
+	} else if strings.Contains(inventoryItemPath, "wlv") || strings.Contains(inventoryItemPath, "Rakshasa") {
 		return "Rakshasa Core"
-	} else if strings.Contains(inventoryItemPath, "spi") {
+	} else if strings.Contains(inventoryItemPath, "spi") || strings.Contains(inventoryItemPath, "Mirage") {
 		return "Mirage Core"
-	} else if strings.Contains(inventoryItemPath, "samurai") {
+	} else if strings.Contains(inventoryItemPath, "samurai") || strings.Contains(inventoryItemPath, "Yoroi") {
 		return "Yoroi Core"
-	} else if strings.Contains(inventoryItemPath, "eag") {
+	} else if strings.Contains(inventoryItemPath, "eag") || strings.Contains(inventoryItemPath, "Eaglestrike") {
 		return "Eaglestrike Core"
-	} else if strings.Contains(inventoryItemPath, "fwl") {
+	} else if strings.Contains(inventoryItemPath, "fwl") || strings.Contains(inventoryItemPath, "Chimera") {
 		return "Chimera Core"
-	} else if strings.Contains(inventoryItemPath, "haz") {
+	} else if strings.Contains(inventoryItemPath, "haz") || strings.Contains(inventoryItemPath, "Hazmat") {
 		return "Hazmat Core"
-	} else if strings.Contains(inventoryItemPath, "hws") {
+	} else if strings.Contains(inventoryItemPath, "hws") || strings.Contains(inventoryItemPath, "Mark-IV") {
 		return "Mark IV Core"
 	}
 	// If none of the keywords match, return "Unknown Core"
@@ -290,23 +290,23 @@ func getCoreFromInventoryItemPath(inventoryItemPath string) string {
 }
 
 func getCoreIDFromInventoryItemPath(inventoryItemPath string) string {
-	if strings.Contains(inventoryItemPath, "olympus") {
+	if strings.Contains(inventoryItemPath, "olympus") || strings.Contains(inventoryItemPath, "Mark-VII") {
 		return "017-001-olympus-c13d0b38"
-	} else if strings.Contains(inventoryItemPath, "reach") {
+	} else if strings.Contains(inventoryItemPath, "reach") || strings.Contains(inventoryItemPath, "Mark-V") {
 		return "017-001-reach-2564121f"
-	} else if strings.Contains(inventoryItemPath, "wlv") {
+	} else if strings.Contains(inventoryItemPath, "wlv") || strings.Contains(inventoryItemPath, "Rakshasa") {
 		return "017-001-wlv-c13d0b38"
-	} else if strings.Contains(inventoryItemPath, "spi") {
+	} else if strings.Contains(inventoryItemPath, "spi") || strings.Contains(inventoryItemPath, "Mirage") {
 		return "017-001-spi-c13d0b38"
-	} else if strings.Contains(inventoryItemPath, "samurai") {
+	} else if strings.Contains(inventoryItemPath, "samurai") || strings.Contains(inventoryItemPath, "Yoroi") {
 		return "017-001-samurai-55badb14"
-	} else if strings.Contains(inventoryItemPath, "eag") {
+	} else if strings.Contains(inventoryItemPath, "eag") || strings.Contains(inventoryItemPath, "Eaglestrike") {
 		return "017-001-eag-c13d0b38"
-	} else if strings.Contains(inventoryItemPath, "fwl") {
+	} else if strings.Contains(inventoryItemPath, "fwl") || strings.Contains(inventoryItemPath, "Chimera") {
 		return "017-001-fwl-c13d0b38"
-	} else if strings.Contains(inventoryItemPath, "haz") {
+	} else if strings.Contains(inventoryItemPath, "haz") || strings.Contains(inventoryItemPath, "Hazmat") {
 		return "017-001-haz-c13d0b38"
-	} else if strings.Contains(inventoryItemPath, "hws") {
+	} else if strings.Contains(inventoryItemPath, "hws") || strings.Contains(inventoryItemPath, "Mark-IV") {
 		return "017-001-hws-c13d0b38"
 	}
 	// If none of the keywords match, return "Unknown Core"
