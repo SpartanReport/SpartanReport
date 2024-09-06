@@ -34,12 +34,13 @@ type Challenge struct {
 }
 
 type ChallengeDetail struct {
-	Description         Description     `json:"Description"`
-	Difficulty          string          `json:"Difficulty"`
-	Category            string          `json:"Category"`
-	Reward              RewardChallenge `json:"Reward"`
-	ThresholdForSuccess int             `json:"ThresholdForSuccess"`
-	Title               Title           `json:"Title"`
+	Description         Description              `json:"Description"`
+	Difficulty          string                   `json:"Difficulty"`
+	Category            string                   `json:"Category"`
+	Reward              RewardChallenge          `json:"Reward"`
+	SecondaryReward     SecondaryRewardChallenge `json:"SecondaryReward"`
+	ThresholdForSuccess int                      `json:"ThresholdForSuccess"`
+	Title               Title                    `json:"Title"`
 }
 
 type Description struct {
@@ -47,8 +48,14 @@ type Description struct {
 	Value        string            `json:"value"`
 	Translations map[string]string `json:"translations"`
 }
+
+type SecondaryRewardChallenge struct {
+	SoftExperience int `json:"SoftExperience"`
+}
+
 type RewardChallenge struct {
 	InventoryItems      []string `json:"InventoryItems"`
+	SoftExperience      int      `json:"SoftExperience"`
 	OperationExperience int      `json:"OperationExperience"`
 }
 
@@ -84,6 +91,8 @@ func HandleChallengeDeck(c *gin.Context) {
 	for _, deck := range playerData.AssignedDecks {
 		// Active Challenges
 		for i, chal := range deck.ActiveChallenges {
+			fmt.Println("Challenge Raw", chal)
+
 			var chalDetail ChallengeDetail
 			challengeURL := baseURL + chal.Path
 			err := makeAPIRequest(gamerInfo.SpartanKey, challengeURL, hdrs, &chalDetail)

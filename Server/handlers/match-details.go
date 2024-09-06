@@ -123,7 +123,6 @@ func GetMatchStats(c *gin.Context, spartanToken string, matchId string) (Match, 
 	url := fmt.Sprintf("https://halostats.svc.halowaypoint.com/hi/matches/%s/stats", matchId)
 	err := makeAPIRequest(spartanToken, url, nil, &data)
 	if err != nil {
-		c.String(http.StatusInternalServerError, "%v", err)
 		return data, err
 	}
 	return data, nil
